@@ -31,16 +31,37 @@ const LIFE_STAGE_PRIORITIES = {
   preRetirement: "長期照顧、醫療保障"
 };
 
+const INCOME_TAX_BRACKETS_115 = [
+  { ceiling: 610000, rate: 0.05, deduction: 0 },
+  { ceiling: 1380000, rate: 0.12, deduction: 42700 },
+  { ceiling: 2770000, rate: 0.20, deduction: 153100 },
+  { ceiling: 5190000, rate: 0.30, deduction: 430100 },
+  { ceiling: Infinity, rate: 0.40, deduction: 949100 }
+];
+
+const VEHICLE_LICENSE_TAX = [
+  [500, 1620], [600, 2160], [1200, 4320], [1800, 7120], [2400, 11230],
+  [3000, 15210], [4200, 28220], [5400, 46170], [6600, 69690], [7800, 117000],
+  [Infinity, 151200]
+];
+
+const VEHICLE_ROAD_FEE = [
+  [500, 2160], [600, 2880], [1200, 4320], [1800, 4800], [2400, 6180],
+  [3000, 7200], [3600, 8640], [4200, 9810], [4800, 11220], [5400, 12180],
+  [6000, 13080], [6600, 13950], [7200, 14910], [7800, 15720], [8400, 16560],
+  [9000, 17430], [9600, 18300], [10200, 19170], [Infinity, 20100]
+];
+
 const INPUT_IDS = [
   "currentAge",
   "annualIncome",
-  "annualTaxExpense",
+  "monthlyLivingExpense",
+  "dependentsCount",
+  "dependentSupportYears",
   "assets",
   "incomeGrowth",
   "inflation",
   "returnRate",
-  "lifeMultiple",
-  "reserveYears",
   "medicalDaily",
   "accidentTarget",
   "cancerTarget",
@@ -269,6 +290,7 @@ function readInputs() {
   DATE_IDS.forEach((id) => {
     values[id] = document.getElementById(id).value;
   });
+  values.maritalStatus = document.getElementById("maritalStatus").value;
   return values;
 }
 
@@ -310,7 +332,6 @@ function blankFinanceStage() {
     startDate,
     endDate: addYearsToIso(startDate, 4),
     annualIncome: Math.round(input.annualIncome * 1.2),
-    extraAnnualExpense: 0,
     incomeGrowth: input.incomeGrowth,
     note: ""
   };
@@ -323,7 +344,6 @@ function normalizeFinanceStages(list) {
     startDate: stage.startDate || ageToDate(stage.startAge || readInputs().currentAge),
     endDate: stage.endDate || ageToDate(stage.endAge || 100),
     annualIncome: Number(stage.annualIncome) || 0,
-    extraAnnualExpense: Number(stage.extraAnnualExpense ?? stage.annualExpense) || 0,
     incomeGrowth: Number(stage.incomeGrowth) || 0,
     note: stage.note || ""
   }));
@@ -354,6 +374,10 @@ function blankResource(kind) {
     name: kind === "asset" ? "新增持有資產" : "新增負債",
     type: kind === "asset" ? "房地產" : "房貸",
     value: 0,
+    taxCategory: "none",
+    vehicleCC: 1800,
+    houseTaxBase: 0,
+    houseTaxRate: 1.2,
     interestRate: kind === "debt" ? 2.2 : 0,
     loanYears: kind === "debt" ? 30 : 0,
     monthlyPayment: 0,
@@ -391,6 +415,12 @@ function normalizeResources(list, kind) {
     name: item.name || (kind === "asset" ? "未命名資產" : "未命名負債"),
     type: item.type || (kind === "asset" ? "其他資產" : "其他負債"),
     value: Number(item.value ?? item.balance) || 0,
+    taxCategory: kind === "asset"
+      ? (item.taxCategory || (/車/.test(item.type || "") ? "vehicle" : /房|不動產/.test(item.type || "") ? "house" : "none"))
+      : "none",
+    vehicleCC: kind === "asset" ? Number(item.vehicleCC) || 1800 : 0,
+    houseTaxBase: kind === "asset" ? Number(item.houseTaxBase) || 0 : 0,
+    houseTaxRate: kind === "asset" ? Number(item.houseTaxRate) || 1.2 : 0,
     interestRate: kind === "debt" ? Number(item.interestRate) || 0 : 0,
     loanYears: kind === "debt" ? Number(item.loanYears) || 0 : 0,
     monthlyPayment: kind === "debt" ? Number(item.monthlyPayment) || 0 : 0,
@@ -449,18 +479,57 @@ function debtPaymentForYear(item, date) {
   return total;
 }
 
-function annualExpenseAtDate(date, input) {
+function estimateIncomeTax(income, input) {
+  const annualIncome = Math.max(0, Number(income) || 0);
+  if (!annualIncome) return 0;
+  const spouseCount = input.maritalStatus === "married" ? 1 : 0;
+  const familyMembers = 1 + spouseCount + Math.max(0, Math.floor(input.dependentsCount));
+  const exemption = familyMembers * 101000;
+  const standardDeduction = spouseCount ? 272000 : 136000;
+  const salaryDeduction = Math.min(227000, annualIncome);
+  const taxableIncome = Math.max(0, annualIncome - exemption - standardDeduction - salaryDeduction);
+  const bracket = INCOME_TAX_BRACKETS_115.find((item) => taxableIncome <= item.ceiling);
+  return Math.max(0, taxableIncome * bracket.rate - bracket.deduction);
+}
+
+function tableAmount(value, table) {
+  const numericValue = Math.max(0, Number(value) || 0);
+  return table.find(([ceiling]) => numericValue <= ceiling)?.[1] || 0;
+}
+
+function annualAssetTax(item) {
+  if (item.taxCategory === "vehicle") {
+    return tableAmount(item.vehicleCC, VEHICLE_LICENSE_TAX)
+      + tableAmount(item.vehicleCC, VEHICLE_ROAD_FEE);
+  }
+  if (item.taxCategory === "house") {
+    return Math.max(0, Number(item.houseTaxBase) || 0) * Math.max(0, Number(item.houseTaxRate) || 0) / 100;
+  }
+  return 0;
+}
+
+function assetTaxAtDate(item, date) {
+  return isDateActive(date, item.startDate, item.endDate) ? annualAssetTax(item) : 0;
+}
+
+function annualExpenseAtDate(date, input, income = 0) {
   const baseYear = Math.max(0, new Date(date).getFullYear() - new Date(input.planStartDate).getFullYear());
   const inflationFactor = Math.pow(1 + input.inflation / 100, baseYear);
-  const livingExpense = expenseItems.reduce((sum, item) => sum + item.monthlyAmount * 12, 0)
-    * inflationFactor;
-  const taxExpense = input.annualTaxExpense * inflationFactor;
+  const livingExpense = (input.monthlyLivingExpense * 12
+    + expenseItems.reduce((sum, item) => sum + item.monthlyAmount * 12, 0)) * inflationFactor;
   const resourceExpense = [...heldAssets, ...debtItems]
     .filter((item) => isDateActive(date, item.startDate, item.endDate))
     .flatMap((item) => item.costs)
     .reduce((sum, cost) => sum + cost.annualAmount, 0);
   const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
-  return livingExpense + taxExpense + resourceExpense + debtRepayment;
+  const incomeTax = estimateIncomeTax(income, input);
+  const assetTax = heldAssets.reduce((sum, item) => sum + assetTaxAtDate(item, date), 0);
+  return {
+    total: livingExpense + resourceExpense + debtRepayment + incomeTax + assetTax,
+    tax: incomeTax + assetTax,
+    incomeTax,
+    assetTax
+  };
 }
 
 function financialAtAge(age, input) {
@@ -469,25 +538,33 @@ function financialAtAge(age, input) {
   const activeStage = financeStages.filter(
     (stage) => isDateActive(date, stage.startDate, stage.endDate)
   ).at(-1);
-  const baseExpense = annualExpenseAtDate(date, input);
-
   if (activeStage) {
     const stageYear = Math.max(0, new Date(date).getFullYear() - new Date(activeStage.startDate).getFullYear());
+    const income = activeStage.annualIncome * Math.pow(1 + activeStage.incomeGrowth / 100, stageYear);
+    const expenses = annualExpenseAtDate(date, input, income);
     return {
       date,
-      income: activeStage.annualIncome * Math.pow(1 + activeStage.incomeGrowth / 100, stageYear),
-      expense: baseExpense + activeStage.extraAnnualExpense * Math.pow(1 + input.inflation / 100, stageYear),
+      income,
+      expense: expenses.total,
+      tax: expenses.tax,
+      incomeTax: expenses.incomeTax,
+      assetTax: expenses.assetTax,
       stageId: activeStage.id,
       stageName: activeStage.name
     };
   }
 
+  const income = isDateActive(date, input.incomeStartDate, input.incomeEndDate)
+    ? input.annualIncome * Math.pow(1 + input.incomeGrowth / 100, baseYear)
+    : 0;
+  const expenses = annualExpenseAtDate(date, input, income);
   return {
     date,
-    income: isDateActive(date, input.incomeStartDate, input.incomeEndDate)
-      ? input.annualIncome * Math.pow(1 + input.incomeGrowth / 100, baseYear)
-      : 0,
-    expense: baseExpense,
+    income,
+    expense: expenses.total,
+    tax: expenses.tax,
+    incomeTax: expenses.incomeTax,
+    assetTax: expenses.assetTax,
     stageId: null,
     stageName: "目前基準"
   };
@@ -526,6 +603,12 @@ function renderRecommendations() {
   document.getElementById("cancerRecommendation").textContent = formatMoney(lastRecommendations.cancerTarget, true);
   document.getElementById("criticalRecommendation").textContent = formatMoney(lastRecommendations.criticalTarget, true);
   document.getElementById("ltcRecommendation").textContent = `${formatMoney(lastRecommendations.ltcMonthly, true)}/月`;
+  const input = readInputs();
+  const familyLabel = input.maritalStatus === "married" ? "已婚" : "單身";
+  const dependentLabel = input.dependentsCount > 0
+    ? `${Math.floor(input.dependentsCount)} 位受扶養人，預計 ${Math.floor(input.dependentSupportYears)} 年`
+    : "無受扶養人";
+  document.getElementById("familyResponsibilitySummary").textContent = `${familyLabel}｜${dependentLabel}`;
 }
 
 function renderComputedExpense() {
@@ -536,6 +619,7 @@ function renderComputedExpense() {
     0
   );
   document.getElementById("computedAnnualExpense").textContent = formatMoney(financial.expense + premium);
+  document.getElementById("computedAnnualTax").textContent = formatMoney(financial.tax);
 }
 
 function activePoliciesAt(age) {
@@ -567,15 +651,20 @@ function needsAtAge(age, input, financial) {
   const year = age - input.currentAge;
   const inflationFactor = Math.pow(1 + input.inflation / 100, year);
   const income = financial.income;
-  const expense = financial.expense;
   const debtNeed = debtItems
     .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
-  const workingDeathNeed = Math.max(
-    income * input.lifeMultiple,
-    expense * input.reserveYears
-  ) + debtNeed;
-  const retirementDeathNeed = age < 80 ? expense * 2 : 0;
-  const deathNeed = income > 0 ? workingDeathNeed : retirementDeathNeed;
+  const supportYearsRemaining = Math.max(0, input.dependentSupportYears - year);
+  const activeDependents = supportYearsRemaining > 0 ? Math.max(0, Math.floor(input.dependentsCount)) : 0;
+  const annualFamilyLiving = input.monthlyLivingExpense * 12 * inflationFactor;
+  let responsibilityNeed;
+  if (activeDependents > 0) {
+    responsibilityNeed = Math.max(income * 5, annualFamilyLiving * supportYearsRemaining);
+  } else if (input.maritalStatus === "married") {
+    responsibilityNeed = Math.max(income * 3, annualFamilyLiving * 5);
+  } else {
+    responsibilityNeed = annualFamilyLiving * 2;
+  }
+  const deathNeed = responsibilityNeed + debtNeed;
   const accidentStep = income > 0 ? 1 : age < 80 ? 0.55 : 0.25;
 
   return {
@@ -646,6 +735,9 @@ function projectPlan() {
       date: financial.date,
       income,
       expense,
+      tax: financial.tax,
+      incomeTax: financial.incomeTax,
+      assetTax: financial.assetTax,
       premium,
       assets: netAssets,
       liquidAssets: liquidBalance,
@@ -746,7 +838,7 @@ function renderStageManager() {
     <section class="entity-summary modal-entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate || "-"} 至 ${stage.endDate || "持續"}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜額外支出 ${formatMoney(stage.extraAnnualExpense, true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜估算所得稅 ${formatMoney(estimateIncomeTax(stage.annualIncome, readInputs()), true)}</span>
       <div class="entity-summary-actions">
         <button type="button" class="detail-btn" data-editor-action="edit-stage-modal">編輯</button>
         <button type="button" class="delete-btn" data-editor-action="delete-stage-modal">刪除</button>
@@ -778,7 +870,6 @@ function renderSimpleEditor() {
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label>收入成長率 %<input data-draft-field="incomeGrowth" type="number" step="0.1" value="${editorDraft.incomeGrowth}"></label>
-      <label>額外年支出<input data-draft-field="extraAnnualExpense" type="number" min="0" step="10000" value="${editorDraft.extraAnnualExpense}"></label>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>`;
   }
@@ -815,11 +906,23 @@ function renderResourceEditor() {
         <span>依目前餘額、利率與年限試算：每月 ${formatMoney(calculateMonthlyLoanPayment(editorDraft.value, editorDraft.interestRate, editorDraft.loanYears))}</span>
         <button type="button" class="detail-btn" data-editor-action="calculate-debt-payment">套用試算月付</button>
       </div>` : "";
+  const assetTaxFields = editorType === "asset" ? `
+      <label>自動稅務類型<select data-draft-field="taxCategory">
+        <option value="none" ${editorDraft.taxCategory === "none" ? "selected" : ""}>一般資產／不自動計稅</option>
+        <option value="vehicle" ${editorDraft.taxCategory === "vehicle" ? "selected" : ""}>自用小客車</option>
+        <option value="house" ${editorDraft.taxCategory === "house" ? "selected" : ""}>自住房屋</option>
+      </select></label>
+      ${editorDraft.taxCategory === "vehicle" ? `<label>汽車排氣量 cc<input data-draft-field="vehicleCC" type="number" min="0" step="1" value="${editorDraft.vehicleCC}"></label>
+      <div class="loan-calculator full-field"><span>估算牌照稅與公路養管費：每年 ${formatMoney(annualAssetTax(editorDraft))}</span></div>` : ""}
+      ${editorDraft.taxCategory === "house" ? `<label>房屋評定現值<input data-draft-field="houseTaxBase" type="number" min="0" step="any" value="${editorDraft.houseTaxBase}"></label>
+      <label>房屋稅率 %<select data-draft-field="houseTaxRate"><option value="1" ${editorDraft.houseTaxRate === 1 ? "selected" : ""}>單一自住 1%</option><option value="1.2" ${editorDraft.houseTaxRate === 1.2 ? "selected" : ""}>自住 1.2%</option></select></label>
+      <div class="loan-calculator full-field"><span>估算房屋稅：每年 ${formatMoney(annualAssetTax(editorDraft))}</span></div>` : ""}` : "";
   return `<div class="modal-field-grid">
       <label>項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>類型<input data-draft-field="type" value="${escapeHtml(editorDraft.type)}"></label>
       <label>${editorType === "asset" ? "估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
       ${debtFields}
+      ${assetTaxFields}
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
@@ -1086,7 +1189,7 @@ function renderResources(kind) {
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
       <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
-      <span>${kind === "asset" ? `價值 ${formatMoney(item.value, true)}｜支出細項 ${item.costs.length}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
+      <span>${kind === "asset" ? `價值 ${formatMoney(item.value, true)}｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
 }
@@ -1105,7 +1208,7 @@ function renderFinanceStages() {
     return `<section class="entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate} 至 ${stage.endDate || "持續"}｜${status}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜額外支出 ${formatMoney(stage.extraAnnualExpense, true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜估算所得稅 ${formatMoney(estimateIncomeTax(stage.annualIncome, readInputs()), true)}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-stage">編輯第一階段</button></div>
     </section>`;
   }).join("") + (financeStages.length > 1 ? `<button type="button" class="secondary compact-more" data-action="manage-stages">其餘 ${financeStages.length - 1} 個階段｜更多編輯</button>` : "");
@@ -1342,6 +1445,7 @@ function collectState() {
   DATE_IDS.forEach((id) => {
     inputs[id] = document.getElementById(id).value;
   });
+  inputs.maritalStatus = document.getElementById("maritalStatus").value;
   return {
     inputs,
     lifeStage: document.getElementById("lifeStage").value,
@@ -1374,7 +1478,7 @@ function loadState() {
   if (!saved) {
     policies = normalizePolicies(structuredClone(samplePolicies));
     financeStages = [];
-    expenseItems = normalizeExpenseItems([{ name: "生活支出", monthlyAmount: 35000 }]);
+    expenseItems = [];
     investments = [];
     heldAssets = [];
     debtItems = [];
@@ -1405,14 +1509,17 @@ function loadState() {
     financeStages = normalizeFinanceStages(
       Array.isArray(state.financeStages) ? state.financeStages : []
     );
+    const hasMonthlyLivingExpense = Object.prototype.hasOwnProperty.call(state.inputs || {}, "monthlyLivingExpense");
     const migratedAnnualExpense = Number(state.inputs?.annualExpense) || 0;
-    expenseItems = normalizeExpenseItems(
-      Array.isArray(state.expenseItems)
-        ? state.expenseItems
-        : migratedAnnualExpense > 0
-          ? [{ name: "生活支出", monthlyAmount: migratedAnnualExpense / 12 }]
-          : []
-    );
+    if (!hasMonthlyLivingExpense) {
+      const legacyMonthlyExpense = Array.isArray(state.expenseItems)
+        ? state.expenseItems.reduce((sum, item) => sum + (Number(item.monthlyAmount) || 0), 0)
+        : migratedAnnualExpense / 12;
+      document.getElementById("monthlyLivingExpense").value = legacyMonthlyExpense || 35000;
+      expenseItems = [];
+    } else {
+      expenseItems = normalizeExpenseItems(Array.isArray(state.expenseItems) ? state.expenseItems : []);
+    }
     investments = normalizeInvestments(Array.isArray(state.investments) ? state.investments : []);
     heldAssets = normalizeResources(Array.isArray(state.heldAssets) ? state.heldAssets : [], "asset");
     const migratedDebt = Number(state.inputs?.debt) || 0;
@@ -1428,7 +1535,7 @@ function loadState() {
   } catch {
     policies = normalizePolicies(structuredClone(samplePolicies));
     financeStages = [];
-    expenseItems = normalizeExpenseItems([{ name: "生活支出", monthlyAmount: 35000 }]);
+    expenseItems = [];
     investments = [];
     heldAssets = [];
     debtItems = [];
@@ -1461,7 +1568,14 @@ function applyImportedState(state) {
 
   policies = normalizePolicies(Array.isArray(state.policies) ? state.policies : []);
   financeStages = normalizeFinanceStages(Array.isArray(state.financeStages) ? state.financeStages : []);
-  expenseItems = normalizeExpenseItems(Array.isArray(state.expenseItems) ? state.expenseItems : []);
+  const hasMonthlyLivingExpense = Object.prototype.hasOwnProperty.call(state.inputs || {}, "monthlyLivingExpense");
+  if (!hasMonthlyLivingExpense && Array.isArray(state.expenseItems)) {
+    document.getElementById("monthlyLivingExpense").value = state.expenseItems
+      .reduce((sum, item) => sum + (Number(item.monthlyAmount) || 0), 0) || 35000;
+    expenseItems = [];
+  } else {
+    expenseItems = normalizeExpenseItems(Array.isArray(state.expenseItems) ? state.expenseItems : []);
+  }
   investments = normalizeInvestments(Array.isArray(state.investments) ? state.investments : []);
   heldAssets = normalizeResources(Array.isArray(state.heldAssets) ? state.heldAssets : [], "asset");
   debtItems = normalizeResources(Array.isArray(state.debtItems) ? state.debtItems : [], "debt");
@@ -1535,6 +1649,7 @@ function bindEvents() {
   });
 
   document.getElementById("lifeStage").addEventListener("change", recalculate);
+  document.getElementById("maritalStatus").addEventListener("change", recalculate);
 
   document.querySelectorAll("[data-apply-recommendation]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1557,7 +1672,7 @@ function bindEvents() {
     const field = event.target.dataset.stageField;
     if (!stageElement || !field) return;
     const stage = financeStages[Number(stageElement.dataset.stageIndex)];
-    const numericFields = ["annualIncome", "extraAnnualExpense", "incomeGrowth"];
+    const numericFields = ["annualIncome", "incomeGrowth"];
     stage[field] = numericFields.includes(field) ? Number(event.target.value) : event.target.value;
     recalculate();
   });
@@ -1811,7 +1926,8 @@ function bindEvents() {
 
     const draftField = event.target.dataset.draftField;
     if (draftField) {
-      editorDraft[draftField] = event.target.type === "number"
+      const numericDraftFields = ["houseTaxRate"];
+      editorDraft[draftField] = event.target.type === "number" || numericDraftFields.includes(draftField)
         ? Number(event.target.value)
         : event.target.value;
 
@@ -1832,6 +1948,13 @@ function bindEvents() {
         const estimate = document.querySelector(".loan-calculator span");
         if (estimate) {
           estimate.textContent = `依目前餘額、利率與年限試算：每月 ${formatMoney(calculateMonthlyLoanPayment(editorDraft.value, editorDraft.interestRate, editorDraft.loanYears))}`;
+        }
+      } else if (editorType === "asset" && draftField === "taxCategory") {
+        renderEditorFields();
+      } else if (editorType === "asset" && ["vehicleCC", "houseTaxBase", "houseTaxRate"].includes(draftField)) {
+        const estimate = document.querySelector(".loan-calculator span");
+        if (estimate) {
+          estimate.textContent = `${editorDraft.taxCategory === "vehicle" ? "估算牌照稅與公路養管費" : "估算房屋稅"}：每年 ${formatMoney(annualAssetTax(editorDraft))}`;
         }
       }
       return;

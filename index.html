@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20260619j">
+  <link rel="stylesheet" href="./styles.css?v=20260619k">
 </head>
 <body>
   <main class="app-shell">
@@ -84,8 +84,27 @@
               <output id="computedAnnualExpense" class="computed-output">0</output>
             </label>
             <label>
-              年稅務支出
-              <input id="annualTaxExpense" type="number" min="0" step="any" value="0">
+              月生活費
+              <input id="monthlyLivingExpense" type="number" min="0" step="any" value="35000">
+            </label>
+            <label>
+              目前估算年稅務支出
+              <output id="computedAnnualTax" class="computed-output">0</output>
+            </label>
+            <label>
+              婚姻狀態
+              <select id="maritalStatus">
+                <option value="single">單身</option>
+                <option value="married">已婚</option>
+              </select>
+            </label>
+            <label>
+              受扶養人數
+              <input id="dependentsCount" type="number" min="0" max="20" step="1" value="0">
+            </label>
+            <label>
+              預計扶養年數
+              <input id="dependentSupportYears" type="number" min="0" max="40" step="1" value="0">
             </label>
             <label>
               收入成長率 %
@@ -103,8 +122,8 @@
           <div class="expense-detail-block">
             <div class="future-finance-head">
               <div>
-                <h3>生活支出明細</h3>
-                <p>月支出會換算成年支出並加入試算。</p>
+                <h3>其他每月支出</h3>
+                <p>月生活費以外的固定支出，可另外加入明細。</p>
               </div>
               <button id="addExpenseItem" class="secondary" type="button">新增支出</button>
             </div>
@@ -114,7 +133,7 @@
             <div class="future-finance-head">
               <div>
                 <h3>未來收入支出規劃</h3>
-                <p>依起訖日套用升遷、轉職或生活階段的收入與額外支出。</p>
+                <p>依起訖日套用升遷或轉職收入，支出與稅務由系統計算。</p>
               </div>
               <button id="addFinanceStage" class="secondary" type="button">更多編輯</button>
             </div>
@@ -141,11 +160,8 @@
               <div class="recommendation-row">
                 <span>建議保額</span><strong id="deathRecommendation">計算中</strong>
               </div>
-              <small class="recommendation-formula">生活費替代或所得倍數取高者，再加負債。</small>
-              <div class="protection-values two-values">
-                <label>年收入倍數<input id="lifeMultiple" type="number" min="0" max="20" step="0.5" value="8"></label>
-                <label>家庭預備年數<input id="reserveYears" type="number" min="0" max="20" step="1" value="5"></label>
-              </div>
+              <small class="recommendation-formula">依婚姻、受扶養人數、扶養年數、生活費與剩餘負債估算。</small>
+              <output id="familyResponsibilitySummary" class="computed-output">單身且無受扶養人</output>
               <label>文字敘述<textarea id="deathDescription" rows="2" placeholder="例如：房貸與家庭責任期間優先補足"></textarea></label>
             </article>
             <article class="protection-item protection-accident">
@@ -345,6 +361,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260619j"></script>
+  <script src="./app.js?v=20260619k"></script>
 </body>
 </html>
