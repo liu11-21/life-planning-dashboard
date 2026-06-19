@@ -354,6 +354,9 @@ function blankResource(kind) {
     name: kind === "asset" ? "新增持有資產" : "新增負債",
     type: kind === "asset" ? "房地產" : "房貸",
     value: 0,
+    interestRate: kind === "debt" ? 2.2 : 0,
+    loanYears: kind === "debt" ? 30 : 0,
+    monthlyPayment: 0,
     startDate: input.planStartDate,
     endDate: "",
     note: "",
@@ -388,6 +391,9 @@ function normalizeResources(list, kind) {
     name: item.name || (kind === "asset" ? "未命名資產" : "未命名負債"),
     type: item.type || (kind === "asset" ? "其他資產" : "其他負債"),
     value: Number(item.value ?? item.balance) || 0,
+    interestRate: kind === "debt" ? Number(item.interestRate) || 0 : 0,
+    loanYears: kind === "debt" ? Number(item.loanYears) || 0 : 0,
+    monthlyPayment: kind === "debt" ? Number(item.monthlyPayment) || 0 : 0,
     startDate: item.startDate || readInputs().planStartDate,
     endDate: item.endDate || "",
     note: item.note || "",
@@ -397,6 +403,50 @@ function normalizeResources(list, kind) {
       annualAmount: Number(cost.annualAmount) || 0
     })) : []
   }));
+}
+
+function calculateMonthlyLoanPayment(principal, annualRate, years) {
+  const months = Math.max(0, Math.round(Number(years) * 12));
+  const amount = Math.max(0, Number(principal) || 0);
+  if (!months || !amount) return 0;
+  const monthlyRate = Math.max(0, Number(annualRate) || 0) / 1200;
+  if (!monthlyRate) return amount / months;
+  const factor = Math.pow(1 + monthlyRate, months);
+  return amount * monthlyRate * factor / (factor - 1);
+}
+
+function monthsBetween(startDate, targetDate) {
+  if (!startDate || !targetDate) return 0;
+  const start = new Date(`${startDate}T12:00:00`);
+  const target = new Date(`${targetDate}T12:00:00`);
+  return Math.max(0, (target.getFullYear() - start.getFullYear()) * 12 + target.getMonth() - start.getMonth());
+}
+
+function debtBalanceAtDate(item, date) {
+  if (!isDateActive(date, item.startDate, item.endDate)) return 0;
+  const principal = Math.max(0, Number(item.value) || 0);
+  const payment = Math.max(0, Number(item.monthlyPayment) || 0);
+  const elapsedMonths = monthsBetween(item.startDate, date);
+  if (!payment || !elapsedMonths) return principal;
+  const monthlyRate = Math.max(0, Number(item.interestRate) || 0) / 1200;
+  if (!monthlyRate) return Math.max(0, principal - payment * elapsedMonths);
+  const factor = Math.pow(1 + monthlyRate, elapsedMonths);
+  return Math.max(0, principal * factor - payment * (factor - 1) / monthlyRate);
+}
+
+function debtPaymentForYear(item, date) {
+  let balance = debtBalanceAtDate(item, date);
+  const payment = Math.max(0, Number(item.monthlyPayment) || 0);
+  if (!balance || !payment) return 0;
+  const monthlyRate = Math.max(0, Number(item.interestRate) || 0) / 1200;
+  let total = 0;
+  for (let month = 0; month < 12 && balance > 0; month += 1) {
+    const amountDue = balance * (1 + monthlyRate);
+    const paid = Math.min(payment, amountDue);
+    balance = Math.max(0, amountDue - paid);
+    total += paid;
+  }
+  return total;
 }
 
 function annualExpenseAtDate(date, input) {
@@ -409,7 +459,8 @@ function annualExpenseAtDate(date, input) {
     .filter((item) => isDateActive(date, item.startDate, item.endDate))
     .flatMap((item) => item.costs)
     .reduce((sum, cost) => sum + cost.annualAmount, 0);
-  return livingExpense + taxExpense + resourceExpense;
+  const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
+  return livingExpense + taxExpense + resourceExpense + debtRepayment;
 }
 
 function financialAtAge(age, input) {
@@ -518,8 +569,7 @@ function needsAtAge(age, input, financial) {
   const income = financial.income;
   const expense = financial.expense;
   const debtNeed = debtItems
-    .filter((item) => isDateActive(financial.date, item.startDate, item.endDate))
-    .reduce((sum, item) => sum + item.value, 0);
+    .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
   const workingDeathNeed = Math.max(
     income * input.lifeMultiple,
     expense * input.reserveYears
@@ -588,8 +638,7 @@ function projectPlan() {
       .filter((item) => isDateActive(financial.date, item.startDate, item.endDate))
       .reduce((sum, item) => sum + item.value, 0);
     const debtValue = debtItems
-      .filter((item) => isDateActive(financial.date, item.startDate, item.endDate))
-      .reduce((sum, item) => sum + item.value, 0);
+      .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
     const netAssets = liquidBalance + investmentTotal + heldAssetValue - debtValue;
 
     rows.push({
@@ -758,16 +807,25 @@ function renderResourceEditor() {
       <label>每年金額<input data-cost-field="annualAmount" type="number" min="0" step="1000" value="${cost.annualAmount}"></label>
       <button type="button" class="delete-btn" data-editor-action="delete-cost">刪除細項</button>
     </div>`).join("") : `<p class="empty-list">尚未加入年度預期支出。</p>`;
+  const debtFields = editorType === "debt" ? `
+      <label>年利率 %<input data-draft-field="interestRate" type="number" min="0" step="any" value="${editorDraft.interestRate}"></label>
+      <label>剩餘貸款年限<input data-draft-field="loanYears" type="number" min="0" step="any" value="${editorDraft.loanYears}"></label>
+      <label>每月還款額<input data-draft-field="monthlyPayment" type="number" min="0" step="any" value="${editorDraft.monthlyPayment}"></label>
+      <div class="loan-calculator full-field">
+        <span>依目前餘額、利率與年限試算：每月 ${formatMoney(calculateMonthlyLoanPayment(editorDraft.value, editorDraft.interestRate, editorDraft.loanYears))}</span>
+        <button type="button" class="detail-btn" data-editor-action="calculate-debt-payment">套用試算月付</button>
+      </div>` : "";
   return `<div class="modal-field-grid">
       <label>項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>類型<input data-draft-field="type" value="${escapeHtml(editorDraft.type)}"></label>
-      <label>${editorType === "asset" ? "估計價值" : "負債餘額"}<input data-draft-field="value" type="number" min="0" step="10000" value="${editorDraft.value}"></label>
+      <label>${editorType === "asset" ? "估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
+      ${debtFields}
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>
     <div class="modal-subsection">
-      <div class="modal-subsection-head"><strong>年度預期支出</strong><button type="button" class="add-benefit-btn" data-editor-action="add-cost">新增支出細項</button></div>
+      <div class="modal-subsection-head"><strong>${editorType === "debt" ? "其他年度支出" : "年度預期支出"}</strong><button type="button" class="add-benefit-btn" data-editor-action="add-cost">新增支出細項</button></div>
       ${costs}
     </div>`;
 }
@@ -1028,7 +1086,7 @@ function renderResources(kind) {
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
       <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
-      <span>${kind === "asset" ? "價值" : "餘額"} ${formatMoney(item.value, true)}｜支出細項 ${item.costs.length}</span>
+      <span>${kind === "asset" ? `價值 ${formatMoney(item.value, true)}｜支出細項 ${item.costs.length}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
 }
@@ -1770,6 +1828,11 @@ function bindEvents() {
           });
         }
         renderEditorFields();
+      } else if (editorType === "debt" && ["value", "interestRate", "loanYears"].includes(draftField)) {
+        const estimate = document.querySelector(".loan-calculator span");
+        if (estimate) {
+          estimate.textContent = `依目前餘額、利率與年限試算：每月 ${formatMoney(calculateMonthlyLoanPayment(editorDraft.value, editorDraft.interestRate, editorDraft.loanYears))}`;
+        }
       }
       return;
     }
@@ -1815,7 +1878,12 @@ function bindEvents() {
     const action = event.target.dataset.editorAction;
     if (!action || !editorDraft) return;
 
-    if (action === "add-stage-modal") {
+    if (action === "calculate-debt-payment") {
+      editorDraft.monthlyPayment = Math.round(
+        calculateMonthlyLoanPayment(editorDraft.value, editorDraft.interestRate, editorDraft.loanYears)
+      );
+      renderEditorFields();
+    } else if (action === "add-stage-modal") {
       openEntityEditor("stage");
       return;
     } else if (action === "edit-stage-modal") {

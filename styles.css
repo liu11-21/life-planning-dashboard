@@ -623,6 +623,23 @@ canvas {
   margin-top: 4px;
 }
 
+.loan-calculator {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.loan-calculator span {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .edit-modal[hidden] {
   display: none;
 }
@@ -1075,5 +1092,10 @@ td select {
   .detail-menu-head {
     align-items: stretch;
     display: grid;
+  }
+
+  .loan-calculator {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
