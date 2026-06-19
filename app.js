@@ -579,6 +579,24 @@ function financialAtAge(age, input) {
   };
 }
 
+function estimateStageAnnualExpense(stage) {
+  const input = readInputs();
+  const startDate = stage.startDate || input.planStartDate;
+  const income = Math.max(0, Number(stage.annualIncome) || 0);
+  const expenses = annualExpenseAtDate(startDate, input, income);
+  const estimatedAge = Math.min(100, Math.max(
+    input.currentAge,
+    input.currentAge + Math.floor(monthsBetween(input.planStartDate, startDate) / 12)
+  ));
+  const premium = activePoliciesAt(estimatedAge)
+    .reduce((sum, policy) => sum + premiumAtAge(policy, estimatedAge), 0);
+  return {
+    total: expenses.total + premium,
+    tax: expenses.tax,
+    premium
+  };
+}
+
 function roundUp(value, step) {
   return Math.ceil(value / step) * step;
 }
@@ -842,16 +860,19 @@ function editorTitle(type, isNew) {
 }
 
 function renderStageManager() {
-  const items = financeStages.length ? financeStages.map((stage, index) => `
+  const items = financeStages.length ? financeStages.map((stage, index) => {
+    const estimate = estimateStageAnnualExpense(stage);
+    return `
     <section class="entity-summary modal-entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate || "-"} 至 ${stage.endDate || "持續"}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜估算所得稅 ${formatMoney(estimateIncomeTax(stage.annualIncome, readInputs()), true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions">
         <button type="button" class="detail-btn" data-editor-action="edit-stage-modal">編輯</button>
         <button type="button" class="delete-btn" data-editor-action="delete-stage-modal">刪除</button>
       </div>
-    </section>`).join("") : `<p class="empty-list">尚未設定未來階段。</p>`;
+    </section>`;
+  }).join("") : `<p class="empty-list">尚未設定未來階段。</p>`;
   return `<div class="modal-subsection-head">
       <div><strong>人生階段</strong><p class="modal-help">主畫面只顯示第一階段，其餘階段集中在此管理。</p></div>
       <button type="button" class="add-benefit-btn" data-editor-action="add-stage-modal">新增階段</button>
@@ -872,12 +893,14 @@ function openStageManager() {
 
 function renderSimpleEditor() {
   if (editorType === "stage") {
+    const estimate = estimateStageAnnualExpense(editorDraft);
     return `<div class="modal-field-grid">
       <label>階段名稱<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>年收入<input data-draft-field="annualIncome" type="number" min="0" step="10000" value="${editorDraft.annualIncome}"></label>
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label>收入成長率 %<input data-draft-field="incomeGrowth" type="number" step="0.1" value="${editorDraft.incomeGrowth}"></label>
+      <div class="loan-calculator stage-expense-preview full-field"><span>系統估算年支出 ${formatMoney(estimate.total)}｜月均 ${formatMoney(estimate.total / 12)}｜其中稅務 ${formatMoney(estimate.tax)}</span></div>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>`;
   }
@@ -1214,10 +1237,11 @@ function renderFinanceStages() {
   container.innerHTML = financeStages.slice(0, 1).map((stage, index) => {
     const today = readInputs().planStartDate;
     const status = today > stage.endDate ? "已結束" : today >= stage.startDate ? "進行中" : "未來";
+    const estimate = estimateStageAnnualExpense(stage);
     return `<section class="entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate} 至 ${stage.endDate || "持續"}｜${status}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜估算所得稅 ${formatMoney(estimateIncomeTax(stage.annualIncome, readInputs()), true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-stage">編輯第一階段</button></div>
     </section>`;
   }).join("") + (financeStages.length > 1 ? `<button type="button" class="secondary compact-more" data-action="manage-stages">其餘 ${financeStages.length - 1} 個階段｜更多編輯</button>` : "");
@@ -1964,6 +1988,12 @@ function bindEvents() {
         const estimate = document.querySelector(".loan-calculator span");
         if (estimate) {
           estimate.textContent = `${editorDraft.taxCategory === "vehicle" ? "估算牌照稅與公路養管費" : "估算房屋稅"}：每年 ${formatMoney(annualAssetTax(editorDraft))}`;
+        }
+      } else if (editorType === "stage" && ["annualIncome", "startDate"].includes(draftField)) {
+        const estimate = estimateStageAnnualExpense(editorDraft);
+        const preview = document.querySelector(".stage-expense-preview span");
+        if (preview) {
+          preview.textContent = `系統估算年支出 ${formatMoney(estimate.total)}｜月均 ${formatMoney(estimate.total / 12)}｜其中稅務 ${formatMoney(estimate.tax)}`;
         }
       }
       return;
