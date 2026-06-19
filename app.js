@@ -332,6 +332,7 @@ function blankFinanceStage() {
     startDate,
     endDate: addYearsToIso(startDate, 4),
     annualIncome: Math.round(input.annualIncome * 1.2),
+    extraMonthlyExpense: 0,
     incomeGrowth: input.incomeGrowth,
     note: ""
   };
@@ -344,6 +345,8 @@ function normalizeFinanceStages(list) {
     startDate: stage.startDate || ageToDate(stage.startAge || readInputs().currentAge),
     endDate: stage.endDate || ageToDate(stage.endAge || 100),
     annualIncome: Number(stage.annualIncome) || 0,
+    extraMonthlyExpense: Number(stage.extraMonthlyExpense)
+      || (Number(stage.extraAnnualExpense ?? stage.annualExpense) || 0) / 12,
     incomeGrowth: Number(stage.incomeGrowth) || 0,
     note: stage.note || ""
   }));
@@ -524,8 +527,7 @@ function assetValueAtDate(item, date) {
 function annualExpenseAtDate(date, input, income = 0) {
   const baseYear = Math.max(0, new Date(date).getFullYear() - new Date(input.planStartDate).getFullYear());
   const inflationFactor = Math.pow(1 + input.inflation / 100, baseYear);
-  const livingExpense = (input.monthlyLivingExpense * 12
-    + expenseItems.reduce((sum, item) => sum + item.monthlyAmount * 12, 0)) * inflationFactor;
+  const livingExpense = input.monthlyLivingExpense * 12 * inflationFactor;
   const resourceExpense = [...heldAssets, ...debtItems]
     .filter((item) => isDateActive(date, item.startDate, item.endDate))
     .flatMap((item) => item.costs)
@@ -551,10 +553,12 @@ function financialAtAge(age, input) {
     const stageYear = Math.max(0, new Date(date).getFullYear() - new Date(activeStage.startDate).getFullYear());
     const income = activeStage.annualIncome * Math.pow(1 + activeStage.incomeGrowth / 100, stageYear);
     const expenses = annualExpenseAtDate(date, input, income);
+    const stageExtraExpense = activeStage.extraMonthlyExpense * 12
+      * Math.pow(1 + input.inflation / 100, stageYear);
     return {
       date,
       income,
-      expense: expenses.total,
+      expense: expenses.total + stageExtraExpense,
       tax: expenses.tax,
       incomeTax: expenses.incomeTax,
       assetTax: expenses.assetTax,
@@ -590,8 +594,9 @@ function estimateStageAnnualExpense(stage) {
   ));
   const premium = activePoliciesAt(estimatedAge)
     .reduce((sum, policy) => sum + premiumAtAge(policy, estimatedAge), 0);
+  const extraExpense = Math.max(0, Number(stage.extraMonthlyExpense) || 0) * 12;
   return {
-    total: expenses.total + premium,
+    total: expenses.total + premium + extraExpense,
     tax: expenses.tax,
     premium
   };
@@ -866,7 +871,7 @@ function renderStageManager() {
     <section class="entity-summary modal-entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate || "-"} 至 ${stage.endDate || "持續"}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions">
         <button type="button" class="detail-btn" data-editor-action="edit-stage-modal">編輯</button>
         <button type="button" class="delete-btn" data-editor-action="delete-stage-modal">刪除</button>
@@ -900,6 +905,7 @@ function renderSimpleEditor() {
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label>收入成長率 %<input data-draft-field="incomeGrowth" type="number" step="0.1" value="${editorDraft.incomeGrowth}"></label>
+      <label>每月額外支出<input data-draft-field="extraMonthlyExpense" type="number" min="0" step="any" value="${editorDraft.extraMonthlyExpense}"></label>
       <div class="loan-calculator stage-expense-preview full-field"><span>系統估算年支出 ${formatMoney(estimate.total)}｜月均 ${formatMoney(estimate.total / 12)}｜其中稅務 ${formatMoney(estimate.tax)}</span></div>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>`;
@@ -1162,17 +1168,6 @@ function renderPolicies() {
     .join("");
 }
 
-function renderExpenseItems() {
-  const container = document.getElementById("expenseItemRows");
-  container.innerHTML = expenseItems.length ? expenseItems.map((item, index) => `
-    <div class="expense-item" data-expense-index="${index}">
-      <label>項目<input data-expense-field="name" value="${escapeHtml(item.name)}" aria-label="支出項目"></label>
-      <label>每月金額<input data-expense-field="monthlyAmount" type="number" min="0" step="1000" value="${item.monthlyAmount}" aria-label="每月支出"></label>
-      <button type="button" class="delete-btn" data-action="delete-expense">刪除</button>
-    </div>
-  `).join("") : `<p class="empty-list">尚未加入生活支出。</p>`;
-}
-
 function renderInvestments() {
   const container = document.getElementById("investmentRows");
   container.innerHTML = investments.length ? investments.map((item, index) => `
@@ -1241,7 +1236,7 @@ function renderFinanceStages() {
     return `<section class="entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate} 至 ${stage.endDate || "持續"}｜${status}</span>
-      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>年收入 ${formatMoney(stage.annualIncome, true)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-stage">編輯第一階段</button></div>
     </section>`;
   }).join("") + (financeStages.length > 1 ? `<button type="button" class="secondary compact-more" data-action="manage-stages">其餘 ${financeStages.length - 1} 個階段｜更多編輯</button>` : "");
@@ -1484,7 +1479,6 @@ function collectState() {
     lifeStage: document.getElementById("lifeStage").value,
     descriptions: readDescriptions(),
     financeStages,
-    expenseItems,
     investments,
     heldAssets,
     debtItems,
@@ -1616,7 +1610,6 @@ function applyImportedState(state) {
   expandedResourceIds.clear();
   renderPolicies();
   renderFinanceStages();
-  renderExpenseItems();
   renderInvestments();
   renderResources("asset");
   renderResources("debt");
@@ -1725,30 +1718,6 @@ function bindEvents() {
       renderFinanceStages();
       recalculate();
     }
-  });
-
-  document.getElementById("addExpenseItem").addEventListener("click", () => {
-    expenseItems.push(blankExpenseItem());
-    renderExpenseItems();
-    recalculate();
-  });
-
-  document.getElementById("expenseItemRows").addEventListener("input", (event) => {
-    const row = event.target.closest("[data-expense-index]");
-    const field = event.target.dataset.expenseField;
-    if (!row || !field) return;
-    expenseItems[Number(row.dataset.expenseIndex)][field] = field === "monthlyAmount"
-      ? Number(event.target.value)
-      : event.target.value;
-    recalculate();
-  });
-
-  document.getElementById("expenseItemRows").addEventListener("click", (event) => {
-    if (event.target.dataset.action !== "delete-expense") return;
-    const row = event.target.closest("[data-expense-index]");
-    expenseItems.splice(Number(row.dataset.expenseIndex), 1);
-    renderExpenseItems();
-    recalculate();
   });
 
   document.getElementById("addInvestment").addEventListener("click", () => {
@@ -1989,7 +1958,7 @@ function bindEvents() {
         if (estimate) {
           estimate.textContent = `${editorDraft.taxCategory === "vehicle" ? "估算牌照稅與公路養管費" : "估算房屋稅"}：每年 ${formatMoney(annualAssetTax(editorDraft))}`;
         }
-      } else if (editorType === "stage" && ["annualIncome", "startDate"].includes(draftField)) {
+      } else if (editorType === "stage" && ["annualIncome", "startDate", "extraMonthlyExpense"].includes(draftField)) {
         const estimate = estimateStageAnnualExpense(editorDraft);
         const preview = document.querySelector(".stage-expense-preview span");
         if (preview) {
@@ -2121,7 +2090,6 @@ ensureDateDefaults();
 loadState();
 renderPolicies();
 renderFinanceStages();
-renderExpenseItems();
 renderInvestments();
 renderResources("asset");
 renderResources("debt");
