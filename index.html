@@ -150,7 +150,7 @@
               <div class="recommendation-row">
                 <span>建議保額</span><strong id="deathRecommendation">計算中</strong>
               </div>
-              <small class="recommendation-formula">依婚姻、受扶養人數、扶養年數、生活費與剩餘負債估算。</small>
+              <small class="recommendation-formula">依家庭責任與剩餘負債估算；單身無扶養時，先以擔保資產抵減債務。</small>
               <output id="familyResponsibilitySummary" class="computed-output">單身且無受扶養人</output>
               <label>文字敘述<textarea id="deathDescription" rows="2" placeholder="例如：房貸與家庭責任期間優先補足"></textarea></label>
             </article>
@@ -214,7 +214,7 @@
       <section class="workspace">
         <section class="summary-row">
           <article class="metric metric-green">
-            <span>目前總缺口</span>
+            <span>目前一次金保障缺口</span>
             <strong id="currentGap">0</strong>
           </article>
           <article class="metric metric-amber">
@@ -236,7 +236,7 @@
             <div class="chart-head">
               <div>
                 <h2>到100歲缺口與資產線</h2>
-                <p>深綠線是總保障缺口，墨色線是資產餘額。</p>
+                <p>深綠線只加總身故、意外、癌症與重大傷病一次金缺口；墨色線是資產餘額。</p>
               </div>
               <input id="selectedAge" type="hidden" value="24">
             </div>
@@ -351,6 +351,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260619n"></script>
+  <script src="./app.js?v=20260619p"></script>
 </body>
 </html>

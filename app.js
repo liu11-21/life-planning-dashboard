@@ -7,6 +7,8 @@ const CATEGORY_DEFS = [
   { key: "ltc", label: "長照月給付", short: "長照" }
 ];
 
+const CORE_LUMP_SUM_GAP_KEYS = ["death", "accident", "cancer", "critical"];
+
 const BENEFIT_TYPES = {
   death: ["身故保險金", "完全失能保險金"],
   accident: ["意外身故", "意外失能", "骨折給付", "意外住院日額"],
@@ -251,6 +253,9 @@ function normalizePolicies(list) {
           annualPremium: Number(period.annualPremium) || 0
         }))
       : [];
+    if (policy.benefits && !Array.isArray(policy.benefits) && typeof policy.benefits === "object") {
+      policy.benefits = [policy.benefits];
+    }
     if (!Array.isArray(policy.benefits) || policy.benefits.length === 0) {
       const category = policy.category || "death";
       const type = BENEFIT_TYPES[category][0];
@@ -683,10 +688,15 @@ function needsAtAge(age, input, financial) {
   const year = age - input.currentAge;
   const inflationFactor = Math.pow(1 + input.inflation / 100, year);
   const income = financial.income;
-  const debtNeed = debtItems
+  const grossDebtNeed = debtItems
     .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
   const supportYearsRemaining = Math.max(0, input.dependentSupportYears - year);
   const activeDependents = supportYearsRemaining > 0 ? Math.max(0, Math.floor(input.dependentsCount)) : 0;
+  const estateAssetValue = heldAssets
+    .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
+  const debtNeed = activeDependents > 0 || input.maritalStatus === "married"
+    ? grossDebtNeed
+    : Math.max(0, grossDebtNeed - estateAssetValue);
   const annualFamilyLiving = input.monthlyLivingExpense * 12 * inflationFactor;
   let responsibilityNeed;
   if (activeDependents > 0) {
@@ -779,7 +789,8 @@ function projectPlan() {
       needs,
       coverage,
       gaps,
-      totalGap: Object.values(gaps).reduce((sum, value) => sum + value, 0),
+      totalGap: CORE_LUMP_SUM_GAP_KEYS.reduce((sum, key) => sum + gaps[key], 0),
+      allEquivalentGap: Object.values(gaps).reduce((sum, value) => sum + value, 0),
       activeCount: active.length
     });
   }
@@ -1289,7 +1300,10 @@ function renderAgeTable() {
   document.getElementById("ageTable").innerHTML = candidateAges
     .map((age) => {
       const row = projection.find((item) => item.age === age);
-      const ratio = row.totalGap / Math.max(1, Object.values(row.needs).reduce((a, b) => a + b, 0));
+      const ratio = row.totalGap / Math.max(
+        1,
+        CORE_LUMP_SUM_GAP_KEYS.reduce((sum, key) => sum + row.needs[key], 0)
+      );
       const riskClass = row.assets < 0 || ratio > 0.7 ? "risk" : ratio > 0.35 ? "warn" : "";
       return `
         <article class="age-item ${riskClass}">
@@ -1401,7 +1415,7 @@ function drawLineChart() {
     context.fillText(`${selectedRow.age}歲`, tooltipX + 10, tooltipY + 9);
     context.font = '11px "Microsoft JhengHei", sans-serif';
     context.fillStyle = "#166c50";
-    context.fillText(`保障缺口 ${formatMoney(selectedRow.totalGap, true)}`, tooltipX + 10, tooltipY + 32);
+    context.fillText(`一次金缺口 ${formatMoney(selectedRow.totalGap, true)}`, tooltipX + 10, tooltipY + 32);
     context.fillStyle = "#26383d";
     context.fillText(`資產餘額 ${formatMoney(selectedRow.assets, true)}`, tooltipX + 10, tooltipY + 51);
     context.fillStyle = "#647276";
@@ -1426,7 +1440,7 @@ function drawLineChart() {
   context.fillStyle = "#166c50";
   context.fillRect(bounds.left, 8, 18, 3);
   context.fillStyle = "#1e2a2f";
-  context.fillText("總保障缺口", bounds.left + 25, 10);
+  context.fillText("一次金保障缺口", bounds.left + 25, 10);
   context.fillStyle = "#26383d";
   context.fillRect(bounds.left + 112, 8, 18, 3);
   context.fillStyle = "#1e2a2f";
@@ -1462,7 +1476,7 @@ function drawBarChart() {
     context.fillText(CATEGORY_DEFS[index].short, x + barWidth / 2, bounds.bottom + 10);
   });
 
-  document.getElementById("barSubtitle").textContent = `${selectedAge}歲，各保障細項缺口換算。`;
+  document.getElementById("barSubtitle").textContent = `${selectedAge}歲；醫療與長照為期間換算值，不併入一次金缺口線。`;
 }
 
 function collectState() {
