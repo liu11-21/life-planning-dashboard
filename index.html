@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>人生規劃儀表板</title>
+  <link rel="stylesheet" href="./styles.css?v=20260619g">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Cathay planning prototype</p>
+        <h1>人生規劃儀表板</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="file-actions">
+          <button id="savePlan" type="button">存檔</button>
+          <button id="importPlan" class="secondary" type="button">匯入</button>
+          <button id="exportAll" class="secondary" type="button">匯出完整檔</button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden>
+        </div>
+        <div class="status-strip">
+          <div>
+            <span>目前年齡</span>
+            <strong id="currentAgeLabel">24</strong>
+          </div>
+          <div>
+            <span>投影終點</span>
+            <strong>100歲</strong>
+          </div>
+          <div>
+            <span>結果</span>
+            <strong id="survivalStatus">計算中</strong>
+          </div>
+        </div>
+        <div id="saveStatus" class="save-status" role="status">尚未手動存檔</div>
+      </div>
+    </header>
+
+    <section class="grid-layout">
+      <aside class="control-panel">
+        <section class="panel-section">
+          <div class="section-head">
+            <h2>基本資料</h2>
+          </div>
+          <div class="input-grid">
+            <label>
+              現在年齡
+              <input id="currentAge" type="number" min="18" max="80" value="24">
+            </label>
+            <label>
+              試算基準日
+              <input id="planStartDate" type="date">
+            </label>
+            <label>
+              人生階段
+              <select id="lifeStage">
+                <option value="single">單身</option>
+                <option value="newlywed">新婚</option>
+                <option value="children">有子女</option>
+                <option value="middle">中年</option>
+                <option value="preRetirement">退休前</option>
+              </select>
+            </label>
+            <label>
+              年收入
+              <input id="annualIncome" type="number" min="0" step="10000" value="720000">
+            </label>
+            <label>
+              收入開始日
+              <input id="incomeStartDate" type="date">
+            </label>
+            <label>
+              收入結束日
+              <input id="incomeEndDate" type="date">
+            </label>
+            <label>
+              目前可投資資產
+              <input id="assets" type="number" min="0" step="10000" value="250000">
+            </label>
+            <label>
+              目前估算年支出
+              <output id="computedAnnualExpense" class="computed-output">0</output>
+            </label>
+            <label>
+              年稅務支出
+              <input id="annualTaxExpense" type="number" min="0" step="any" value="0">
+            </label>
+            <label>
+              收入成長率 %
+              <input id="incomeGrowth" type="number" min="0" max="8" step="0.1" value="2">
+            </label>
+            <label>
+              通膨率 %
+              <input id="inflation" type="number" min="0" max="8" step="0.1" value="2">
+            </label>
+            <label>
+              投資年化報酬 %
+              <input id="returnRate" type="number" min="-5" max="12" step="0.1" value="4">
+            </label>
+          </div>
+          <div class="expense-detail-block">
+            <div class="future-finance-head">
+              <div>
+                <h3>生活支出明細</h3>
+                <p>月支出會換算成年支出並加入試算。</p>
+              </div>
+              <button id="addExpenseItem" class="secondary" type="button">新增支出</button>
+            </div>
+            <div id="expenseItemRows" class="expense-item-list"></div>
+          </div>
+          <div class="future-finance-block">
+            <div class="future-finance-head">
+              <div>
+                <h3>未來收入支出規劃</h3>
+                <p>依起訖日套用升遷、轉職或生活階段的收入與額外支出。</p>
+              </div>
+              <button id="addFinanceStage" class="secondary" type="button">更多編輯</button>
+            </div>
+            <div id="financeStageRows" class="finance-stage-list"></div>
+            <p class="stage-rule">日期重疊時，以最後一個符合的階段為準。</p>
+          </div>
+        </section>
+
+        <section class="panel-section protection-section">
+          <div class="section-head">
+            <div>
+              <h2>六大保障目標</h2>
+              <p>設定保障數值，並補充規劃原因或調整條件。</p>
+            </div>
+          </div>
+          <div class="recommendation-overview">
+            <span>階段優先順序</span>
+            <strong id="stagePriority">醫療保障、意外失能</strong>
+            <small>以下為依輸入資料計算的規劃估算。</small>
+          </div>
+          <div class="protection-grid">
+            <article class="protection-item protection-death">
+              <h3>身故保障</h3>
+              <div class="recommendation-row">
+                <span>建議保額</span><strong id="deathRecommendation">計算中</strong>
+              </div>
+              <small class="recommendation-formula">生活費替代或所得倍數取高者，再加負債。</small>
+              <div class="protection-values two-values">
+                <label>年收入倍數<input id="lifeMultiple" type="number" min="0" max="20" step="0.5" value="8"></label>
+                <label>家庭預備年數<input id="reserveYears" type="number" min="0" max="20" step="1" value="5"></label>
+              </div>
+              <label>文字敘述<textarea id="deathDescription" rows="2" placeholder="例如：房貸與家庭責任期間優先補足"></textarea></label>
+            </article>
+            <article class="protection-item protection-accident">
+              <h3>意外失能</h3>
+              <div class="recommendation-row">
+                <span>建議保額</span><strong id="accidentRecommendation">計算中</strong>
+                <button type="button" data-apply-recommendation="accidentTarget">套用</button>
+              </div>
+              <small class="recommendation-formula">以五年所得替代估算。</small>
+              <label>保障目標<input id="accidentTarget" type="number" min="0" step="100000" value="3000000"></label>
+              <label>文字敘述<textarea id="accidentDescription" rows="2" placeholder="例如：工作通勤及收入中斷風險"></textarea></label>
+            </article>
+            <article class="protection-item protection-medical">
+              <h3>醫療保障</h3>
+              <div class="recommendation-row">
+                <span>建議日額</span><strong id="medicalRecommendation">計算中</strong>
+                <button type="button" data-apply-recommendation="medicalDaily">套用</button>
+              </div>
+              <small class="recommendation-formula">依日常支出估算，最低以每日3,000元規劃。</small>
+              <label>住院日額目標<input id="medicalDaily" type="number" min="0" step="500" value="3000"></label>
+              <label>文字敘述<textarea id="medicalDescription" rows="2" placeholder="例如：包含住院、手術與實支實付需求"></textarea></label>
+            </article>
+            <article class="protection-item protection-cancer">
+              <h3>癌症保障</h3>
+              <div class="recommendation-row">
+                <span>建議一次金</span><strong id="cancerRecommendation">計算中</strong>
+                <button type="button" data-apply-recommendation="cancerTarget">套用</button>
+              </div>
+              <small class="recommendation-formula">兩年所得替代，落在100萬至300萬元區間。</small>
+              <label>一次金目標<input id="cancerTarget" type="number" min="0" step="100000" value="2000000"></label>
+              <label>文字敘述<textarea id="cancerDescription" rows="2" placeholder="例如：治療費用與停工期間生活費"></textarea></label>
+            </article>
+            <article class="protection-item protection-critical">
+              <h3>重大傷病</h3>
+              <div class="recommendation-row">
+                <span>建議一次金</span><strong id="criticalRecommendation">計算中</strong>
+                <button type="button" data-apply-recommendation="criticalTarget">套用</button>
+              </div>
+              <small class="recommendation-formula">一年半所得替代，落在100萬至300萬元區間。</small>
+              <label>一次金目標<input id="criticalTarget" type="number" min="0" step="100000" value="1000000"></label>
+              <label>文字敘述<textarea id="criticalDescription" rows="2" placeholder="例如：確診後立即取得一筆週轉金"></textarea></label>
+            </article>
+            <article class="protection-item protection-ltc">
+              <h3>長期照顧</h3>
+              <div class="recommendation-row">
+                <span>建議月給付</span><strong id="ltcRecommendation">計算中</strong>
+                <button type="button" data-apply-recommendation="ltcMonthly">套用</button>
+              </div>
+              <small class="recommendation-formula">月支出的兩倍，限制在每月5萬至15萬元。</small>
+              <div class="protection-values two-values">
+                <label>月給付目標<input id="ltcMonthly" type="number" min="0" step="5000" value="30000"></label>
+                <label>準備年數<input id="ltcYears" type="number" min="1" max="20" value="8"></label>
+              </div>
+              <label>文字敘述<textarea id="ltcDescription" rows="2" placeholder="例如：30歲後收入穩定時加入規劃"></textarea></label>
+            </article>
+          </div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <section class="summary-row">
+          <article class="metric metric-green">
+            <span>目前總缺口</span>
+            <strong id="currentGap">0</strong>
+          </article>
+          <article class="metric metric-amber">
+            <span>最大缺口年齡</span>
+            <strong id="worstAge">0歲</strong>
+          </article>
+          <article class="metric metric-red">
+            <span>資產耗盡年齡</span>
+            <strong id="depletionAge">未耗盡</strong>
+          </article>
+          <article class="metric metric-slate">
+            <span>100歲資產</span>
+            <strong id="age100Assets">0</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid">
+          <article class="chart-panel wide-panel">
+            <div class="chart-head">
+              <div>
+                <h2>到100歲缺口與資產線</h2>
+                <p>深綠線是總保障缺口，墨色線是資產餘額。</p>
+              </div>
+              <input id="selectedAge" type="hidden" value="24">
+            </div>
+            <canvas id="lineChart" width="960" height="330" aria-label="缺口與資產折線圖"></canvas>
+          </article>
+
+          <article class="chart-panel">
+            <div class="chart-head compact">
+              <div>
+                <h2>該年齡缺口</h2>
+                <p id="barSubtitle">24歲，各保障項目。</p>
+              </div>
+            </div>
+            <canvas id="barChart" width="520" height="330" aria-label="保障缺口直條圖"></canvas>
+          </article>
+        </section>
+
+        <section class="planning-panel">
+          <div class="section-head policy-head">
+            <div>
+              <h2>投資項目</h2>
+              <p>一次投入與定期定額會依日期及個別報酬率計入資產線。</p>
+            </div>
+            <button id="addInvestment" type="button">新增投資</button>
+          </div>
+          <div class="table-wrap">
+            <table class="investment-table">
+              <thead><tr><th>項目</th><th>一次投入</th><th>定期定額</th><th>週期</th><th>預期年報酬率</th><th>開始日</th><th>結束日</th><th></th></tr></thead>
+              <tbody id="investmentRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="planning-panel">
+          <div class="section-head policy-head">
+            <div>
+              <h2>持有資產</h2>
+              <p>房地產、車輛或其他動產可設定持有期間，展開細項加入年度持有成本。</p>
+            </div>
+            <button id="addHeldAsset" type="button">新增資產</button>
+          </div>
+          <div id="heldAssetRows" class="resource-list"></div>
+        </section>
+
+        <section class="planning-panel">
+          <div class="section-head policy-head">
+            <div>
+              <h2>負債</h2>
+              <p>房貸、車貸或其他負債會在有效期間扣除淨資產，細項可加入年度還款支出。</p>
+            </div>
+            <button id="addDebtItem" type="button">新增負債</button>
+          </div>
+          <div id="debtRows" class="resource-list"></div>
+        </section>
+
+        <section class="policy-panel">
+          <div class="section-head policy-head">
+            <div>
+              <h2>現有保單與未來規劃</h2>
+              <p>主畫面只顯示主約；附約、給付細項與非平準保費集中在「更多編輯」。</p>
+            </div>
+            <div class="button-row">
+              <button id="addPolicy" type="button">新增主約</button>
+              <button id="loadSample" class="secondary" type="button">載入範例</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="policy-table">
+              <thead>
+                <tr>
+                  <th>保單</th>
+                  <th>保障摘要</th>
+                  <th>保費方式</th>
+                  <th>年保費</th>
+                  <th>起保年齡</th>
+                  <th>保障到</th>
+                  <th>狀態</th>
+                  <th>規劃重點</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="policyRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="gap-table-panel">
+          <div class="section-head">
+            <h2>年齡檢查表</h2>
+            <p>抓出幾歲需要處理最大缺口。</p>
+          </div>
+          <div id="ageTable" class="age-table"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <div id="editModal" class="edit-modal" hidden>
+    <div class="edit-modal-backdrop" data-modal-action="cancel"></div>
+    <section class="edit-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+      <header class="edit-modal-header">
+        <h2 id="editModalTitle">更多編輯</h2>
+        <button id="closeEditModal" class="modal-close" type="button" aria-label="關閉編輯視窗">×</button>
+      </header>
+      <form id="editModalForm">
+        <div id="editModalFields" class="edit-modal-fields"></div>
+        <footer class="edit-modal-actions">
+          <button type="button" class="secondary" data-modal-action="cancel">取消</button>
+          <button type="submit">儲存</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+
+  <script src="./app.js?v=20260619i"></script>
+</body>
+</html>
