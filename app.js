@@ -374,6 +374,7 @@ function blankResource(kind) {
     name: kind === "asset" ? "新增持有資產" : "新增負債",
     type: kind === "asset" ? "房地產" : "房貸",
     value: 0,
+    annualGrowthRate: kind === "asset" ? 2 : 0,
     taxCategory: "none",
     vehicleCC: 1800,
     houseTaxBase: 0,
@@ -415,6 +416,7 @@ function normalizeResources(list, kind) {
     name: item.name || (kind === "asset" ? "未命名資產" : "未命名負債"),
     type: item.type || (kind === "asset" ? "其他資產" : "其他負債"),
     value: Number(item.value ?? item.balance) || 0,
+    annualGrowthRate: kind === "asset" ? Number(item.annualGrowthRate) || 0 : 0,
     taxCategory: kind === "asset"
       ? (item.taxCategory || (/車/.test(item.type || "") ? "vehicle" : /房|不動產/.test(item.type || "") ? "house" : "none"))
       : "none",
@@ -510,6 +512,13 @@ function annualAssetTax(item) {
 
 function assetTaxAtDate(item, date) {
   return isDateActive(date, item.startDate, item.endDate) ? annualAssetTax(item) : 0;
+}
+
+function assetValueAtDate(item, date) {
+  if (!isDateActive(date, item.startDate, item.endDate)) return 0;
+  const yearsHeld = monthsBetween(item.startDate, date) / 12;
+  const growthRate = Math.max(-100, Number(item.annualGrowthRate) || 0) / 100;
+  return Math.max(0, item.value * Math.pow(1 + growthRate, yearsHeld));
 }
 
 function annualExpenseAtDate(date, input, income = 0) {
@@ -724,8 +733,7 @@ function projectPlan() {
       + income - expense - premium - investmentContribution + investmentLiquidation;
     const investmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
     const heldAssetValue = heldAssets
-      .filter((item) => isDateActive(financial.date, item.startDate, item.endDate))
-      .reduce((sum, item) => sum + item.value, 0);
+      .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
     const debtValue = debtItems
       .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
     const netAssets = liquidBalance + investmentTotal + heldAssetValue - debtValue;
@@ -920,7 +928,8 @@ function renderResourceEditor() {
   return `<div class="modal-field-grid">
       <label>項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>類型<input data-draft-field="type" value="${escapeHtml(editorDraft.type)}"></label>
-      <label>${editorType === "asset" ? "估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
+      <label>${editorType === "asset" ? "起始估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
+      ${editorType === "asset" ? `<label>預期年增值率 %<input data-draft-field="annualGrowthRate" type="number" min="-100" step="any" value="${editorDraft.annualGrowthRate}"></label>` : ""}
       ${debtFields}
       ${assetTaxFields}
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
@@ -1189,7 +1198,7 @@ function renderResources(kind) {
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
       <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
-      <span>${kind === "asset" ? `價值 ${formatMoney(item.value, true)}｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
+      <span>${kind === "asset" ? `起始價值 ${formatMoney(item.value, true)}｜年增率 ${item.annualGrowthRate}%｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
 }
