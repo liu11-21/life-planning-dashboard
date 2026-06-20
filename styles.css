@@ -787,6 +787,16 @@ button.secondary:hover {
   background: var(--surface-soft);
 }
 
+button.danger-action {
+  background: #ffffff;
+  border-color: #b8463d;
+  color: #a33c34;
+}
+
+button.danger-action:hover {
+  background: #fff2f0;
+}
+
 .table-wrap {
   max-width: 100%;
   min-width: 0;

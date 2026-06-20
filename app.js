@@ -184,6 +184,12 @@ let expenseItems = [];
 let investments = [];
 let heldAssets = [];
 let debtItems = [];
+const HISTORY_LIMIT = 100;
+let undoStack = [];
+let redoStack = [];
+let lastHistorySnapshot = "";
+let historyReady = false;
+let applyingHistory = false;
 let expandedPolicyIds = new Set();
 let expandedResourceIds = new Set();
 let chartHoverActive = false;
@@ -1500,6 +1506,32 @@ function collectState() {
   };
 }
 
+function serializeCurrentState() {
+  return JSON.stringify(collectState());
+}
+
+function updateHistoryButtons() {
+  document.getElementById("undoPlan").disabled = undoStack.length === 0;
+  document.getElementById("redoPlan").disabled = redoStack.length === 0;
+}
+
+function recordHistory() {
+  const currentSnapshot = serializeCurrentState();
+  if (!historyReady) {
+    historyReady = true;
+    lastHistorySnapshot = currentSnapshot;
+    updateHistoryButtons();
+    return;
+  }
+  if (!applyingHistory && currentSnapshot !== lastHistorySnapshot) {
+    undoStack.push(lastHistorySnapshot);
+    if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+    redoStack = [];
+    lastHistorySnapshot = currentSnapshot;
+  }
+  updateHistoryButtons();
+}
+
 function setFileStatus(message, type = "") {
   const status = document.getElementById("saveStatus");
   status.textContent = message;
@@ -1630,7 +1662,68 @@ function applyImportedState(state) {
   recalculate();
 }
 
+function restoreHistorySnapshot(snapshot, message) {
+  applyingHistory = true;
+  try {
+    applyImportedState(JSON.parse(snapshot));
+    lastHistorySnapshot = serializeCurrentState();
+  } finally {
+    applyingHistory = false;
+  }
+  updateHistoryButtons();
+  setFileStatus(message, "success");
+}
+
+function undoPlan() {
+  if (!undoStack.length) return;
+  const previousSnapshot = undoStack.pop();
+  redoStack.push(serializeCurrentState());
+  if (redoStack.length > HISTORY_LIMIT) redoStack.shift();
+  restoreHistorySnapshot(previousSnapshot, "已回到上一步");
+}
+
+function redoPlan() {
+  if (!redoStack.length) return;
+  const nextSnapshot = redoStack.pop();
+  undoStack.push(serializeCurrentState());
+  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+  restoreHistorySnapshot(nextSnapshot, "已回到下一步");
+}
+
+function createEmptyPlanState() {
+  const today = isoDate(new Date());
+  const inputs = Object.fromEntries(INPUT_IDS.map((id) => [id, "0"]));
+  Object.assign(inputs, {
+    currentAge: "24",
+    planStartDate: today,
+    incomeStartDate: today,
+    incomeEndDate: "",
+    maritalStatus: "single",
+    inflation: "2",
+    returnRate: "4",
+    ltcYears: "8"
+  });
+  return {
+    inputs,
+    lifeStage: "single",
+    descriptions: Object.fromEntries(DESCRIPTION_IDS.map((id) => [id, ""])),
+    financeStages: [],
+    investments: [],
+    heldAssets: [],
+    debtItems: [],
+    policies: []
+  };
+}
+
+function clearPlan() {
+  const confirmed = window.confirm("確定要清除全部規劃資料嗎？清除後仍可按「回到上一步」復原。");
+  if (!confirmed) return;
+  applyImportedState(createEmptyPlanState());
+  setFileStatus("已清除全部資料，可按「回到上一步」復原", "success");
+}
+
 function recalculate() {
+  recordHistory();
   projection = projectPlan();
   renderComputedExpense();
   renderRecommendations();
@@ -1700,7 +1793,10 @@ function bindEvents() {
   });
 
   DESCRIPTION_IDS.forEach((id) => {
-    document.getElementById(id).addEventListener("input", saveState);
+    document.getElementById(id).addEventListener("input", () => {
+      recordHistory();
+      saveState();
+    });
   });
 
   document.getElementById("addFinanceStage").addEventListener("click", () => {
@@ -1842,6 +1938,9 @@ function bindEvents() {
   });
 
   document.getElementById("savePlan").addEventListener("click", () => saveState(true));
+  document.getElementById("undoPlan").addEventListener("click", undoPlan);
+  document.getElementById("redoPlan").addEventListener("click", redoPlan);
+  document.getElementById("clearPlan").addEventListener("click", clearPlan);
   document.getElementById("importPlan").addEventListener("click", () => {
     document.getElementById("importFile").click();
   });
@@ -2092,6 +2191,16 @@ function bindEvents() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && editorDraft) closeEntityEditor();
+    const isEditing = ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName);
+    if (isEditing || !(event.ctrlKey || event.metaKey)) return;
+    const key = event.key.toLowerCase();
+    if (key === "z" && !event.shiftKey) {
+      event.preventDefault();
+      undoPlan();
+    } else if (key === "y" || (key === "z" && event.shiftKey)) {
+      event.preventDefault();
+      redoPlan();
+    }
   });
 
   window.addEventListener("resize", () => {

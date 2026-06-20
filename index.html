@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20260619k">
+  <link rel="stylesheet" href="./styles.css?v=20260620a">
 </head>
 <body>
   <main class="app-shell">
@@ -15,9 +15,12 @@
       </div>
       <div class="topbar-right">
         <div class="file-actions">
+          <button id="undoPlan" class="secondary" type="button" disabled title="回到上一步">回到上一步</button>
+          <button id="redoPlan" class="secondary" type="button" disabled title="回到下一步">回到下一步</button>
           <button id="savePlan" type="button">存檔</button>
           <button id="importPlan" class="secondary" type="button">匯入</button>
           <button id="exportAll" class="secondary" type="button">匯出完整檔</button>
+          <button id="clearPlan" class="danger-action" type="button">全部清除</button>
           <input id="importFile" type="file" accept="application/json,.json" hidden>
         </div>
         <div class="status-strip">
@@ -351,6 +354,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260619p"></script>
+  <script src="./app.js?v=20260620a"></script>
 </body>
 </html>
