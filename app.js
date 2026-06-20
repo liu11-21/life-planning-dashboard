@@ -85,6 +85,15 @@ const DESCRIPTION_IDS = [
 
 const STORAGE_KEY = "protection-planner-v1";
 
+const FINANCIAL_RATIO_DEFS = [
+  { key: "shortTermDebt", label: "短期消費貸款比例", threshold: 25, direction: "max", recommendation: "建議小於 25%", formula: "短期消費性負債 ÷ 流動資產" },
+  { key: "financing", label: "融資比率", threshold: 70, direction: "max", recommendation: "建議小於 70%", formula: "非消費性負債 ÷ 投資與持有資產" },
+  { key: "overallDebt", label: "整體負債比率", threshold: 80, direction: "max", recommendation: "建議小於 80%", formula: "總負債 ÷ 總資產" },
+  { key: "consumption", label: "消費率", threshold: 80, direction: "max", recommendation: "建議小於 80%", formula: "生活與持有支出 ÷ 稅後所得" },
+  { key: "financialBurden", label: "財務負擔率", threshold: 40, direction: "max", recommendation: "建議小於 40%", formula: "還款與保費 ÷ 稅後所得" },
+  { key: "netSavings", label: "淨儲蓄率", threshold: 15, direction: "min", recommendation: "建議至少 15%", formula: "稅後所得扣除消費、還款與保費後餘額 ÷ 稅後所得" }
+];
+
 const samplePolicies = [
   {
     name: "CV4 醫療附約",
@@ -550,7 +559,10 @@ function annualExpenseAtDate(date, input, income = 0) {
     total: livingExpense + resourceExpense + debtRepayment + incomeTax + assetTax,
     tax: incomeTax + assetTax,
     incomeTax,
-    assetTax
+    assetTax,
+    livingExpense,
+    resourceExpense,
+    debtRepayment
   };
 }
 
@@ -573,6 +585,9 @@ function financialAtAge(age, input) {
       tax: expenses.tax,
       incomeTax: expenses.incomeTax,
       assetTax: expenses.assetTax,
+      consumptionExpense: expenses.livingExpense + expenses.resourceExpense
+        + expenses.assetTax + stageExtraExpense,
+      debtRepayment: expenses.debtRepayment,
       stageId: activeStage.id,
       stageName: activeStage.name
     };
@@ -589,6 +604,8 @@ function financialAtAge(age, input) {
     tax: expenses.tax,
     incomeTax: expenses.incomeTax,
     assetTax: expenses.assetTax,
+    consumptionExpense: expenses.livingExpense + expenses.resourceExpense + expenses.assetTax,
+    debtRepayment: expenses.debtRepayment,
     stageId: null,
     stageName: "目前基準"
   };
@@ -725,6 +742,41 @@ function needsAtAge(age, input, financial) {
   };
 }
 
+function isShortTermConsumerDebt(item) {
+  const description = `${item.name || ""} ${item.type || ""}`;
+  if (/房貸|房屋|不動產|投資|融資|企業|營運/.test(description)) return false;
+  if (/信用卡|卡債|現金卡|消費|信貸|小額|短期|學貸/.test(description)) return true;
+  return Number(item.loanYears) > 0 && Number(item.loanYears) <= 5;
+}
+
+function safeRatio(numerator, denominator) {
+  if (numerator === 0) return 0;
+  if (!(denominator > 0)) return null;
+  return numerator / denominator * 100;
+}
+
+function financialRatiosAtAge(financial, premium, liquidAssets, investmentAssets, heldAssetValue, debtValue) {
+  const activeDebtItems = debtItems.filter((item) => isDateActive(financial.date, item.startDate, item.endDate));
+  const shortTermDebtValue = activeDebtItems
+    .filter(isShortTermConsumerDebt)
+    .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
+  const financingDebtValue = Math.max(0, debtValue - shortTermDebtValue);
+  const positiveLiquidAssets = Math.max(0, liquidAssets);
+  const financingAssets = Math.max(0, investmentAssets) + Math.max(0, heldAssetValue);
+  const grossAssets = positiveLiquidAssets + financingAssets;
+  const afterTaxIncome = Math.max(0, financial.income - financial.incomeTax);
+  const financialPayments = financial.debtRepayment + premium;
+  const netSavings = afterTaxIncome - financial.consumptionExpense - financialPayments;
+  return {
+    shortTermDebt: safeRatio(shortTermDebtValue, positiveLiquidAssets),
+    financing: safeRatio(financingDebtValue, financingAssets),
+    overallDebt: safeRatio(debtValue, grossAssets),
+    consumption: safeRatio(financial.consumptionExpense, afterTaxIncome),
+    financialBurden: safeRatio(financialPayments, afterTaxIncome),
+    netSavings: safeRatio(netSavings, afterTaxIncome)
+  };
+}
+
 function projectPlan() {
   const input = readInputs();
   let liquidBalance = input.assets;
@@ -776,6 +828,14 @@ function projectPlan() {
     const debtValue = debtItems
       .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
     const netAssets = liquidBalance + investmentTotal + heldAssetValue - debtValue;
+    const financialRatios = financialRatiosAtAge(
+      financial,
+      premium,
+      liquidBalance,
+      investmentTotal,
+      heldAssetValue,
+      debtValue
+    );
 
     rows.push({
       age,
@@ -791,6 +851,7 @@ function projectPlan() {
       investmentAssets: investmentTotal,
       heldAssetValue,
       debtValue,
+      financialRatios,
       financeStage: financial.stageName,
       needs,
       coverage,
@@ -1286,6 +1347,26 @@ function renderSummary() {
   }
 }
 
+function renderFinancialRatios() {
+  const selectedAge = Number(document.getElementById("selectedAge").value);
+  const row = projection.find((item) => item.age === selectedAge) || projection[0];
+  document.getElementById("ratioMonitorAge").textContent = `${row.age}歲財務比率`;
+  document.getElementById("financialRatioGrid").innerHTML = FINANCIAL_RATIO_DEFS.map((definition) => {
+    const value = row.financialRatios[definition.key];
+    const available = Number.isFinite(value);
+    const passes = available && (definition.direction === "min"
+      ? value >= definition.threshold
+      : value < definition.threshold);
+    const state = available ? (passes ? "good" : "warn") : "na";
+    const displayValue = available ? `${value.toFixed(1)}%` : "無法計算";
+    return `<div class="ratio-item" data-state="${state}" title="${definition.formula}；${definition.recommendation}">
+      <span>${definition.label}</span>
+      <strong>${displayValue}</strong>
+      <small>${definition.recommendation}</small>
+    </div>`;
+  }).join("");
+}
+
 function renderAgeTable() {
   const input = readInputs();
   const candidateAges = [
@@ -1728,6 +1809,7 @@ function recalculate() {
   renderComputedExpense();
   renderRecommendations();
   renderSummary();
+  renderFinancialRatios();
   renderAgeTable();
   drawLineChart();
   drawBarChart();
@@ -1920,6 +2002,7 @@ function bindEvents() {
     chartHoverActive = true;
     drawLineChart();
     drawBarChart();
+    renderFinancialRatios();
   });
   lineCanvas.addEventListener("pointerleave", () => {
     chartHoverActive = false;

@@ -475,6 +475,82 @@ canvas {
   cursor: crosshair;
 }
 
+.ratio-monitor {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.ratio-monitor-head {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ratio-monitor-head h3 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.ratio-monitor-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ratio-item {
+  border-left: 1px solid var(--line);
+  min-width: 0;
+  padding: 9px 12px;
+}
+
+.ratio-item:nth-child(3n + 1) {
+  border-left: 0;
+}
+
+.ratio-item:nth-child(n + 4) {
+  border-top: 1px solid var(--line);
+}
+
+.ratio-item span,
+.ratio-item small {
+  color: var(--muted);
+  display: block;
+}
+
+.ratio-item span {
+  font-size: 12px;
+}
+
+.ratio-item strong {
+  display: block;
+  font-size: 20px;
+  margin: 3px 0;
+}
+
+.ratio-item small {
+  font-size: 11px;
+}
+
+.ratio-item[data-state="good"] strong {
+  color: var(--green);
+}
+
+.ratio-item[data-state="warn"] strong {
+  color: var(--red);
+}
+
+.ratio-item[data-state="na"] strong {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 29px;
+}
+
 .policy-panel,
 .planning-panel,
 .gap-table-panel {
@@ -1060,6 +1136,23 @@ td select {
   .control-panel,
   .age-table {
     grid-template-columns: 1fr;
+  }
+
+  .ratio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ratio-item,
+  .ratio-item:nth-child(3n + 1) {
+    border-left: 1px solid var(--line);
+  }
+
+  .ratio-item:nth-child(2n + 1) {
+    border-left: 0;
+  }
+
+  .ratio-item:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
   }
 
   .section-head,

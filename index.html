@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20260620a">
+  <link rel="stylesheet" href="./styles.css?v=20260620b">
 </head>
 <body>
   <main class="app-shell">
@@ -244,6 +244,13 @@
               <input id="selectedAge" type="hidden" value="24">
             </div>
             <canvas id="lineChart" width="960" height="330" aria-label="缺口與資產折線圖"></canvas>
+            <section class="ratio-monitor" aria-live="polite">
+              <div class="ratio-monitor-head">
+                <h3 id="ratioMonitorAge">24歲財務比率</h3>
+                <span>隨圖表游標更新</span>
+              </div>
+              <div id="financialRatioGrid" class="ratio-grid"></div>
+            </section>
           </article>
 
           <article class="chart-panel">
@@ -354,6 +361,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260620a"></script>
+  <script src="./app.js?v=20260620b"></script>
 </body>
 </html>
