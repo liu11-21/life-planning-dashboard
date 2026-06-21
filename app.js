@@ -259,6 +259,13 @@ function normalizePolicies(list) {
     const policy = { ...source, id: source.id || makeId("policy") };
     policy.contractType = source.contractType === "rider" ? "rider" : "main";
     policy.parentId = policy.contractType === "rider" ? (source.parentId || "") : "";
+    policy.productType = source.productType === "investmentLinked" ? "investmentLinked" : "protection";
+    policy.investmentMode = source.investmentMode === "recurring" ? "recurring" : "lumpSum";
+    policy.investmentAmount = Math.max(0, Number(source.investmentAmount) || 0);
+    policy.investmentCycle = ["monthly", "quarterly", "yearly"].includes(source.investmentCycle)
+      ? source.investmentCycle
+      : "monthly";
+    policy.investmentReturnRate = Number(source.investmentReturnRate) || 0;
     policy.premiumMode = source.premiumMode === "stepped" ? "stepped" : "level";
     policy.premiumSchedule = Array.isArray(source.premiumSchedule)
       ? source.premiumSchedule.map((period) => ({
@@ -327,6 +334,11 @@ function blankPolicy() {
     name: "新增規劃項目",
     contractType: "main",
     parentId: "",
+    productType: "protection",
+    investmentMode: "lumpSum",
+    investmentAmount: 0,
+    investmentCycle: "monthly",
+    investmentReturnRate: numberValue("returnRate") || 4,
     premiumMode: "level",
     premiumSchedule: [],
     premium: 0,
@@ -789,10 +801,19 @@ function financialRatiosAtAge(financial, premium, liquidAssets, investmentAssets
   };
 }
 
+function annualCycleMultiplier(cycle) {
+  return cycle === "monthly" ? 12 : cycle === "quarterly" ? 4 : 1;
+}
+
 function projectPlan() {
   const input = readInputs();
   let liquidBalance = input.assets;
   const investmentBalances = Object.fromEntries(investments.map((item) => [item.id, 0]));
+  const policyInvestmentBalances = Object.fromEntries(
+    policies
+      .filter((policy) => policy.productType === "investmentLinked")
+      .map((policy) => [policy.id, 0])
+  );
   const rows = [];
 
   for (let age = input.currentAge; age <= 100; age += 1) {
@@ -829,7 +850,7 @@ function projectPlan() {
         && financial.date >= item.endDate
       );
       if (heldDuringYear) {
-        const cycleMultiplier = item.cycle === "monthly" ? 12 : item.cycle === "quarterly" ? 4 : 1;
+        const cycleMultiplier = annualCycleMultiplier(item.cycle);
         const contribution = active
           ? item.recurringAmount * cycleMultiplier + (startsThisYear ? item.lumpSum : 0)
           : 0;
@@ -842,9 +863,37 @@ function projectPlan() {
       }
     });
 
+    let policyInvestmentContribution = 0;
+    let policyInvestmentLiquidation = 0;
+    policies
+      .filter((policy) => policy.productType === "investmentLinked")
+      .forEach((policy) => {
+        const activeInvestment = age >= policy.startAge && age <= policy.endAge;
+        if (activeInvestment) {
+          const startsThisYear = age === policy.startAge
+            || (age === input.currentAge && policy.startAge <= input.currentAge);
+          const contribution = policy.investmentMode === "recurring"
+            ? policy.investmentAmount * annualCycleMultiplier(policy.investmentCycle)
+            : startsThisYear ? policy.investmentAmount : 0;
+          policyInvestmentBalances[policy.id] = policyInvestmentBalances[policy.id]
+            * (1 + policy.investmentReturnRate / 100)
+            + contribution;
+          policyInvestmentContribution += contribution;
+        }
+        if (policyInvestmentBalances[policy.id] > 0 && age >= policy.endAge) {
+          policyInvestmentLiquidation += policyInvestmentBalances[policy.id];
+          policyInvestmentBalances[policy.id] = 0;
+        }
+      });
+
+    const totalInvestmentContribution = investmentContribution + policyInvestmentContribution;
+    const totalInvestmentLiquidation = investmentLiquidation + policyInvestmentLiquidation;
+
     liquidBalance = liquidBalance * (1 + input.returnRate / 100)
-      + income - expense - premium - investmentContribution + investmentLiquidation;
-    const investmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
+      + income - expense - premium - totalInvestmentContribution + totalInvestmentLiquidation;
+    const marketInvestmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
+    const policyInvestmentTotal = Object.values(policyInvestmentBalances).reduce((sum, value) => sum + value, 0);
+    const investmentTotal = marketInvestmentTotal + policyInvestmentTotal;
     const heldAssetValue = heldAssets
       .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
     const realEstateValue = heldAssets
@@ -874,12 +923,18 @@ function projectPlan() {
       assets: netAssets,
       liquidAssets: liquidBalance,
       investmentAssets: investmentTotal,
+      marketInvestmentAssets: marketInvestmentTotal,
+      policyInvestmentAssets: policyInvestmentTotal,
       heldAssetValue,
       realEstateValue,
       equivalentAssets: liquidBalance + investmentTotal + realEstateValue,
       debtValue,
-      investmentContribution,
-      investmentLiquidation,
+      investmentContribution: totalInvestmentContribution,
+      investmentLiquidation: totalInvestmentLiquidation,
+      marketInvestmentContribution: investmentContribution,
+      marketInvestmentLiquidation: investmentLiquidation,
+      policyInvestmentContribution,
+      policyInvestmentLiquidation,
       financialRatios,
       financeStage: financial.stageName,
       needs,
@@ -1112,16 +1167,28 @@ function renderPolicyEditor() {
       </div>
     </section>`;
   }).join("") : `<p class="empty-list">此主約尚未加入附約。</p>`;
+  const investmentFields = editorDraft.productType === "investmentLinked" ? `
+    <div class="modal-subsection">
+      <div class="modal-subsection-head"><div><strong>投資帳戶設定</strong><p class="modal-help">投入金額會從現金扣除並計入投資資產；保障給付仍照保障細項計算。</p></div></div>
+      <div class="modal-field-grid">
+        <label>投入方式<select data-draft-field="investmentMode"><option value="lumpSum" ${editorDraft.investmentMode === "lumpSum" ? "selected" : ""}>一次投入</option><option value="recurring" ${editorDraft.investmentMode === "recurring" ? "selected" : ""}>定期定額</option></select></label>
+        <label>${editorDraft.investmentMode === "lumpSum" ? "一次投入金額" : "每期投入金額"}<input data-draft-field="investmentAmount" type="number" min="0" step="any" value="${editorDraft.investmentAmount}"></label>
+        ${editorDraft.investmentMode === "recurring" ? `<label>投入週期<select data-draft-field="investmentCycle"><option value="monthly" ${editorDraft.investmentCycle === "monthly" ? "selected" : ""}>每月</option><option value="quarterly" ${editorDraft.investmentCycle === "quarterly" ? "selected" : ""}>每季</option><option value="yearly" ${editorDraft.investmentCycle === "yearly" ? "selected" : ""}>每年</option></select></label>` : ""}
+        <label>預估年化報酬率 %<input data-draft-field="investmentReturnRate" type="number" step="0.1" value="${editorDraft.investmentReturnRate}"></label>
+      </div>
+    </div>` : "";
   return `<div class="modal-field-grid">
       <label>保單名稱<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>保單層級<select data-draft-field="contractType" disabled><option value="main" ${editorDraft.contractType === "main" ? "selected" : ""}>主約</option><option value="rider" ${editorDraft.contractType === "rider" ? "selected" : ""}>附約</option></select></label>
       <label>所屬主約<select data-draft-field="parentId" ${editorDraft.contractType === "main" ? "disabled" : ""}>${mainPolicyOptions(editorDraft.parentId, editorDraft.id)}</select></label>
+      <label>保單類型<select data-draft-field="productType"><option value="protection" ${editorDraft.productType === "protection" ? "selected" : ""}>保障型保險</option><option value="investmentLinked" ${editorDraft.productType === "investmentLinked" ? "selected" : ""}>投資型保險</option></select></label>
       <label>保費方式<select data-draft-field="premiumMode"><option value="level" ${editorDraft.premiumMode === "level" ? "selected" : ""}>平準</option><option value="stepped" ${editorDraft.premiumMode === "stepped" ? "selected" : ""}>非平準</option></select></label>
       <label>平準年保費<input data-draft-field="premium" type="number" min="0" step="any" value="${editorDraft.premium}" ${editorDraft.premiumMode === "stepped" ? "disabled" : ""}></label>
       <label>起保年齡<input data-draft-field="startAge" type="number" min="0" max="100" value="${editorDraft.startAge}"></label>
       <label>保障到幾歲<input data-draft-field="endAge" type="number" min="0" max="100" value="${editorDraft.endAge}"></label>
       <label class="full-field">規劃重點<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>
+    ${investmentFields}
     <div class="modal-subsection"><div class="modal-subsection-head"><strong>保障給付細項</strong><button type="button" class="add-benefit-btn" data-editor-action="add-benefit">新增給付細項</button></div>${benefits}</div>
     ${editorDraft.premiumMode === "stepped" ? `<div class="modal-subsection"><div class="modal-subsection-head"><strong>非平準保費表</strong><button type="button" class="add-benefit-btn" data-editor-action="add-premium">新增保費區間</button></div>${premiumPeriods}</div>` : ""}
     ${editorDraft.contractType === "main" ? `<div class="modal-subsection"><div class="modal-subsection-head"><div><strong>附約</strong><p class="modal-help">${editorIndex === null ? "請先儲存主約，再回來新增附約。" : "附約只在此主約的二級選單顯示。"}</p></div><button type="button" class="add-benefit-btn" data-editor-action="add-rider" ${editorIndex === null ? "disabled" : ""}>新增附約</button></div><div class="entity-summary-list">${riderRows}</div></div>` : ""}`;
@@ -1258,7 +1325,7 @@ function renderPolicies() {
       const more = policy.benefits.length > 2 ? `<small>另有 ${policy.benefits.length - 2} 項</small>` : "";
       return `
         <tr data-index="${index}">
-          <td><strong>${escapeHtml(policy.name)}</strong></td>
+          <td><strong>${escapeHtml(policy.name)}</strong>${policy.productType === "investmentLinked" ? "<small>投資型保險</small>" : ""}</td>
           <td><div class="coverage-summary">${summary || "尚無細項"}${more}</div></td>
           <td>${policy.premiumMode === "stepped" ? "非平準" : "平準"}</td>
           <td>${formatMoney(premiumAtAge(policy, currentAge))}</td>
@@ -1525,8 +1592,8 @@ function drawLineChart() {
     context.stroke();
     context.setLineDash([]);
 
-    const tooltipWidth = 218;
-    const tooltipHeight = 154;
+    const tooltipWidth = 232;
+    const tooltipHeight = 174;
     const tooltipX = selectedX + tooltipWidth + 14 > bounds.right
       ? selectedX - tooltipWidth - 12
       : selectedX + 12;
@@ -1548,12 +1615,14 @@ function drawLineChart() {
     context.fillText(`現金資產 ${formatMoney(selectedRow.liquidAssets, true)}`, tooltipX + 10, tooltipY + 51);
     context.fillStyle = "#377f8f";
     context.fillText(`投資資產 ${formatMoney(selectedRow.investmentAssets, true)}`, tooltipX + 10, tooltipY + 70);
-    context.fillStyle = "#b27716";
-    context.fillText(`不動產 ${formatMoney(selectedRow.realEstateValue, true)}`, tooltipX + 10, tooltipY + 89);
-    context.fillStyle = "#1e2a2f";
-    context.fillText(`約當總和 ${formatMoney(selectedRow.equivalentAssets, true)}`, tooltipX + 10, tooltipY + 108);
     context.fillStyle = "#647276";
-    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 127);
+    context.fillText(`其中投資型保單 ${formatMoney(selectedRow.policyInvestmentAssets, true)}`, tooltipX + 10, tooltipY + 89);
+    context.fillStyle = "#b27716";
+    context.fillText(`不動產 ${formatMoney(selectedRow.realEstateValue, true)}`, tooltipX + 10, tooltipY + 108);
+    context.fillStyle = "#1e2a2f";
+    context.fillText(`約當總和 ${formatMoney(selectedRow.equivalentAssets, true)}`, tooltipX + 10, tooltipY + 127);
+    context.fillStyle = "#647276";
+    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 146);
   }
 
   context.fillStyle = "#647276";
@@ -2188,6 +2257,8 @@ function bindEvents() {
 
       if (draftField === "contractType") {
         if (editorDraft.contractType === "main") editorDraft.parentId = "";
+        renderEditorFields();
+      } else if (draftField === "productType" || draftField === "investmentMode") {
         renderEditorFields();
       } else if (draftField === "premiumMode") {
         if (editorDraft.premiumMode === "stepped" && !editorDraft.premiumSchedule.length) {

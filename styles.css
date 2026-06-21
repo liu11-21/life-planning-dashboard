@@ -993,6 +993,13 @@ td select {
   margin-top: 2px;
 }
 
+.policy-table td > small {
+  color: var(--cyan);
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
 .policy-detail-row > td {
   background: #f7faf8;
   padding: 0;
