@@ -71,6 +71,14 @@
               <input id="annualIncome" type="number" min="0" step="10000" value="720000">
             </label>
             <label>
+              年副業收入
+              <input id="sideIncome" type="number" min="0" step="10000" value="0">
+            </label>
+            <label>
+              副業年增(減)率 %
+              <input id="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="0">
+            </label>
+            <label>
               收入開始日
               <input id="incomeStartDate" type="date">
             </label>
@@ -110,8 +118,8 @@
               <input id="dependentSupportYears" type="number" min="0" max="40" step="1" value="0">
             </label>
             <label>
-              收入成長率 %
-              <input id="incomeGrowth" type="number" min="0" max="8" step="0.1" value="2">
+              主業年增(減)率 %
+              <input id="incomeGrowth" type="number" min="-100" max="100" step="0.1" value="2">
             </label>
             <label>
               通膨率 %
@@ -289,7 +297,7 @@
           <div class="section-head policy-head">
             <div>
               <h2>不動產</h2>
-              <p>房屋、土地等不動產獨立估值，依年增率計入不動產折線與約當總和。</p>
+              <p>房屋、土地等不動產獨立估值，依年增(減)率計入不動產折線與約當總和。</p>
             </div>
             <button id="addRealEstate" type="button">新增不動產</button>
           </div>
@@ -311,7 +319,7 @@
           <div class="section-head policy-head">
             <div>
               <h2>固定支出項</h2>
-              <p>長期租金、管理費等固定開銷會依年增率逐年估算並扣除現金資產。</p>
+              <p>長期租金、管理費等固定開銷會依年增(減)率逐年估算並扣除現金資產。</p>
             </div>
             <button id="addFixedExpense" type="button">新增固定支出</button>
           </div>
@@ -388,6 +396,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260621e"></script>
+  <script src="./app.js?v=20260621f"></script>
 </body>
 </html>
