@@ -191,6 +191,7 @@ let projection = [];
 let financeStages = [];
 let expenseItems = [];
 let investments = [];
+let fixedExpenses = [];
 let heldAssets = [];
 let debtItems = [];
 const HISTORY_LIMIT = 100;
@@ -402,6 +403,19 @@ function blankInvestment() {
   };
 }
 
+function blankFixedExpense() {
+  const input = readInputs();
+  return {
+    id: makeId("fixed-expense"),
+    name: "長期租金",
+    monthlyAmount: 0,
+    annualGrowthRate: input.inflation,
+    startDate: input.planStartDate,
+    endDate: "",
+    note: ""
+  };
+}
+
 function blankResource(kind) {
   const input = readInputs();
   return {
@@ -443,6 +457,18 @@ function normalizeInvestments(list) {
     returnRate: Number(item.returnRate) || 0,
     startDate: item.startDate || readInputs().planStartDate,
     endDate: item.endDate || ""
+  }));
+}
+
+function normalizeFixedExpenses(list) {
+  return list.map((item) => ({
+    id: item.id || makeId("fixed-expense"),
+    name: item.name || "未命名固定支出",
+    monthlyAmount: Math.max(0, Number(item.monthlyAmount) || 0),
+    annualGrowthRate: Math.max(-100, Number(item.annualGrowthRate) || 0),
+    startDate: item.startDate || readInputs().planStartDate,
+    endDate: item.endDate || "",
+    note: item.note || ""
   }));
 }
 
@@ -568,6 +594,13 @@ function isRealEstateAsset(item) {
   return item.assetClass === "realEstate";
 }
 
+function fixedExpenseAtDate(item, date) {
+  if (!isDateActive(date, item.startDate, item.endDate)) return 0;
+  const yearsActive = monthsBetween(item.startDate, date) / 12;
+  const growthRate = Math.max(-100, Number(item.annualGrowthRate) || 0) / 100;
+  return Math.max(0, item.monthlyAmount * 12 * Math.pow(1 + growthRate, yearsActive));
+}
+
 function annualExpenseAtDate(date, input, income = 0) {
   const baseYear = Math.max(0, new Date(date).getFullYear() - new Date(input.planStartDate).getFullYear());
   const inflationFactor = Math.pow(1 + input.inflation / 100, baseYear);
@@ -579,13 +612,15 @@ function annualExpenseAtDate(date, input, income = 0) {
   const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
   const incomeTax = estimateIncomeTax(income, input);
   const assetTax = heldAssets.reduce((sum, item) => sum + assetTaxAtDate(item, date), 0);
+  const fixedExpense = fixedExpenses.reduce((sum, item) => sum + fixedExpenseAtDate(item, date), 0);
   return {
-    total: livingExpense + resourceExpense + debtRepayment + incomeTax + assetTax,
+    total: livingExpense + fixedExpense + resourceExpense + debtRepayment + incomeTax + assetTax,
     tax: incomeTax + assetTax,
     incomeTax,
     assetTax,
     livingExpense,
     resourceExpense,
+    fixedExpense,
     debtRepayment
   };
 }
@@ -609,7 +644,8 @@ function financialAtAge(age, input) {
       tax: expenses.tax,
       incomeTax: expenses.incomeTax,
       assetTax: expenses.assetTax,
-      consumptionExpense: expenses.livingExpense + expenses.resourceExpense
+      fixedExpense: expenses.fixedExpense,
+      consumptionExpense: expenses.livingExpense + expenses.fixedExpense + expenses.resourceExpense
         + expenses.assetTax + stageExtraExpense,
       debtRepayment: expenses.debtRepayment,
       stageId: activeStage.id,
@@ -628,7 +664,8 @@ function financialAtAge(age, input) {
     tax: expenses.tax,
     incomeTax: expenses.incomeTax,
     assetTax: expenses.assetTax,
-    consumptionExpense: expenses.livingExpense + expenses.resourceExpense + expenses.assetTax,
+    fixedExpense: expenses.fixedExpense,
+    consumptionExpense: expenses.livingExpense + expenses.fixedExpense + expenses.resourceExpense + expenses.assetTax,
     debtRepayment: expenses.debtRepayment,
     stageId: null,
     stageName: "目前基準"
@@ -919,6 +956,7 @@ function projectPlan() {
       tax: financial.tax,
       incomeTax: financial.incomeTax,
       assetTax: financial.assetTax,
+      fixedExpense: financial.fixedExpense,
       premium,
       assets: netAssets,
       liquidAssets: liquidBalance,
@@ -1007,6 +1045,7 @@ function mainPolicyOptions(selected, currentPolicyId) {
 function editorList(type) {
   if (type === "stage") return financeStages;
   if (type === "investment") return investments;
+  if (type === "fixedExpense") return fixedExpenses;
   if (type === "asset") return heldAssets;
   if (type === "debt") return debtItems;
   if (type === "policy") return policies;
@@ -1016,13 +1055,14 @@ function editorList(type) {
 function newEditorDraft(type) {
   if (type === "stage") return blankFinanceStage();
   if (type === "investment") return blankInvestment();
+  if (type === "fixedExpense") return blankFixedExpense();
   if (type === "asset") return blankResource("asset");
   if (type === "debt") return blankResource("debt");
   return blankPolicy();
 }
 
 function editorTitle(type, isNew) {
-  const labels = { stage: "人生階段", investment: "投資項目", asset: "持有資產", debt: "負債", policy: "保單" };
+  const labels = { stage: "人生階段", investment: "投資項目", fixedExpense: "固定支出", asset: "持有資產", debt: "負債", policy: "保單" };
   return `${isNew ? "新增" : "編輯"}${labels[type]}`;
 }
 
@@ -1069,6 +1109,16 @@ function renderSimpleEditor() {
       <label>收入成長率 %<input data-draft-field="incomeGrowth" type="number" step="0.1" value="${editorDraft.incomeGrowth}"></label>
       <label>每月額外支出<input data-draft-field="extraMonthlyExpense" type="number" min="0" step="any" value="${editorDraft.extraMonthlyExpense}"></label>
       <div class="loan-calculator stage-expense-preview full-field"><span>系統估算年支出 ${formatMoney(estimate.total)}｜月均 ${formatMoney(estimate.total / 12)}｜其中稅務 ${formatMoney(estimate.tax)}</span></div>
+      <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
+    </div>`;
+  }
+  if (editorType === "fixedExpense") {
+    return `<div class="modal-field-grid">
+      <label>支出項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
+      <label>每月金額<input data-draft-field="monthlyAmount" type="number" min="0" step="any" value="${editorDraft.monthlyAmount}"></label>
+      <label>預估年增率 %<input data-draft-field="annualGrowthRate" type="number" min="-100" step="0.1" value="${editorDraft.annualGrowthRate}"></label>
+      <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
+      <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>`;
   }
@@ -1249,6 +1299,7 @@ function commitEntityEditor() {
   else list[editorIndex] = structuredClone(editorDraft);
   if (editorType === "stage") renderFinanceStages();
   if (editorType === "investment") renderInvestments();
+  if (editorType === "fixedExpense") renderFixedExpenses();
   if (editorType === "asset" || editorType === "debt") renderResources(editorType);
   if (editorType === "policy") renderPolicies();
   closeEntityEditor();
@@ -1357,6 +1408,22 @@ function renderInvestments() {
       <td><div class="row-actions"><button type="button" class="detail-btn" data-action="edit-investment">更多編輯</button><button type="button" class="delete-btn" data-action="delete-investment">刪除</button></div></td>
     </tr>
   `).join("") : `<tr><td colspan="8" class="empty-list">尚未加入投資項目。</td></tr>`;
+}
+
+function renderFixedExpenses() {
+  const container = document.getElementById("fixedExpenseRows");
+  if (!fixedExpenses.length) {
+    container.innerHTML = `<p class="empty-list">尚未加入固定支出項。</p>`;
+    return;
+  }
+  container.className = "resource-list entity-summary-list";
+  container.innerHTML = fixedExpenses.map((item, index) => `
+    <section class="entity-summary" data-fixed-expense-index="${index}">
+      <strong>${escapeHtml(item.name)}</strong>
+      <span>${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
+      <span>每月 ${formatMoney(item.monthlyAmount)}｜預估年增率 ${item.annualGrowthRate}%</span>
+      <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-fixed-expense">更多編輯</button><button type="button" class="delete-btn" data-action="delete-fixed-expense">刪除</button></div>
+    </section>`).join("");
 }
 
 function renderResourceCosts(item, kind, index) {
@@ -1705,6 +1772,7 @@ function collectState() {
     descriptions: readDescriptions(),
     financeStages,
     investments,
+    fixedExpenses,
     heldAssets,
     debtItems,
     policies
@@ -1758,6 +1826,7 @@ function loadState() {
     financeStages = [];
     expenseItems = [];
     investments = [];
+    fixedExpenses = [];
     heldAssets = [];
     debtItems = [];
     return;
@@ -1799,6 +1868,7 @@ function loadState() {
       expenseItems = normalizeExpenseItems(Array.isArray(state.expenseItems) ? state.expenseItems : []);
     }
     investments = normalizeInvestments(Array.isArray(state.investments) ? state.investments : []);
+    fixedExpenses = normalizeFixedExpenses(Array.isArray(state.fixedExpenses) ? state.fixedExpenses : []);
     heldAssets = normalizeResources(Array.isArray(state.heldAssets) ? state.heldAssets : [], "asset");
     const migratedDebt = Number(state.inputs?.debt) || 0;
     debtItems = normalizeResources(
@@ -1815,6 +1885,7 @@ function loadState() {
     financeStages = [];
     expenseItems = [];
     investments = [];
+    fixedExpenses = [];
     heldAssets = [];
     debtItems = [];
     setFileStatus("本機存檔無法讀取，已載入預設資料", "error");
@@ -1823,7 +1894,7 @@ function loadState() {
 
 function applyImportedState(state) {
   if (!state || typeof state !== "object") throw new Error("檔案內容不是有效的規劃資料");
-  const hasPlanningData = state.inputs || state.policies || state.investments
+  const hasPlanningData = state.inputs || state.policies || state.investments || state.fixedExpenses
     || state.heldAssets || state.debtItems || state.expenseItems;
   if (!hasPlanningData) throw new Error("檔案中找不到可匯入的規劃資料");
 
@@ -1855,6 +1926,7 @@ function applyImportedState(state) {
     expenseItems = normalizeExpenseItems(Array.isArray(state.expenseItems) ? state.expenseItems : []);
   }
   investments = normalizeInvestments(Array.isArray(state.investments) ? state.investments : []);
+  fixedExpenses = normalizeFixedExpenses(Array.isArray(state.fixedExpenses) ? state.fixedExpenses : []);
   heldAssets = normalizeResources(Array.isArray(state.heldAssets) ? state.heldAssets : [], "asset");
   debtItems = normalizeResources(Array.isArray(state.debtItems) ? state.debtItems : [], "debt");
   expandedPolicyIds.clear();
@@ -1862,6 +1934,7 @@ function applyImportedState(state) {
   renderPolicies();
   renderFinanceStages();
   renderInvestments();
+  renderFixedExpenses();
   renderResources("asset");
   renderResources("debt");
   recalculate();
@@ -1914,6 +1987,7 @@ function createEmptyPlanState() {
     descriptions: Object.fromEntries(DESCRIPTION_IDS.map((id) => [id, ""])),
     financeStages: [],
     investments: [],
+    fixedExpenses: [],
     heldAssets: [],
     debtItems: [],
     policies: []
@@ -2061,6 +2135,23 @@ function bindEvents() {
     if (action === "delete-investment") {
       investments.splice(index, 1);
       renderInvestments();
+      recalculate();
+    }
+  });
+
+  document.getElementById("addFixedExpense").addEventListener("click", () => {
+    openEntityEditor("fixedExpense");
+  });
+
+  document.getElementById("fixedExpenseRows").addEventListener("click", (event) => {
+    const action = event.target.dataset.action;
+    const row = event.target.closest("[data-fixed-expense-index]");
+    if (!action || !row) return;
+    const index = Number(row.dataset.fixedExpenseIndex);
+    if (action === "edit-fixed-expense") openEntityEditor("fixedExpense", index);
+    if (action === "delete-fixed-expense") {
+      fixedExpenses.splice(index, 1);
+      renderFixedExpenses();
       recalculate();
     }
   });
@@ -2425,6 +2516,7 @@ loadState();
 renderPolicies();
 renderFinanceStages();
 renderInvestments();
+renderFixedExpenses();
 renderResources("asset");
 renderResources("debt");
 bindEvents();
