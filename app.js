@@ -75,6 +75,7 @@ const INPUT_IDS = [
 ];
 
 const DATE_IDS = ["planStartDate", "incomeStartDate", "incomeEndDate"];
+const GROWTH_MODE_IDS = ["incomeGrowthMode", "sideIncomeGrowthMode"];
 
 const DESCRIPTION_IDS = [
   "deathDescription",
@@ -320,6 +321,9 @@ function readInputs() {
   DATE_IDS.forEach((id) => {
     values[id] = document.getElementById(id).value;
   });
+  GROWTH_MODE_IDS.forEach((id) => {
+    values[id] = document.getElementById(id).value;
+  });
   values.maritalStatus = document.getElementById("maritalStatus").value;
   return values;
 }
@@ -371,6 +375,8 @@ function blankFinanceStage() {
     extraMonthlyExpense: 0,
     incomeGrowth: input.incomeGrowth,
     sideIncomeGrowth: input.sideIncomeGrowth,
+    incomeGrowthMode: input.incomeGrowthMode,
+    sideIncomeGrowthMode: input.sideIncomeGrowthMode,
     note: ""
   };
 }
@@ -387,6 +393,8 @@ function normalizeFinanceStages(list) {
       || (Number(stage.extraAnnualExpense ?? stage.annualExpense) || 0) / 12,
     incomeGrowth: Math.max(-100, Number(stage.incomeGrowth) || 0),
     sideIncomeGrowth: Math.max(-100, Number(stage.sideIncomeGrowth) || 0),
+    incomeGrowthMode: stage.incomeGrowthMode === "simple" ? "simple" : "compound",
+    sideIncomeGrowthMode: stage.sideIncomeGrowthMode === "simple" ? "simple" : "compound",
     note: stage.note || ""
   }));
 }
@@ -416,6 +424,7 @@ function blankFixedExpense() {
     name: "長期租金",
     monthlyAmount: 0,
     annualGrowthRate: input.inflation,
+    growthMode: "compound",
     startDate: input.planStartDate,
     endDate: "",
     note: ""
@@ -431,6 +440,7 @@ function blankResource(kind) {
     assetClass: kind === "asset" ? "other" : "",
     value: 0,
     annualGrowthRate: kind === "asset" ? 2 : 0,
+    growthMode: kind === "asset" ? "compound" : "",
     taxCategory: "none",
     vehicleCC: 1800,
     houseTaxBase: 0,
@@ -472,6 +482,7 @@ function normalizeFixedExpenses(list) {
     name: item.name || "未命名固定支出",
     monthlyAmount: Math.max(0, Number(item.monthlyAmount) || 0),
     annualGrowthRate: Math.max(-100, Number(item.annualGrowthRate) || 0),
+    growthMode: item.growthMode === "simple" ? "simple" : "compound",
     startDate: item.startDate || readInputs().planStartDate,
     endDate: item.endDate || "",
     note: item.note || ""
@@ -492,6 +503,7 @@ function normalizeResources(list, kind) {
       : "",
     value: Number(item.value ?? item.balance) || 0,
     annualGrowthRate: kind === "asset" ? Number(item.annualGrowthRate) || 0 : 0,
+    growthMode: kind === "asset" ? (item.growthMode === "simple" ? "simple" : "compound") : "",
     taxCategory: kind === "asset"
       ? (item.taxCategory || (/車/.test(item.type || "") ? "vehicle" : /房|不動產/.test(item.type || "") ? "house" : "none"))
       : "none",
@@ -589,11 +601,22 @@ function assetTaxAtDate(item, date) {
   return isDateActive(date, item.startDate, item.endDate) ? annualAssetTax(item) : 0;
 }
 
+function applyAnnualChange(value, annualRate, years, mode = "compound") {
+  const rate = Math.max(-100, Number(annualRate) || 0) / 100;
+  const factor = mode === "simple"
+    ? 1 + rate * Math.max(0, years)
+    : Math.pow(1 + rate, Math.max(0, years));
+  return Number(value || 0) * factor;
+}
+
+function growthModeLabel(mode) {
+  return mode === "simple" ? "單利" : "複利";
+}
+
 function assetValueAtDate(item, date) {
   if (!isDateActive(date, item.startDate, item.endDate)) return 0;
   const yearsHeld = monthsBetween(item.startDate, date) / 12;
-  const growthRate = Math.max(-100, Number(item.annualGrowthRate) || 0) / 100;
-  return Math.max(0, item.value * Math.pow(1 + growthRate, yearsHeld));
+  return Math.max(0, applyAnnualChange(item.value, item.annualGrowthRate, yearsHeld, item.growthMode));
 }
 
 function isRealEstateAsset(item) {
@@ -603,8 +626,7 @@ function isRealEstateAsset(item) {
 function fixedExpenseAtDate(item, date) {
   if (!isDateActive(date, item.startDate, item.endDate)) return 0;
   const yearsActive = monthsBetween(item.startDate, date) / 12;
-  const growthRate = Math.max(-100, Number(item.annualGrowthRate) || 0) / 100;
-  return Math.max(0, item.monthlyAmount * 12 * Math.pow(1 + growthRate, yearsActive));
+  return Math.max(0, applyAnnualChange(item.monthlyAmount * 12, item.annualGrowthRate, yearsActive, item.growthMode));
 }
 
 function annualExpenseAtDate(date, input, income = 0) {
@@ -639,10 +661,18 @@ function financialAtAge(age, input) {
   ).at(-1);
   if (activeStage) {
     const stageYear = Math.max(0, new Date(date).getFullYear() - new Date(activeStage.startDate).getFullYear());
-    const mainIncome = activeStage.annualIncome
-      * Math.pow(1 + Math.max(-100, activeStage.incomeGrowth) / 100, stageYear);
-    const sideIncome = activeStage.sideIncome
-      * Math.pow(1 + Math.max(-100, activeStage.sideIncomeGrowth) / 100, stageYear);
+    const mainIncome = Math.max(0, applyAnnualChange(
+      activeStage.annualIncome,
+      activeStage.incomeGrowth,
+      stageYear,
+      activeStage.incomeGrowthMode
+    ));
+    const sideIncome = Math.max(0, applyAnnualChange(
+      activeStage.sideIncome,
+      activeStage.sideIncomeGrowth,
+      stageYear,
+      activeStage.sideIncomeGrowthMode
+    ));
     const income = mainIncome + sideIncome;
     const expenses = annualExpenseAtDate(date, input, income);
     const stageExtraExpense = activeStage.extraMonthlyExpense * 12
@@ -667,10 +697,10 @@ function financialAtAge(age, input) {
 
   const incomeActive = isDateActive(date, input.incomeStartDate, input.incomeEndDate);
   const mainIncome = incomeActive
-    ? input.annualIncome * Math.pow(1 + Math.max(-100, input.incomeGrowth) / 100, baseYear)
+    ? Math.max(0, applyAnnualChange(input.annualIncome, input.incomeGrowth, baseYear, input.incomeGrowthMode))
     : 0;
   const sideIncome = incomeActive
-    ? input.sideIncome * Math.pow(1 + Math.max(-100, input.sideIncomeGrowth) / 100, baseYear)
+    ? Math.max(0, applyAnnualChange(input.sideIncome, input.sideIncomeGrowth, baseYear, input.sideIncomeGrowthMode))
     : 0;
   const income = mainIncome + sideIncome;
   const expenses = annualExpenseAtDate(date, input, income);
@@ -1095,7 +1125,7 @@ function renderStageManager() {
     <section class="entity-summary modal-entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate || "-"} 至 ${stage.endDate || "持續"}</span>
-      <span>主業 ${formatMoney(stage.annualIncome, true)}｜副業 ${formatMoney(stage.sideIncome, true)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions">
         <button type="button" class="detail-btn" data-editor-action="edit-stage-modal">編輯</button>
         <button type="button" class="delete-btn" data-editor-action="delete-stage-modal">刪除</button>
@@ -1127,8 +1157,10 @@ function renderSimpleEditor() {
       <label>階段名稱<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>年主業收入<input data-draft-field="annualIncome" type="number" min="0" step="10000" value="${editorDraft.annualIncome}"></label>
       <label>主業年增(減)率 %<input data-draft-field="incomeGrowth" type="number" min="-100" max="100" step="0.1" value="${editorDraft.incomeGrowth}"></label>
+      <label>主業增減模式<select data-draft-field="incomeGrowthMode"><option value="compound" ${editorDraft.incomeGrowthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.incomeGrowthMode === "simple" ? "selected" : ""}>單利</option></select></label>
       <label>年副業收入<input data-draft-field="sideIncome" type="number" min="0" step="10000" value="${editorDraft.sideIncome}"></label>
       <label>副業年增(減)率 %<input data-draft-field="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="${editorDraft.sideIncomeGrowth}"></label>
+      <label>副業增減模式<select data-draft-field="sideIncomeGrowthMode"><option value="compound" ${editorDraft.sideIncomeGrowthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.sideIncomeGrowthMode === "simple" ? "selected" : ""}>單利</option></select></label>
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label>每月額外支出<input data-draft-field="extraMonthlyExpense" type="number" min="0" step="any" value="${editorDraft.extraMonthlyExpense}"></label>
@@ -1141,6 +1173,7 @@ function renderSimpleEditor() {
       <label>支出項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>每月金額<input data-draft-field="monthlyAmount" type="number" min="0" step="any" value="${editorDraft.monthlyAmount}"></label>
       <label>預估年增(減)率 %<input data-draft-field="annualGrowthRate" type="number" min="-100" max="100" step="0.1" value="${editorDraft.annualGrowthRate}"></label>
+      <label>增減模式<select data-draft-field="growthMode"><option value="compound" ${editorDraft.growthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.growthMode === "simple" ? "selected" : ""}>單利</option></select></label>
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
@@ -1196,6 +1229,7 @@ function renderResourceEditor() {
       <label>類型<input data-draft-field="type" value="${escapeHtml(editorDraft.type)}"></label>
       <label>${editorType === "asset" ? "起始估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
       ${editorType === "asset" ? `<label>預期年增(減)率 %<input data-draft-field="annualGrowthRate" type="number" min="-100" max="100" step="any" value="${editorDraft.annualGrowthRate}"></label>` : ""}
+      ${editorType === "asset" ? `<label>增減模式<select data-draft-field="growthMode"><option value="compound" ${editorDraft.growthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.growthMode === "simple" ? "selected" : ""}>單利</option></select></label>` : ""}
       ${debtFields}
       ${assetTaxFields}
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
@@ -1461,7 +1495,7 @@ function renderFixedExpenses() {
     <section class="entity-summary" data-fixed-expense-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
       <span>${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
-      <span>每月 ${formatMoney(item.monthlyAmount)}｜預估年增(減)率 ${item.annualGrowthRate}%</span>
+      <span>每月 ${formatMoney(item.monthlyAmount)}｜預估年增(減)率 ${item.annualGrowthRate}%（${growthModeLabel(item.growthMode)}）</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-fixed-expense">更多編輯</button><button type="button" class="delete-btn" data-action="delete-fixed-expense">刪除</button></div>
     </section>`).join("");
 }
@@ -1496,7 +1530,7 @@ function renderResourceEntries(container, entries, kind, emptyLabel) {
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
       <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
-      <span>${kind === "asset" ? `起始價值 ${formatMoney(item.value, true)}｜年增(減)率 ${item.annualGrowthRate}%｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
+      <span>${kind === "asset" ? `起始價值 ${formatMoney(item.value, true)}｜年增(減)率 ${item.annualGrowthRate}%（${growthModeLabel(item.growthMode)}）｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
 }
@@ -1535,7 +1569,7 @@ function renderFinanceStages() {
     return `<section class="entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate} 至 ${stage.endDate || "持續"}｜${status}</span>
-      <span>主業 ${formatMoney(stage.annualIncome, true)}｜副業 ${formatMoney(stage.sideIncome, true)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-stage">編輯第一階段</button></div>
     </section>`;
   }).join("") + (financeStages.length > 1 ? `<button type="button" class="secondary compact-more" data-action="manage-stages">其餘 ${financeStages.length - 1} 個階段｜更多編輯</button>` : "");
@@ -1822,6 +1856,9 @@ function collectState() {
   DATE_IDS.forEach((id) => {
     inputs[id] = document.getElementById(id).value;
   });
+  GROWTH_MODE_IDS.forEach((id) => {
+    inputs[id] = document.getElementById(id).value;
+  });
   inputs.maritalStatus = document.getElementById("maritalStatus").value;
   return {
     inputs,
@@ -2037,6 +2074,8 @@ function createEmptyPlanState() {
     maritalStatus: "single",
     inflation: "2",
     returnRate: "4",
+    incomeGrowthMode: "compound",
+    sideIncomeGrowthMode: "compound",
     ltcYears: "8"
   });
   return {
@@ -2118,6 +2157,10 @@ function bindEvents() {
       renderFinanceStages();
       recalculate();
     });
+  });
+
+  GROWTH_MODE_IDS.forEach((id) => {
+    document.getElementById(id).addEventListener("change", recalculate);
   });
 
   document.getElementById("lifeStage").addEventListener("change", recalculate);
@@ -2441,7 +2484,7 @@ function bindEvents() {
         if (estimate) {
           estimate.textContent = `${editorDraft.taxCategory === "vehicle" ? "估算牌照稅與公路養管費" : "估算房屋稅"}：每年 ${formatMoney(annualAssetTax(editorDraft))}`;
         }
-      } else if (editorType === "stage" && ["annualIncome", "sideIncome", "incomeGrowth", "sideIncomeGrowth", "startDate", "extraMonthlyExpense"].includes(draftField)) {
+      } else if (editorType === "stage" && ["annualIncome", "sideIncome", "incomeGrowth", "sideIncomeGrowth", "incomeGrowthMode", "sideIncomeGrowthMode", "startDate", "extraMonthlyExpense"].includes(draftField)) {
         const estimate = estimateStageAnnualExpense(editorDraft);
         const preview = document.querySelector(".stage-expense-preview span");
         if (preview) {

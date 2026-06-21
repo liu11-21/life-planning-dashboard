@@ -79,6 +79,10 @@
               <input id="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="0">
             </label>
             <label>
+              副業增減模式
+              <select id="sideIncomeGrowthMode"><option value="compound">複利</option><option value="simple">單利</option></select>
+            </label>
+            <label>
               收入開始日
               <input id="incomeStartDate" type="date">
             </label>
@@ -120,6 +124,10 @@
             <label>
               主業年增(減)率 %
               <input id="incomeGrowth" type="number" min="-100" max="100" step="0.1" value="2">
+            </label>
+            <label>
+              主業增減模式
+              <select id="incomeGrowthMode"><option value="compound">複利</option><option value="simple">單利</option></select>
             </label>
             <label>
               通膨率 %
@@ -396,6 +404,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260621f"></script>
+  <script src="./app.js?v=20260621g"></script>
 </body>
 </html>
