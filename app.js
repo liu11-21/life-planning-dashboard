@@ -421,8 +421,8 @@ function blankResource(kind) {
   return {
     id: makeId(kind),
     name: kind === "asset" ? "新增持有資產" : "新增負債",
-    type: kind === "asset" ? "房地產" : "房貸",
-    assetClass: kind === "asset" ? "realEstate" : "",
+    type: kind === "asset" ? "其他資產" : "房貸",
+    assetClass: kind === "asset" ? "other" : "",
     value: 0,
     annualGrowthRate: kind === "asset" ? 2 : 0,
     taxCategory: "none",
@@ -1266,6 +1266,18 @@ function openEntityEditor(type, index = null) {
   document.body.classList.add("modal-open");
 }
 
+function openRealEstateEditor(index = null) {
+  openEntityEditor("asset", index);
+  if (index === null) {
+    editorDraft.assetClass = "realEstate";
+    editorDraft.name = "新增不動產";
+    editorDraft.type = "房地產";
+    editorDraft.annualGrowthRate = 2;
+    renderEditorFields();
+  }
+  document.getElementById("editModalTitle").textContent = index === null ? "新增不動產" : "編輯不動產";
+}
+
 function openRiderEditor(parentId, index = null) {
   if (index !== null) {
     openEntityEditor("policy", index);
@@ -1300,7 +1312,11 @@ function commitEntityEditor() {
   if (editorType === "stage") renderFinanceStages();
   if (editorType === "investment") renderInvestments();
   if (editorType === "fixedExpense") renderFixedExpenses();
-  if (editorType === "asset" || editorType === "debt") renderResources(editorType);
+  if (editorType === "asset") {
+    renderRealEstate();
+    renderResources("asset");
+  }
+  if (editorType === "debt") renderResources("debt");
   if (editorType === "policy") renderPolicies();
   closeEntityEditor();
   recalculate();
@@ -1446,21 +1462,38 @@ function renderResourceCosts(item, kind, index) {
   `;
 }
 
-function renderResources(kind) {
-  const list = kind === "asset" ? heldAssets : debtItems;
-  const container = document.getElementById(kind === "asset" ? "heldAssetRows" : "debtRows");
-  if (!list.length) {
-    container.innerHTML = `<p class="empty-list">尚未加入${kind === "asset" ? "持有資產" : "負債"}。</p>`;
+function renderResourceEntries(container, entries, kind, emptyLabel) {
+  if (!entries.length) {
+    container.innerHTML = `<p class="empty-list">尚未加入${emptyLabel}。</p>`;
     return;
   }
   container.className = "resource-list entity-summary-list";
-  container.innerHTML = list.map((item, index) => `
+  container.innerHTML = entries.map(({ item, index }) => `
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
-      <span>${kind === "asset" ? `${isRealEstateAsset(item) ? "不動產" : "其他持有資產"}｜` : ""}${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
+      <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
       <span>${kind === "asset" ? `起始價值 ${formatMoney(item.value, true)}｜年增率 ${item.annualGrowthRate}%｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
+}
+
+function renderRealEstate() {
+  const entries = heldAssets
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => isRealEstateAsset(item));
+  renderResourceEntries(document.getElementById("realEstateRows"), entries, "asset", "不動產");
+}
+
+function renderResources(kind) {
+  const entries = (kind === "asset" ? heldAssets : debtItems)
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => kind !== "asset" || !isRealEstateAsset(item));
+  renderResourceEntries(
+    document.getElementById(kind === "asset" ? "heldAssetRows" : "debtRows"),
+    entries,
+    kind,
+    kind === "asset" ? "其他持有資產" : "負債"
+  );
 }
 
 function renderFinanceStages() {
@@ -1935,6 +1968,7 @@ function applyImportedState(state) {
   renderFinanceStages();
   renderInvestments();
   renderFixedExpenses();
+  renderRealEstate();
   renderResources("asset");
   renderResources("debt");
   recalculate();
@@ -2160,11 +2194,15 @@ function bindEvents() {
     openEntityEditor("asset");
   });
 
+  document.getElementById("addRealEstate").addEventListener("click", () => {
+    openRealEstateEditor();
+  });
+
   document.getElementById("addDebtItem").addEventListener("click", () => {
     openEntityEditor("debt");
   });
 
-  ["heldAssetRows", "debtRows"].forEach((containerId) => {
+  ["realEstateRows", "heldAssetRows", "debtRows"].forEach((containerId) => {
     const container = document.getElementById(containerId);
     container.addEventListener("input", (event) => {
       const row = event.target.closest("[data-resource-index]");
@@ -2193,14 +2231,20 @@ function bindEvents() {
       const list = kind === "asset" ? heldAssets : debtItems;
       const index = Number(row.dataset.resourceIndex);
       if (action === "edit-resource") {
-        openEntityEditor(kind, index);
+        if (containerId === "realEstateRows") openRealEstateEditor(index);
+        else openEntityEditor(kind, index);
         return;
       } else if (action === "delete-resource") {
         list.splice(index, 1);
       } else {
         return;
       }
-      renderResources(kind);
+      if (kind === "asset") {
+        renderRealEstate();
+        renderResources("asset");
+      } else {
+        renderResources("debt");
+      }
       recalculate();
     });
   });
@@ -2517,6 +2561,7 @@ renderPolicies();
 renderFinanceStages();
 renderInvestments();
 renderFixedExpenses();
+renderRealEstate();
 renderResources("asset");
 renderResources("debt");
 bindEvents();

@@ -288,10 +288,21 @@
         <section class="planning-panel">
           <div class="section-head policy-head">
             <div>
-              <h2>持有資產</h2>
-              <p>房地產、車輛或其他動產可設定持有期間，展開細項加入年度持有成本。</p>
+              <h2>不動產</h2>
+              <p>房屋、土地等不動產獨立估值，依年增率計入不動產折線與約當總和。</p>
             </div>
-            <button id="addHeldAsset" type="button">新增資產</button>
+            <button id="addRealEstate" type="button">新增不動產</button>
+          </div>
+          <div id="realEstateRows" class="resource-list"></div>
+        </section>
+
+        <section class="planning-panel">
+          <div class="section-head policy-head">
+            <div>
+              <h2>其他持有資產</h2>
+              <p>車輛或其他動產可設定持有期間，展開細項加入年度持有成本。</p>
+            </div>
+            <button id="addHeldAsset" type="button">新增其他資產</button>
           </div>
           <div id="heldAssetRows" class="resource-list"></div>
         </section>
@@ -377,6 +388,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260621d"></script>
+  <script src="./app.js?v=20260621e"></script>
 </body>
 </html>
