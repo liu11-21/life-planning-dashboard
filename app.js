@@ -396,6 +396,7 @@ function blankResource(kind) {
     id: makeId(kind),
     name: kind === "asset" ? "新增持有資產" : "新增負債",
     type: kind === "asset" ? "房地產" : "房貸",
+    assetClass: kind === "asset" ? "realEstate" : "",
     value: 0,
     annualGrowthRate: kind === "asset" ? 2 : 0,
     taxCategory: "none",
@@ -438,6 +439,13 @@ function normalizeResources(list, kind) {
     id: item.id || makeId(kind),
     name: item.name || (kind === "asset" ? "未命名資產" : "未命名負債"),
     type: item.type || (kind === "asset" ? "其他資產" : "其他負債"),
+    assetClass: kind === "asset"
+      ? (["realEstate", "other"].includes(item.assetClass)
+        ? item.assetClass
+        : (/房|土地|不動產/.test(`${item.name || ""} ${item.type || ""}`) || item.taxCategory === "house"
+          ? "realEstate"
+          : "other"))
+      : "",
     value: Number(item.value ?? item.balance) || 0,
     annualGrowthRate: kind === "asset" ? Number(item.annualGrowthRate) || 0 : 0,
     taxCategory: kind === "asset"
@@ -542,6 +550,10 @@ function assetValueAtDate(item, date) {
   const yearsHeld = monthsBetween(item.startDate, date) / 12;
   const growthRate = Math.max(-100, Number(item.annualGrowthRate) || 0) / 100;
   return Math.max(0, item.value * Math.pow(1 + growthRate, yearsHeld));
+}
+
+function isRealEstateAsset(item) {
+  return item.assetClass === "realEstate";
 }
 
 function annualExpenseAtDate(date, input, income = 0) {
@@ -835,6 +847,9 @@ function projectPlan() {
     const investmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
     const heldAssetValue = heldAssets
       .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
+    const realEstateValue = heldAssets
+      .filter(isRealEstateAsset)
+      .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
     const debtValue = debtItems
       .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
     const netAssets = liquidBalance + investmentTotal + heldAssetValue - debtValue;
@@ -860,6 +875,8 @@ function projectPlan() {
       liquidAssets: liquidBalance,
       investmentAssets: investmentTotal,
       heldAssetValue,
+      realEstateValue,
+      equivalentAssets: liquidBalance + investmentTotal + realEstateValue,
       debtValue,
       investmentContribution,
       investmentLiquidation,
@@ -1046,6 +1063,7 @@ function renderResourceEditor() {
       <div class="loan-calculator full-field"><span>估算房屋稅：每年 ${formatMoney(annualAssetTax(editorDraft))}</span></div>` : ""}` : "";
   return `<div class="modal-field-grid">
       <label>項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
+      ${editorType === "asset" ? `<label>資產分類<select data-draft-field="assetClass"><option value="realEstate" ${editorDraft.assetClass === "realEstate" ? "selected" : ""}>不動產</option><option value="other" ${editorDraft.assetClass === "other" ? "selected" : ""}>其他持有資產</option></select></label>` : ""}
       <label>類型<input data-draft-field="type" value="${escapeHtml(editorDraft.type)}"></label>
       <label>${editorType === "asset" ? "起始估計價值" : "目前貸款餘額"}<input data-draft-field="value" type="number" min="0" step="any" value="${editorDraft.value}"></label>
       ${editorType === "asset" ? `<label>預期年增值率 %<input data-draft-field="annualGrowthRate" type="number" min="-100" step="any" value="${editorDraft.annualGrowthRate}"></label>` : ""}
@@ -1305,7 +1323,7 @@ function renderResources(kind) {
   container.innerHTML = list.map((item, index) => `
     <section class="entity-summary" data-resource-kind="${kind}" data-resource-index="${index}">
       <strong>${escapeHtml(item.name)}</strong>
-      <span>${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
+      <span>${kind === "asset" ? `${isRealEstateAsset(item) ? "不動產" : "其他持有資產"}｜` : ""}${escapeHtml(item.type)}｜${item.startDate || "-"} 至 ${item.endDate || "持續"}</span>
       <span>${kind === "asset" ? `起始價值 ${formatMoney(item.value, true)}｜年增率 ${item.annualGrowthRate}%｜估算年稅 ${formatMoney(annualAssetTax(item), true)}` : `餘額 ${formatMoney(item.value, true)}｜月付 ${formatMoney(item.monthlyPayment)}`}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-resource">更多編輯</button><button type="button" class="delete-btn" data-action="delete-resource">刪除</button></div>
     </section>`).join("");
@@ -1377,6 +1395,13 @@ function renderFinancialRatios() {
       <small>${definition.recommendation}</small>
     </div>`;
   }).join("");
+}
+
+function renderEquivalentAssets() {
+  const selectedAge = Number(document.getElementById("selectedAge").value);
+  const row = projection.find((item) => item.age === selectedAge) || projection[0];
+  document.getElementById("equivalentAssetsAge").textContent = `${row.age}歲約當現金總和`;
+  document.getElementById("equivalentAssetsTotal").textContent = formatMoney(row.equivalentAssets, true);
 }
 
 function renderAgeTable() {
@@ -1466,11 +1491,12 @@ function drawLine(context, values, color, bounds, yMin, yMax) {
 function drawLineChart() {
   const canvas = document.getElementById("lineChart");
   const { context, width, height } = setupCanvas(canvas);
-  const bounds = { left: 70, right: width - 18, top: 30, bottom: height - 38 };
+  const bounds = { left: 70, right: width - 18, top: 48, bottom: height - 38 };
   const gapValues = projection.map((row) => row.totalGap);
   const cashValues = projection.map((row) => row.liquidAssets);
   const investmentValues = projection.map((row) => row.investmentAssets);
-  const allValues = [...gapValues, ...cashValues, ...investmentValues, 0];
+  const realEstateValues = projection.map((row) => row.realEstateValue);
+  const allValues = [...gapValues, ...cashValues, ...investmentValues, ...realEstateValues, 0];
   let yMin = Math.min(...allValues);
   let yMax = Math.max(...allValues);
   const padding = Math.max(1, (yMax - yMin) * 0.08);
@@ -1481,6 +1507,7 @@ function drawLineChart() {
   drawLine(context, gapValues, "#166c50", bounds, yMin, yMax);
   drawLine(context, cashValues, "#26383d", bounds, yMin, yMax);
   drawLine(context, investmentValues, "#377f8f", bounds, yMin, yMax);
+  drawLine(context, realEstateValues, "#b27716", bounds, yMin, yMax);
 
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const selectedIndex = Math.max(0, selectedAge - projection[0].age);
@@ -1489,7 +1516,7 @@ function drawLineChart() {
     ((bounds.right - bounds.left) * selectedIndex) / Math.max(1, projection.length - 1);
   if (chartHoverActive) {
     const selectedRow = projection[selectedIndex] || projection[0];
-    context.strokeStyle = "#b27716";
+    context.strokeStyle = "#b8463d";
     context.lineWidth = 1.5;
     context.setLineDash([5, 4]);
     context.beginPath();
@@ -1498,8 +1525,8 @@ function drawLineChart() {
     context.stroke();
     context.setLineDash([]);
 
-    const tooltipWidth = 202;
-    const tooltipHeight = 112;
+    const tooltipWidth = 218;
+    const tooltipHeight = 154;
     const tooltipX = selectedX + tooltipWidth + 14 > bounds.right
       ? selectedX - tooltipWidth - 12
       : selectedX + 12;
@@ -1521,8 +1548,12 @@ function drawLineChart() {
     context.fillText(`現金資產 ${formatMoney(selectedRow.liquidAssets, true)}`, tooltipX + 10, tooltipY + 51);
     context.fillStyle = "#377f8f";
     context.fillText(`投資資產 ${formatMoney(selectedRow.investmentAssets, true)}`, tooltipX + 10, tooltipY + 70);
+    context.fillStyle = "#b27716";
+    context.fillText(`不動產 ${formatMoney(selectedRow.realEstateValue, true)}`, tooltipX + 10, tooltipY + 89);
+    context.fillStyle = "#1e2a2f";
+    context.fillText(`約當總和 ${formatMoney(selectedRow.equivalentAssets, true)}`, tooltipX + 10, tooltipY + 108);
     context.fillStyle = "#647276";
-    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 89);
+    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 127);
   }
 
   context.fillStyle = "#647276";
@@ -1549,9 +1580,13 @@ function drawLineChart() {
   context.fillStyle = "#1e2a2f";
   context.fillText("現金資產", bounds.left + 108, 10);
   context.fillStyle = "#377f8f";
-  context.fillRect(bounds.left + 184, 8, 14, 3);
+  context.fillRect(bounds.left, 27, 14, 3);
   context.fillStyle = "#1e2a2f";
-  context.fillText("投資資產", bounds.left + 204, 10);
+  context.fillText("投資資產", bounds.left + 20, 29);
+  context.fillStyle = "#b27716";
+  context.fillRect(bounds.left + 88, 27, 14, 3);
+  context.fillStyle = "#1e2a2f";
+  context.fillText("不動產", bounds.left + 108, 29);
 }
 
 function drawBarChart() {
@@ -1830,6 +1865,7 @@ function recalculate() {
   renderRecommendations();
   renderSummary();
   renderFinancialRatios();
+  renderEquivalentAssets();
   renderAgeTable();
   drawLineChart();
   drawBarChart();
@@ -2023,6 +2059,7 @@ function bindEvents() {
     drawLineChart();
     drawBarChart();
     renderFinancialRatios();
+    renderEquivalentAssets();
   });
   lineCanvas.addEventListener("pointerleave", () => {
     chartHoverActive = false;

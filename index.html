@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20260621a">
+  <link rel="stylesheet" href="./styles.css?v=20260621b">
 </head>
 <body>
   <main class="app-shell">
@@ -239,7 +239,12 @@
             <div class="chart-head">
               <div>
                 <h2>到100歲缺口與資產線</h2>
-                <p>深綠線為一次金保障缺口；墨色線為現金資產；藍綠線為投資資產。</p>
+                <p>深綠線為保障缺口；墨色為現金；藍綠為投資；金色為不動產。</p>
+              </div>
+              <div class="equivalent-assets">
+                <span id="equivalentAssetsAge">24歲約當現金總和</span>
+                <strong id="equivalentAssetsTotal">0</strong>
+                <small>現金＋投資＋不動產</small>
               </div>
               <input id="selectedAge" type="hidden" value="24">
             </div>
@@ -361,6 +366,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260621a"></script>
+  <script src="./app.js?v=20260621b"></script>
 </body>
 </html>

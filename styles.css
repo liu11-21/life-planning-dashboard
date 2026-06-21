@@ -463,6 +463,27 @@ button:focus {
   min-height: 65px;
 }
 
+.equivalent-assets {
+  border-left: 3px solid var(--amber);
+  flex: 0 0 auto;
+  min-width: 158px;
+  padding-left: 10px;
+  text-align: right;
+}
+
+.equivalent-assets span,
+.equivalent-assets small {
+  color: var(--muted);
+  display: block;
+  font-size: 11px;
+}
+
+.equivalent-assets strong {
+  display: block;
+  font-size: 20px;
+  margin: 2px 0;
+}
+
 canvas {
   display: block;
   height: 330px;
@@ -1159,6 +1180,11 @@ td select {
   .chart-head,
   .policy-head {
     display: grid;
+  }
+
+  .equivalent-assets {
+    min-width: 0;
+    text-align: left;
   }
 
   .button-row {
