@@ -809,12 +809,22 @@ function projectPlan() {
     investments.forEach((item) => {
       const active = isDateActive(financial.date, item.startDate, item.endDate);
       const startsThisYear = active && (!previousDate || previousDate < item.startDate);
-      if (active) {
+      const heldDuringYear = active || (
+        investmentBalances[item.id] > 0
+        && item.endDate
+        && previousDate
+        && previousDate < item.endDate
+        && financial.date >= item.endDate
+      );
+      if (heldDuringYear) {
         const cycleMultiplier = item.cycle === "monthly" ? 12 : item.cycle === "quarterly" ? 4 : 1;
-        const contribution = item.recurringAmount * cycleMultiplier + (startsThisYear ? item.lumpSum : 0);
+        const contribution = active
+          ? item.recurringAmount * cycleMultiplier + (startsThisYear ? item.lumpSum : 0)
+          : 0;
         investmentBalances[item.id] = investmentBalances[item.id] * (1 + item.returnRate / 100) + contribution;
         investmentContribution += contribution;
-      } else if (investmentBalances[item.id] > 0 && item.endDate && financial.date > item.endDate) {
+      }
+      if (investmentBalances[item.id] > 0 && item.endDate && financial.date >= item.endDate) {
         investmentLiquidation += investmentBalances[item.id];
         investmentBalances[item.id] = 0;
       }
@@ -851,6 +861,8 @@ function projectPlan() {
       investmentAssets: investmentTotal,
       heldAssetValue,
       debtValue,
+      investmentContribution,
+      investmentLiquidation,
       financialRatios,
       financeStage: financial.stageName,
       needs,
@@ -1456,8 +1468,9 @@ function drawLineChart() {
   const { context, width, height } = setupCanvas(canvas);
   const bounds = { left: 70, right: width - 18, top: 30, bottom: height - 38 };
   const gapValues = projection.map((row) => row.totalGap);
-  const assetValues = projection.map((row) => row.assets);
-  const allValues = [...gapValues, ...assetValues, 0];
+  const cashValues = projection.map((row) => row.liquidAssets);
+  const investmentValues = projection.map((row) => row.investmentAssets);
+  const allValues = [...gapValues, ...cashValues, ...investmentValues, 0];
   let yMin = Math.min(...allValues);
   let yMax = Math.max(...allValues);
   const padding = Math.max(1, (yMax - yMin) * 0.08);
@@ -1466,7 +1479,8 @@ function drawLineChart() {
 
   drawGrid(context, bounds, yMin, yMax, (value) => formatMoney(value, true));
   drawLine(context, gapValues, "#166c50", bounds, yMin, yMax);
-  drawLine(context, assetValues, "#26383d", bounds, yMin, yMax);
+  drawLine(context, cashValues, "#26383d", bounds, yMin, yMax);
+  drawLine(context, investmentValues, "#377f8f", bounds, yMin, yMax);
 
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const selectedIndex = Math.max(0, selectedAge - projection[0].age);
@@ -1485,7 +1499,7 @@ function drawLineChart() {
     context.setLineDash([]);
 
     const tooltipWidth = 202;
-    const tooltipHeight = 92;
+    const tooltipHeight = 112;
     const tooltipX = selectedX + tooltipWidth + 14 > bounds.right
       ? selectedX - tooltipWidth - 12
       : selectedX + 12;
@@ -1504,9 +1518,11 @@ function drawLineChart() {
     context.fillStyle = "#166c50";
     context.fillText(`一次金缺口 ${formatMoney(selectedRow.totalGap, true)}`, tooltipX + 10, tooltipY + 32);
     context.fillStyle = "#26383d";
-    context.fillText(`資產餘額 ${formatMoney(selectedRow.assets, true)}`, tooltipX + 10, tooltipY + 51);
+    context.fillText(`現金資產 ${formatMoney(selectedRow.liquidAssets, true)}`, tooltipX + 10, tooltipY + 51);
+    context.fillStyle = "#377f8f";
+    context.fillText(`投資資產 ${formatMoney(selectedRow.investmentAssets, true)}`, tooltipX + 10, tooltipY + 70);
     context.fillStyle = "#647276";
-    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 70);
+    context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 89);
   }
 
   context.fillStyle = "#647276";
@@ -1525,13 +1541,17 @@ function drawLineChart() {
   context.textAlign = "left";
   context.textBaseline = "middle";
   context.fillStyle = "#166c50";
-  context.fillRect(bounds.left, 8, 18, 3);
+  context.fillRect(bounds.left, 8, 14, 3);
   context.fillStyle = "#1e2a2f";
-  context.fillText("一次金保障缺口", bounds.left + 25, 10);
+  context.fillText("保障缺口", bounds.left + 20, 10);
   context.fillStyle = "#26383d";
-  context.fillRect(bounds.left + 112, 8, 18, 3);
+  context.fillRect(bounds.left + 88, 8, 14, 3);
   context.fillStyle = "#1e2a2f";
-  context.fillText("資產餘額", bounds.left + 137, 10);
+  context.fillText("現金資產", bounds.left + 108, 10);
+  context.fillStyle = "#377f8f";
+  context.fillRect(bounds.left + 184, 8, 14, 3);
+  context.fillStyle = "#1e2a2f";
+  context.fillText("投資資產", bounds.left + 204, 10);
 }
 
 function drawBarChart() {
