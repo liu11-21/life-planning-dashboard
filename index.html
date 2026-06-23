@@ -147,6 +147,22 @@
               投資年化報酬 %
               <input id="returnRate" type="number" min="-5" max="12" step="0.1" value="4">
             </label>
+            <label>
+              現金年利率 %
+              <input id="cashReturnRate" type="number" min="-5" max="12" step="0.001" value="0.695">
+            </label>
+            <label>
+              保費現金扣除門檻 %
+              <input id="premiumCashCapRate" type="number" min="0" max="100" step="0.1" value="0">
+            </label>
+            <label>
+              保費扣現起始年齡
+              <input id="premiumCashCapStartAge" type="number" min="0" max="100" step="1" value="52">
+            </label>
+            <label>
+              保費扣現結束年齡
+              <input id="premiumCashCapEndAge" type="number" min="0" max="100" step="1" value="65">
+            </label>
           </div>
           <div class="future-finance-block">
             <div class="future-finance-head">
@@ -414,6 +430,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260623a"></script>
+  <script src="./app.js?v=20260623b"></script>
 </body>
 </html>

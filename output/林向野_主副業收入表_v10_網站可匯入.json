@@ -12,6 +12,10 @@
       "dependentsCount": "0",
       "dependentSupportYears": "0",
       "assets": "200000",
+      "cashReturnRate": "0.695",
+      "premiumCashCapRate": "15",
+      "premiumCashCapStartAge": "52",
+      "premiumCashCapEndAge": "65",
       "incomeGrowth": "0",
       "inflation": "3",
       "returnRate": "6.52",
@@ -405,175 +409,182 @@
             "id": "contribution-00881-24",
             "startAge": 24,
             "endAge": 24,
-            "recurringAmount": 4123
+            "recurringAmount": 4122.9
           },
           {
             "id": "contribution-00881-25",
             "startAge": 25,
             "endAge": 25,
-            "recurringAmount": 4008
+            "recurringAmount": 4008.0
           },
           {
             "id": "contribution-00881-26",
             "startAge": 26,
             "endAge": 26,
-            "recurringAmount": 3947
+            "recurringAmount": 3947.3999999999996
           },
           {
             "id": "contribution-00881-27",
             "startAge": 27,
             "endAge": 27,
-            "recurringAmount": 7090
+            "recurringAmount": 7090.2
           },
           {
             "id": "contribution-00881-28",
             "startAge": 28,
             "endAge": 28,
-            "recurringAmount": 7026
+            "recurringAmount": 7025.7
           },
           {
             "id": "contribution-00881-29",
             "startAge": 29,
             "endAge": 29,
-            "recurringAmount": 6960
+            "recurringAmount": 6959.7
           },
           {
             "id": "contribution-00881-30",
             "startAge": 30,
             "endAge": 30,
-            "recurringAmount": 6888
+            "recurringAmount": 6888.0
           },
           {
             "id": "contribution-00881-31",
             "startAge": 31,
             "endAge": 31,
-            "recurringAmount": 13990
+            "recurringAmount": 13989.9
           },
           {
             "id": "contribution-00881-32",
             "startAge": 32,
             "endAge": 32,
-            "recurringAmount": 13919
+            "recurringAmount": 13919.1
           },
           {
             "id": "contribution-00881-33",
             "startAge": 33,
             "endAge": 33,
-            "recurringAmount": 13844
+            "recurringAmount": 13843.8
           },
           {
             "id": "contribution-00881-34",
             "startAge": 34,
             "endAge": 34,
-            "recurringAmount": 13766
+            "recurringAmount": 13766.1
           },
           {
             "id": "contribution-00881-35",
             "startAge": 35,
             "endAge": 35,
-            "recurringAmount": 13630
+            "recurringAmount": 13630.5
           },
           {
             "id": "contribution-00881-36",
             "startAge": 36,
             "endAge": 36,
-            "recurringAmount": 13546
+            "recurringAmount": 13545.9
           },
           {
             "id": "contribution-00881-37",
             "startAge": 37,
             "endAge": 37,
-            "recurringAmount": 13455
+            "recurringAmount": 13455.3
           },
           {
             "id": "contribution-00881-38",
             "startAge": 38,
             "endAge": 38,
-            "recurringAmount": 23617
+            "recurringAmount": 23616.6
           },
           {
             "id": "contribution-00881-39",
             "startAge": 39,
             "endAge": 39,
-            "recurringAmount": 23519
+            "recurringAmount": 23519.1
           },
           {
             "id": "contribution-00881-40",
             "startAge": 40,
             "endAge": 40,
-            "recurringAmount": 23382
+            "recurringAmount": 23382.0
           },
           {
             "id": "contribution-00881-41",
             "startAge": 41,
             "endAge": 41,
-            "recurringAmount": 23275
+            "recurringAmount": 23275.2
           },
           {
             "id": "contribution-00881-42",
             "startAge": 42,
             "endAge": 42,
-            "recurringAmount": 9394
+            "recurringAmount": 9394.199999999999
           },
           {
             "id": "contribution-00881-43",
             "startAge": 43,
             "endAge": 43,
-            "recurringAmount": 17093
+            "recurringAmount": 17093.399999999998
           },
           {
             "id": "contribution-00881-44",
             "startAge": 44,
             "endAge": 44,
-            "recurringAmount": 17314
+            "recurringAmount": 17314.2
           },
           {
             "id": "contribution-00881-45",
             "startAge": 45,
             "endAge": 45,
-            "recurringAmount": 3141
+            "recurringAmount": 3140.7
           },
           {
             "id": "contribution-00881-46",
             "startAge": 46,
             "endAge": 46,
-            "recurringAmount": 2680
+            "recurringAmount": 2680.2
           },
           {
             "id": "contribution-00881-47",
             "startAge": 47,
             "endAge": 47,
-            "recurringAmount": 2212
+            "recurringAmount": 2211.6
           },
           {
             "id": "contribution-00881-48",
             "startAge": 48,
             "endAge": 48,
-            "recurringAmount": 1748
+            "recurringAmount": 1747.5
           },
           {
             "id": "contribution-00881-49",
             "startAge": 49,
             "endAge": 49,
-            "recurringAmount": 1361
+            "recurringAmount": 1361.1
           },
           {
             "id": "contribution-00881-50",
             "startAge": 50,
             "endAge": 50,
-            "recurringAmount": 933
+            "recurringAmount": 933.0
           },
           {
             "id": "contribution-00881-51",
             "startAge": 51,
             "endAge": 51,
-            "recurringAmount": 620
+            "recurringAmount": 620.4
           },
           {
             "id": "contribution-00881-52",
             "startAge": 52,
             "endAge": 65,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
+          }
+        ],
+        "rebalanceSchedule": [
+          {
+            "id": "rebalance-00881-52",
+            "age": 52,
+            "targetWeight": 0.1
           }
         ],
         "startDate": "2026-06-21",
@@ -591,171 +602,172 @@
             "id": "contribution-00830-24",
             "startAge": 24,
             "endAge": 24,
-            "recurringAmount": 2749
+            "recurringAmount": 2748.6000000000004
           },
           {
             "id": "contribution-00830-25",
             "startAge": 25,
             "endAge": 25,
-            "recurringAmount": 2672
+            "recurringAmount": 2672.0
           },
           {
             "id": "contribution-00830-26",
             "startAge": 26,
             "endAge": 26,
-            "recurringAmount": 2632
+            "recurringAmount": 2631.6000000000004
           },
           {
             "id": "contribution-00830-27",
             "startAge": 27,
             "endAge": 27,
-            "recurringAmount": 4727
+            "recurringAmount": 4726.8
           },
           {
             "id": "contribution-00830-28",
             "startAge": 28,
             "endAge": 28,
-            "recurringAmount": 4684
+            "recurringAmount": 4683.8
           },
           {
             "id": "contribution-00830-29",
             "startAge": 29,
             "endAge": 29,
-            "recurringAmount": 4640
+            "recurringAmount": 4639.8
           },
           {
             "id": "contribution-00830-30",
             "startAge": 30,
             "endAge": 30,
-            "recurringAmount": 4592
+            "recurringAmount": 4592.0
           },
           {
             "id": "contribution-00830-31",
             "startAge": 31,
             "endAge": 31,
-            "recurringAmount": 9327
+            "recurringAmount": 9326.6
           },
           {
             "id": "contribution-00830-32",
             "startAge": 32,
             "endAge": 32,
-            "recurringAmount": 9279
+            "recurringAmount": 9279.4
           },
           {
             "id": "contribution-00830-33",
             "startAge": 33,
             "endAge": 33,
-            "recurringAmount": 9229
+            "recurringAmount": 9229.2
           },
           {
             "id": "contribution-00830-34",
             "startAge": 34,
             "endAge": 34,
-            "recurringAmount": 9177
+            "recurringAmount": 9177.4
           },
           {
             "id": "contribution-00830-35",
             "startAge": 35,
             "endAge": 35,
-            "recurringAmount": 9087
+            "recurringAmount": 9087.0
           },
           {
             "id": "contribution-00830-36",
             "startAge": 36,
             "endAge": 36,
-            "recurringAmount": 9031
+            "recurringAmount": 9030.6
           },
           {
             "id": "contribution-00830-37",
             "startAge": 37,
             "endAge": 37,
-            "recurringAmount": 8970
+            "recurringAmount": 8970.2
           },
           {
             "id": "contribution-00830-38",
             "startAge": 38,
             "endAge": 38,
-            "recurringAmount": 15744
+            "recurringAmount": 15744.400000000001
           },
           {
             "id": "contribution-00830-39",
             "startAge": 39,
             "endAge": 39,
-            "recurringAmount": 15679
+            "recurringAmount": 15679.400000000001
           },
           {
             "id": "contribution-00830-40",
             "startAge": 40,
             "endAge": 40,
-            "recurringAmount": 15588
+            "recurringAmount": 15588.0
           },
           {
             "id": "contribution-00830-41",
             "startAge": 41,
             "endAge": 41,
-            "recurringAmount": 15517
+            "recurringAmount": 15516.800000000001
           },
           {
             "id": "contribution-00830-42",
             "startAge": 42,
             "endAge": 42,
-            "recurringAmount": 6263
+            "recurringAmount": 6262.8
           },
           {
             "id": "contribution-00830-43",
             "startAge": 43,
             "endAge": 43,
-            "recurringAmount": 11396
+            "recurringAmount": 11395.6
           },
           {
             "id": "contribution-00830-44",
             "startAge": 44,
             "endAge": 44,
-            "recurringAmount": 11543
+            "recurringAmount": 11542.800000000001
           },
           {
             "id": "contribution-00830-45",
             "startAge": 45,
             "endAge": 45,
-            "recurringAmount": 2094
+            "recurringAmount": 2093.8
           },
           {
             "id": "contribution-00830-46",
             "startAge": 46,
             "endAge": 46,
-            "recurringAmount": 1787
+            "recurringAmount": 1786.8000000000002
           },
           {
             "id": "contribution-00830-47",
             "startAge": 47,
             "endAge": 47,
-            "recurringAmount": 1474
+            "recurringAmount": 1474.4
           },
           {
             "id": "contribution-00830-48",
             "startAge": 48,
             "endAge": 48,
-            "recurringAmount": 1165
+            "recurringAmount": 1165.0
           },
           {
             "id": "contribution-00830-49",
             "startAge": 49,
             "endAge": 49,
-            "recurringAmount": 907
+            "recurringAmount": 907.4000000000001
           },
           {
             "id": "contribution-00830-50",
             "startAge": 50,
             "endAge": 50,
-            "recurringAmount": 622
+            "recurringAmount": 622.0
           },
           {
             "id": "contribution-00830-51",
             "startAge": 51,
             "endAge": 51,
-            "recurringAmount": 414
+            "recurringAmount": 413.6
           }
         ],
+        "rebalanceSchedule": [],
         "startDate": "2026-06-21",
         "endDate": ""
       },
@@ -771,181 +783,193 @@
             "id": "contribution-VT-24",
             "startAge": 24,
             "endAge": 24,
-            "recurringAmount": 1374
+            "recurringAmount": 1374.3000000000002
           },
           {
             "id": "contribution-VT-25",
             "startAge": 25,
             "endAge": 25,
-            "recurringAmount": 1336
+            "recurringAmount": 1336.0
           },
           {
             "id": "contribution-VT-26",
             "startAge": 26,
             "endAge": 26,
-            "recurringAmount": 1316
+            "recurringAmount": 1315.8000000000002
           },
           {
             "id": "contribution-VT-27",
             "startAge": 27,
             "endAge": 27,
-            "recurringAmount": 2363
+            "recurringAmount": 2363.4
           },
           {
             "id": "contribution-VT-28",
             "startAge": 28,
             "endAge": 28,
-            "recurringAmount": 2342
+            "recurringAmount": 2341.9
           },
           {
             "id": "contribution-VT-29",
             "startAge": 29,
             "endAge": 29,
-            "recurringAmount": 2320
+            "recurringAmount": 2319.9
           },
           {
             "id": "contribution-VT-30",
             "startAge": 30,
             "endAge": 30,
-            "recurringAmount": 2296
+            "recurringAmount": 2296.0
           },
           {
             "id": "contribution-VT-31",
             "startAge": 31,
             "endAge": 31,
-            "recurringAmount": 4663
+            "recurringAmount": 4663.3
           },
           {
             "id": "contribution-VT-32",
             "startAge": 32,
             "endAge": 32,
-            "recurringAmount": 4640
+            "recurringAmount": 4639.7
           },
           {
             "id": "contribution-VT-33",
             "startAge": 33,
             "endAge": 33,
-            "recurringAmount": 4615
+            "recurringAmount": 4614.6
           },
           {
             "id": "contribution-VT-34",
             "startAge": 34,
             "endAge": 34,
-            "recurringAmount": 4589
+            "recurringAmount": 4588.7
           },
           {
             "id": "contribution-VT-35",
             "startAge": 35,
             "endAge": 35,
-            "recurringAmount": 4544
+            "recurringAmount": 4543.5
           },
           {
             "id": "contribution-VT-36",
             "startAge": 36,
             "endAge": 36,
-            "recurringAmount": 4515
+            "recurringAmount": 4515.3
           },
           {
             "id": "contribution-VT-37",
             "startAge": 37,
             "endAge": 37,
-            "recurringAmount": 4485
+            "recurringAmount": 4485.1
           },
           {
             "id": "contribution-VT-38",
             "startAge": 38,
             "endAge": 38,
-            "recurringAmount": 7872
+            "recurringAmount": 7872.200000000001
           },
           {
             "id": "contribution-VT-39",
             "startAge": 39,
             "endAge": 39,
-            "recurringAmount": 7840
+            "recurringAmount": 7839.700000000001
           },
           {
             "id": "contribution-VT-40",
             "startAge": 40,
             "endAge": 40,
-            "recurringAmount": 7794
+            "recurringAmount": 7794.0
           },
           {
             "id": "contribution-VT-41",
             "startAge": 41,
             "endAge": 41,
-            "recurringAmount": 7758
+            "recurringAmount": 7758.400000000001
           },
           {
             "id": "contribution-VT-42",
             "startAge": 42,
             "endAge": 42,
-            "recurringAmount": 3131
+            "recurringAmount": 3131.4
           },
           {
             "id": "contribution-VT-43",
             "startAge": 43,
             "endAge": 43,
-            "recurringAmount": 5698
+            "recurringAmount": 5697.8
           },
           {
             "id": "contribution-VT-44",
             "startAge": 44,
             "endAge": 44,
-            "recurringAmount": 5771
+            "recurringAmount": 5771.400000000001
           },
           {
             "id": "contribution-VT-45",
             "startAge": 45,
             "endAge": 45,
-            "recurringAmount": 1047
+            "recurringAmount": 1046.9
           },
           {
             "id": "contribution-VT-46",
             "startAge": 46,
             "endAge": 46,
-            "recurringAmount": 893
+            "recurringAmount": 893.4000000000001
           },
           {
             "id": "contribution-VT-47",
             "startAge": 47,
             "endAge": 47,
-            "recurringAmount": 737
+            "recurringAmount": 737.2
           },
           {
             "id": "contribution-VT-48",
             "startAge": 48,
             "endAge": 48,
-            "recurringAmount": 582
+            "recurringAmount": 582.5
           },
           {
             "id": "contribution-VT-49",
             "startAge": 49,
             "endAge": 49,
-            "recurringAmount": 454
+            "recurringAmount": 453.70000000000005
           },
           {
             "id": "contribution-VT-50",
             "startAge": 50,
             "endAge": 50,
-            "recurringAmount": 311
+            "recurringAmount": 311.0
           },
           {
             "id": "contribution-VT-51",
             "startAge": 51,
             "endAge": 51,
-            "recurringAmount": 207
+            "recurringAmount": 206.8
           },
           {
             "id": "contribution-VT-52",
             "startAge": 52,
             "endAge": 65,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
           },
           {
             "id": "contribution-VT-66",
             "startAge": 66,
             "endAge": 100,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
+          }
+        ],
+        "rebalanceSchedule": [
+          {
+            "id": "rebalance-VT-52",
+            "age": 52,
+            "targetWeight": 0.15
+          },
+          {
+            "id": "rebalance-VT-66",
+            "age": 66,
+            "targetWeight": 0.1
           }
         ],
         "startDate": "2026-06-21",
@@ -963,181 +987,193 @@
             "id": "contribution-0050-24",
             "startAge": 24,
             "endAge": 24,
-            "recurringAmount": 2749
+            "recurringAmount": 2748.6000000000004
           },
           {
             "id": "contribution-0050-25",
             "startAge": 25,
             "endAge": 25,
-            "recurringAmount": 2672
+            "recurringAmount": 2672.0
           },
           {
             "id": "contribution-0050-26",
             "startAge": 26,
             "endAge": 26,
-            "recurringAmount": 2632
+            "recurringAmount": 2631.6000000000004
           },
           {
             "id": "contribution-0050-27",
             "startAge": 27,
             "endAge": 27,
-            "recurringAmount": 4727
+            "recurringAmount": 4726.8
           },
           {
             "id": "contribution-0050-28",
             "startAge": 28,
             "endAge": 28,
-            "recurringAmount": 4684
+            "recurringAmount": 4683.8
           },
           {
             "id": "contribution-0050-29",
             "startAge": 29,
             "endAge": 29,
-            "recurringAmount": 4640
+            "recurringAmount": 4639.8
           },
           {
             "id": "contribution-0050-30",
             "startAge": 30,
             "endAge": 30,
-            "recurringAmount": 4592
+            "recurringAmount": 4592.0
           },
           {
             "id": "contribution-0050-31",
             "startAge": 31,
             "endAge": 31,
-            "recurringAmount": 9327
+            "recurringAmount": 9326.6
           },
           {
             "id": "contribution-0050-32",
             "startAge": 32,
             "endAge": 32,
-            "recurringAmount": 9279
+            "recurringAmount": 9279.4
           },
           {
             "id": "contribution-0050-33",
             "startAge": 33,
             "endAge": 33,
-            "recurringAmount": 9229
+            "recurringAmount": 9229.2
           },
           {
             "id": "contribution-0050-34",
             "startAge": 34,
             "endAge": 34,
-            "recurringAmount": 9177
+            "recurringAmount": 9177.4
           },
           {
             "id": "contribution-0050-35",
             "startAge": 35,
             "endAge": 35,
-            "recurringAmount": 9087
+            "recurringAmount": 9087.0
           },
           {
             "id": "contribution-0050-36",
             "startAge": 36,
             "endAge": 36,
-            "recurringAmount": 9031
+            "recurringAmount": 9030.6
           },
           {
             "id": "contribution-0050-37",
             "startAge": 37,
             "endAge": 37,
-            "recurringAmount": 8970
+            "recurringAmount": 8970.2
           },
           {
             "id": "contribution-0050-38",
             "startAge": 38,
             "endAge": 38,
-            "recurringAmount": 15744
+            "recurringAmount": 15744.400000000001
           },
           {
             "id": "contribution-0050-39",
             "startAge": 39,
             "endAge": 39,
-            "recurringAmount": 15679
+            "recurringAmount": 15679.400000000001
           },
           {
             "id": "contribution-0050-40",
             "startAge": 40,
             "endAge": 40,
-            "recurringAmount": 15588
+            "recurringAmount": 15588.0
           },
           {
             "id": "contribution-0050-41",
             "startAge": 41,
             "endAge": 41,
-            "recurringAmount": 15517
+            "recurringAmount": 15516.800000000001
           },
           {
             "id": "contribution-0050-42",
             "startAge": 42,
             "endAge": 42,
-            "recurringAmount": 6263
+            "recurringAmount": 6262.8
           },
           {
             "id": "contribution-0050-43",
             "startAge": 43,
             "endAge": 43,
-            "recurringAmount": 11396
+            "recurringAmount": 11395.6
           },
           {
             "id": "contribution-0050-44",
             "startAge": 44,
             "endAge": 44,
-            "recurringAmount": 11543
+            "recurringAmount": 11542.800000000001
           },
           {
             "id": "contribution-0050-45",
             "startAge": 45,
             "endAge": 45,
-            "recurringAmount": 2094
+            "recurringAmount": 2093.8
           },
           {
             "id": "contribution-0050-46",
             "startAge": 46,
             "endAge": 46,
-            "recurringAmount": 1787
+            "recurringAmount": 1786.8000000000002
           },
           {
             "id": "contribution-0050-47",
             "startAge": 47,
             "endAge": 47,
-            "recurringAmount": 1474
+            "recurringAmount": 1474.4
           },
           {
             "id": "contribution-0050-48",
             "startAge": 48,
             "endAge": 48,
-            "recurringAmount": 1165
+            "recurringAmount": 1165.0
           },
           {
             "id": "contribution-0050-49",
             "startAge": 49,
             "endAge": 49,
-            "recurringAmount": 907
+            "recurringAmount": 907.4000000000001
           },
           {
             "id": "contribution-0050-50",
             "startAge": 50,
             "endAge": 50,
-            "recurringAmount": 622
+            "recurringAmount": 622.0
           },
           {
             "id": "contribution-0050-51",
             "startAge": 51,
             "endAge": 51,
-            "recurringAmount": 414
+            "recurringAmount": 413.6
           },
           {
             "id": "contribution-0050-52",
             "startAge": 52,
             "endAge": 65,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
           },
           {
             "id": "contribution-0050-66",
             "startAge": 66,
             "endAge": 100,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
+          }
+        ],
+        "rebalanceSchedule": [
+          {
+            "id": "rebalance-0050-52",
+            "age": 52,
+            "targetWeight": 0.15
+          },
+          {
+            "id": "rebalance-0050-66",
+            "age": 66,
+            "targetWeight": 0.1
           }
         ],
         "startDate": "2026-06-21",
@@ -1155,181 +1191,193 @@
             "id": "contribution-00878-24",
             "startAge": 24,
             "endAge": 24,
-            "recurringAmount": 2749
+            "recurringAmount": 2748.6000000000004
           },
           {
             "id": "contribution-00878-25",
             "startAge": 25,
             "endAge": 25,
-            "recurringAmount": 2672
+            "recurringAmount": 2672.0
           },
           {
             "id": "contribution-00878-26",
             "startAge": 26,
             "endAge": 26,
-            "recurringAmount": 2632
+            "recurringAmount": 2631.6000000000004
           },
           {
             "id": "contribution-00878-27",
             "startAge": 27,
             "endAge": 27,
-            "recurringAmount": 4727
+            "recurringAmount": 4726.8
           },
           {
             "id": "contribution-00878-28",
             "startAge": 28,
             "endAge": 28,
-            "recurringAmount": 4684
+            "recurringAmount": 4683.8
           },
           {
             "id": "contribution-00878-29",
             "startAge": 29,
             "endAge": 29,
-            "recurringAmount": 4640
+            "recurringAmount": 4639.8
           },
           {
             "id": "contribution-00878-30",
             "startAge": 30,
             "endAge": 30,
-            "recurringAmount": 4592
+            "recurringAmount": 4592.0
           },
           {
             "id": "contribution-00878-31",
             "startAge": 31,
             "endAge": 31,
-            "recurringAmount": 9327
+            "recurringAmount": 9326.6
           },
           {
             "id": "contribution-00878-32",
             "startAge": 32,
             "endAge": 32,
-            "recurringAmount": 9279
+            "recurringAmount": 9279.4
           },
           {
             "id": "contribution-00878-33",
             "startAge": 33,
             "endAge": 33,
-            "recurringAmount": 9229
+            "recurringAmount": 9229.2
           },
           {
             "id": "contribution-00878-34",
             "startAge": 34,
             "endAge": 34,
-            "recurringAmount": 9177
+            "recurringAmount": 9177.4
           },
           {
             "id": "contribution-00878-35",
             "startAge": 35,
             "endAge": 35,
-            "recurringAmount": 9087
+            "recurringAmount": 9087.0
           },
           {
             "id": "contribution-00878-36",
             "startAge": 36,
             "endAge": 36,
-            "recurringAmount": 9031
+            "recurringAmount": 9030.6
           },
           {
             "id": "contribution-00878-37",
             "startAge": 37,
             "endAge": 37,
-            "recurringAmount": 8970
+            "recurringAmount": 8970.2
           },
           {
             "id": "contribution-00878-38",
             "startAge": 38,
             "endAge": 38,
-            "recurringAmount": 15744
+            "recurringAmount": 15744.400000000001
           },
           {
             "id": "contribution-00878-39",
             "startAge": 39,
             "endAge": 39,
-            "recurringAmount": 15679
+            "recurringAmount": 15679.400000000001
           },
           {
             "id": "contribution-00878-40",
             "startAge": 40,
             "endAge": 40,
-            "recurringAmount": 15588
+            "recurringAmount": 15588.0
           },
           {
             "id": "contribution-00878-41",
             "startAge": 41,
             "endAge": 41,
-            "recurringAmount": 15517
+            "recurringAmount": 15516.800000000001
           },
           {
             "id": "contribution-00878-42",
             "startAge": 42,
             "endAge": 42,
-            "recurringAmount": 6263
+            "recurringAmount": 6262.8
           },
           {
             "id": "contribution-00878-43",
             "startAge": 43,
             "endAge": 43,
-            "recurringAmount": 11396
+            "recurringAmount": 11395.6
           },
           {
             "id": "contribution-00878-44",
             "startAge": 44,
             "endAge": 44,
-            "recurringAmount": 11543
+            "recurringAmount": 11542.800000000001
           },
           {
             "id": "contribution-00878-45",
             "startAge": 45,
             "endAge": 45,
-            "recurringAmount": 2094
+            "recurringAmount": 2093.8
           },
           {
             "id": "contribution-00878-46",
             "startAge": 46,
             "endAge": 46,
-            "recurringAmount": 1787
+            "recurringAmount": 1786.8000000000002
           },
           {
             "id": "contribution-00878-47",
             "startAge": 47,
             "endAge": 47,
-            "recurringAmount": 1474
+            "recurringAmount": 1474.4
           },
           {
             "id": "contribution-00878-48",
             "startAge": 48,
             "endAge": 48,
-            "recurringAmount": 1165
+            "recurringAmount": 1165.0
           },
           {
             "id": "contribution-00878-49",
             "startAge": 49,
             "endAge": 49,
-            "recurringAmount": 907
+            "recurringAmount": 907.4000000000001
           },
           {
             "id": "contribution-00878-50",
             "startAge": 50,
             "endAge": 50,
-            "recurringAmount": 622
+            "recurringAmount": 622.0
           },
           {
             "id": "contribution-00878-51",
             "startAge": 51,
             "endAge": 51,
-            "recurringAmount": 414
+            "recurringAmount": 413.6
           },
           {
             "id": "contribution-00878-52",
             "startAge": 52,
             "endAge": 65,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
           },
           {
             "id": "contribution-00878-66",
             "startAge": 66,
             "endAge": 100,
-            "recurringAmount": 0
+            "recurringAmount": 0.0
+          }
+        ],
+        "rebalanceSchedule": [
+          {
+            "id": "rebalance-00878-52",
+            "age": 52,
+            "targetWeight": 0.6
+          },
+          {
+            "id": "rebalance-00878-66",
+            "age": 66,
+            "targetWeight": 0.8
           }
         ],
         "startDate": "2026-06-21",
@@ -1366,12 +1414,6 @@
           {
             "id": "premium-24",
             "startAge": 24,
-            "endAge": 31,
-            "annualPremium": 22180
-          },
-          {
-            "id": "premium-33",
-            "startAge": 33,
             "endAge": 43,
             "annualPremium": 22180
           }
@@ -1382,21 +1424,21 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-medical-86097",
+            "id": "benefit-medical-68663",
             "category": "medical",
             "type": "住院手術",
             "amount": 160000,
             "unit": "perEvent"
           },
           {
-            "id": "benefit-medical-29316",
+            "id": "benefit-medical-85782",
             "category": "medical",
             "type": "門診手術",
             "amount": 160000,
             "unit": "perEvent"
           },
           {
-            "id": "benefit-medical-52934",
+            "id": "benefit-medical-43966",
             "category": "medical",
             "type": "每次給付",
             "amount": 80000,
@@ -1419,12 +1461,6 @@
           {
             "id": "premium-24",
             "startAge": 24,
-            "endAge": 31,
-            "annualPremium": 1250
-          },
-          {
-            "id": "premium-33",
-            "startAge": 33,
             "endAge": 75,
             "annualPremium": 1250
           }
@@ -1435,28 +1471,28 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-accident-62278",
+            "id": "benefit-accident-67255",
             "category": "accident",
             "type": "意外身故",
             "amount": 2000000,
             "unit": "lump"
           },
           {
-            "id": "benefit-accident-290",
+            "id": "benefit-accident-62219",
             "category": "accident",
             "type": "意外失能",
             "amount": 2000000,
             "unit": "lump"
           },
           {
-            "id": "benefit-accident-4362",
+            "id": "benefit-accident-30117",
             "category": "accident",
             "type": "每月給付",
             "amount": 40000,
             "unit": "monthly"
           },
           {
-            "id": "benefit-accident-22897",
+            "id": "benefit-accident-78659",
             "category": "accident",
             "type": "重大燒燙傷",
             "amount": 1000000,
@@ -1479,12 +1515,6 @@
           {
             "id": "premium-24",
             "startAge": 24,
-            "endAge": 31,
-            "annualPremium": 1400
-          },
-          {
-            "id": "premium-33",
-            "startAge": 33,
             "endAge": 75,
             "annualPremium": 1400
           }
@@ -1495,7 +1525,7 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-accident-11111",
+            "id": "benefit-accident-35130",
             "category": "accident",
             "type": "實支實付限額",
             "amount": 100000,
@@ -1540,21 +1570,21 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-accident-28862",
+            "id": "benefit-accident-93221",
             "category": "accident",
             "type": "意外身故",
             "amount": 1000000,
             "unit": "lump"
           },
           {
-            "id": "benefit-accident-65216",
+            "id": "benefit-accident-99321",
             "category": "accident",
             "type": "骨折給付",
             "amount": 800000,
             "unit": "perEvent"
           },
           {
-            "id": "benefit-accident-14136",
+            "id": "benefit-accident-40342",
             "category": "accident",
             "type": "每次給付",
             "amount": 300000,
@@ -1593,14 +1623,14 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-accident-8000",
+            "id": "benefit-accident-70584",
             "category": "accident",
             "type": "意外住院日額",
             "amount": 2000,
             "unit": "daily"
           },
           {
-            "id": "benefit-accident-66359",
+            "id": "benefit-accident-98178",
             "category": "accident",
             "type": "骨折給付",
             "amount": 60000,
@@ -1879,14 +1909,14 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-critical-16565",
+            "id": "benefit-critical-13280",
             "category": "critical",
             "type": "重大疾病一次金",
             "amount": 2600000,
             "unit": "lump"
           },
           {
-            "id": "benefit-critical-69871",
+            "id": "benefit-critical-92742",
             "category": "critical",
             "type": "重大傷病一次金",
             "amount": 400000,
@@ -2165,14 +2195,14 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-cancer-37189",
+            "id": "benefit-cancer-20146",
             "category": "cancer",
             "type": "初次罹癌一次金",
             "amount": 2000000,
             "unit": "lump"
           },
           {
-            "id": "benefit-cancer-86632",
+            "id": "benefit-cancer-71407",
             "category": "cancer",
             "type": "癌症一次金",
             "amount": 400000,
@@ -2271,21 +2301,21 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-medical-30474",
+            "id": "benefit-medical-32608",
             "category": "medical",
             "type": "住院日額",
             "amount": 3000,
             "unit": "daily"
           },
           {
-            "id": "benefit-medical-43716",
+            "id": "benefit-medical-86325",
             "category": "medical",
             "type": "實支實付限額",
             "amount": 300000,
             "unit": "lump"
           },
           {
-            "id": "benefit-medical-97177",
+            "id": "benefit-medical-86049",
             "category": "medical",
             "type": "門診手術",
             "amount": 25000,
@@ -2624,7 +2654,7 @@
         "note": "",
         "benefits": [
           {
-            "id": "benefit-ltc-73438",
+            "id": "benefit-ltc-2347",
             "category": "ltc",
             "type": "長照一次金",
             "amount": 1800000,

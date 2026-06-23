@@ -63,6 +63,10 @@ const INPUT_IDS = [
   "dependentsCount",
   "dependentSupportYears",
   "assets",
+  "cashReturnRate",
+  "premiumCashCapRate",
+  "premiumCashCapStartAge",
+  "premiumCashCapEndAge",
   "incomeGrowth",
   "inflation",
   "returnRate",
@@ -428,6 +432,7 @@ function blankInvestment() {
     cycle: "monthly",
     returnRate: input.returnRate,
     contributionSchedule: [],
+    rebalanceSchedule: [],
     startDate: input.planStartDate,
     endDate: ""
   };
@@ -492,6 +497,11 @@ function normalizeInvestments(list) {
       startAge: Number(row.startAge) || readInputs().currentAge,
       endAge: Number(row.endAge) || Number(row.startAge) || readInputs().currentAge,
       recurringAmount: Number(row.recurringAmount) || 0
+    })) : [],
+    rebalanceSchedule: Array.isArray(item.rebalanceSchedule) ? item.rebalanceSchedule.map((row) => ({
+      id: row.id || makeId("rebalance"),
+      age: Number(row.age) || readInputs().currentAge,
+      targetWeight: Number(row.targetWeight) || 0
     })) : [],
     startDate: item.startDate || readInputs().planStartDate,
     endDate: item.endDate || ""
@@ -924,6 +934,16 @@ function annualCycleMultiplier(cycle) {
   return cycle === "monthly" ? 12 : cycle === "quarterly" ? 4 : 1;
 }
 
+function periodicContributionFutureValue(amount, annualRate, cycle) {
+  const periods = annualCycleMultiplier(cycle);
+  const periodicAmount = Math.max(0, Number(amount) || 0);
+  if (!periods || !periodicAmount) return 0;
+  const rate = Number(annualRate) / 100;
+  if (!rate) return periodicAmount * periods;
+  const periodRate = Math.pow(1 + rate, 1 / periods) - 1;
+  return periodicAmount * ((Math.pow(1 + periodRate, periods) - 1) / periodRate) * (1 + periodRate);
+}
+
 function recurringInvestmentAmountAtAge(item, age) {
   if (!Array.isArray(item.contributionSchedule) || !item.contributionSchedule.length) {
     return item.recurringAmount;
@@ -951,6 +971,11 @@ function projectPlan() {
     const expense = financial.expense;
     const active = activePoliciesAt(age);
     const premium = active.reduce((sum, policy) => sum + premiumAtAge(policy, age), 0);
+    const premiumCashCharge = input.premiumCashCapRate > 0
+      && age >= input.premiumCashCapStartAge
+      && age <= input.premiumCashCapEndAge
+      ? Math.max(0, premium - income * input.premiumCashCapRate / 100)
+      : 0;
     const needs = needsAtAge(age, input, financial);
     const coverage = Object.fromEntries(CATEGORY_DEFS.map((item) => [item.key, 0]));
 
@@ -966,6 +991,21 @@ function projectPlan() {
     });
 
     const previousDate = age === input.currentAge ? "" : dateForAge(age - 1, input);
+    const rebalanceRows = investments
+      .map((item) => ({
+        id: item.id,
+        row: item.rebalanceSchedule?.find((schedule) => schedule.age === age)
+      }))
+      .filter(({ row }) => row);
+    if (rebalanceRows.length) {
+      const rebalanceTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
+      Object.keys(investmentBalances).forEach((id) => {
+        investmentBalances[id] = 0;
+      });
+      rebalanceRows.forEach(({ id, row }) => {
+        investmentBalances[id] = rebalanceTotal * Math.max(0, Number(row.targetWeight) || 0);
+      });
+    }
     let investmentContribution = 0;
     let investmentLiquidation = 0;
     investments.forEach((item) => {
@@ -980,11 +1020,13 @@ function projectPlan() {
       );
       if (heldDuringYear) {
         const cycleMultiplier = annualCycleMultiplier(item.cycle);
-        const contribution = active
-          ? recurringInvestmentAmountAtAge(item, age) * cycleMultiplier + (startsThisYear ? item.lumpSum : 0)
-          : 0;
-        investmentBalances[item.id] = investmentBalances[item.id] * (1 + item.returnRate / 100) + contribution;
-        investmentContribution += contribution;
+        const recurringAmount = active ? recurringInvestmentAmountAtAge(item, age) : 0;
+        const recurringContribution = recurringAmount * cycleMultiplier;
+        const lumpSum = active && startsThisYear ? item.lumpSum : 0;
+        investmentBalances[item.id] = investmentBalances[item.id] * (1 + item.returnRate / 100)
+          + lumpSum * (1 + item.returnRate / 100)
+          + periodicContributionFutureValue(recurringAmount, item.returnRate, item.cycle);
+        investmentContribution += recurringContribution + lumpSum;
       }
       if (investmentBalances[item.id] > 0 && item.endDate && financial.date >= item.endDate) {
         investmentLiquidation += investmentBalances[item.id];
@@ -1018,8 +1060,10 @@ function projectPlan() {
     const totalInvestmentContribution = investmentContribution + policyInvestmentContribution;
     const totalInvestmentLiquidation = investmentLiquidation + policyInvestmentLiquidation;
 
-    liquidBalance = liquidBalance * (1 + input.returnRate / 100)
-      + income - expense - premium - totalInvestmentContribution + totalInvestmentLiquidation;
+    const cashGrowthRate = Math.max(-100, Number(input.cashReturnRate) || 0) / 100;
+    const liquidGrowthFactor = age === input.currentAge ? 1 : 1 + cashGrowthRate;
+    liquidBalance = liquidBalance * liquidGrowthFactor
+      + income - expense - premium - premiumCashCharge - totalInvestmentContribution + totalInvestmentLiquidation;
     const marketInvestmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
     const policyInvestmentTotal = Object.values(policyInvestmentBalances).reduce((sum, value) => sum + value, 0);
     const investmentTotal = marketInvestmentTotal + policyInvestmentTotal;
@@ -1034,6 +1078,7 @@ function projectPlan() {
     const financialRatios = financialRatiosAtAge(
       financial,
       premium,
+      premiumCashCharge,
       liquidBalance,
       investmentTotal,
       heldAssetValue,
@@ -2131,6 +2176,10 @@ function createEmptyPlanState() {
     maritalStatus: "single",
     inflation: "2",
     returnRate: "4",
+    cashReturnRate: "0.695",
+    premiumCashCapRate: "0",
+    premiumCashCapStartAge: "52",
+    premiumCashCapEndAge: "65",
     incomeGrowthMode: "compound",
     sideIncomeGrowthMode: "compound",
     incomeType: "salary",
