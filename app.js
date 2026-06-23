@@ -77,6 +77,14 @@ const INPUT_IDS = [
 const DATE_IDS = ["planStartDate", "incomeStartDate", "incomeEndDate"];
 const GROWTH_MODE_IDS = ["incomeGrowthMode", "sideIncomeGrowthMode"];
 
+const INCOME_TYPE_OPTIONS = {
+  salary: "月薪制",
+  annual: "年收制",
+  project: "月薪／計畫制",
+  consulting: "顧問費為主",
+  passive: "被動為主"
+};
+
 const DESCRIPTION_IDS = [
   "deathDescription",
   "accidentDescription",
@@ -325,6 +333,7 @@ function readInputs() {
     values[id] = document.getElementById(id).value;
   });
   values.maritalStatus = document.getElementById("maritalStatus").value;
+  values.incomeType = document.getElementById("incomeType").value;
   return values;
 }
 
@@ -377,6 +386,8 @@ function blankFinanceStage() {
     sideIncomeGrowth: input.sideIncomeGrowth,
     incomeGrowthMode: input.incomeGrowthMode,
     sideIncomeGrowthMode: input.sideIncomeGrowthMode,
+    incomeType: input.incomeType,
+    livingExpenseRate: 0,
     note: ""
   };
 }
@@ -395,6 +406,10 @@ function normalizeFinanceStages(list) {
     sideIncomeGrowth: Math.max(-100, Number(stage.sideIncomeGrowth) || 0),
     incomeGrowthMode: stage.incomeGrowthMode === "simple" ? "simple" : "compound",
     sideIncomeGrowthMode: stage.sideIncomeGrowthMode === "simple" ? "simple" : "compound",
+    incomeType: Object.prototype.hasOwnProperty.call(INCOME_TYPE_OPTIONS, stage.incomeType)
+      ? stage.incomeType
+      : "salary",
+    livingExpenseRate: Math.max(0, Number(stage.livingExpenseRate) || 0),
     note: stage.note || ""
   }));
 }
@@ -412,6 +427,7 @@ function blankInvestment() {
     recurringAmount: 0,
     cycle: "monthly",
     returnRate: input.returnRate,
+    contributionSchedule: [],
     startDate: input.planStartDate,
     endDate: ""
   };
@@ -471,6 +487,12 @@ function normalizeInvestments(list) {
     recurringAmount: Number(item.recurringAmount) || 0,
     cycle: ["monthly", "quarterly", "yearly"].includes(item.cycle) ? item.cycle : "monthly",
     returnRate: Number(item.returnRate) || 0,
+    contributionSchedule: Array.isArray(item.contributionSchedule) ? item.contributionSchedule.map((row) => ({
+      id: row.id || makeId("contribution"),
+      startAge: Number(row.startAge) || readInputs().currentAge,
+      endAge: Number(row.endAge) || Number(row.startAge) || readInputs().currentAge,
+      recurringAmount: Number(row.recurringAmount) || 0
+    })) : [],
     startDate: item.startDate || readInputs().planStartDate,
     endDate: item.endDate || ""
   }));
@@ -568,14 +590,18 @@ function debtPaymentForYear(item, date) {
   return total;
 }
 
-function estimateIncomeTax(income, input) {
+function hasSalaryDeduction(incomeType) {
+  return ["salary", "project"].includes(incomeType || "salary");
+}
+
+function estimateIncomeTax(income, input, incomeType = "salary") {
   const annualIncome = Math.max(0, Number(income) || 0);
   if (!annualIncome) return 0;
   const spouseCount = input.maritalStatus === "married" ? 1 : 0;
   const familyMembers = 1 + spouseCount + Math.max(0, Math.floor(input.dependentsCount));
   const exemption = familyMembers * 101000;
   const standardDeduction = spouseCount ? 272000 : 136000;
-  const salaryDeduction = Math.min(227000, annualIncome);
+  const salaryDeduction = hasSalaryDeduction(incomeType) ? Math.min(227000, annualIncome) : 0;
   const taxableIncome = Math.max(0, annualIncome - exemption - standardDeduction - salaryDeduction);
   const bracket = INCOME_TAX_BRACKETS_115.find((item) => taxableIncome <= item.ceiling);
   return Math.max(0, taxableIncome * bracket.rate - bracket.deduction);
@@ -613,6 +639,10 @@ function growthModeLabel(mode) {
   return mode === "simple" ? "單利" : "複利";
 }
 
+function incomeTypeLabel(type) {
+  return INCOME_TYPE_OPTIONS[type] || INCOME_TYPE_OPTIONS.salary;
+}
+
 function assetValueAtDate(item, date) {
   if (!isDateActive(date, item.startDate, item.endDate)) return 0;
   const yearsHeld = monthsBetween(item.startDate, date) / 12;
@@ -629,16 +659,18 @@ function fixedExpenseAtDate(item, date) {
   return Math.max(0, applyAnnualChange(item.monthlyAmount * 12, item.annualGrowthRate, yearsActive, item.growthMode));
 }
 
-function annualExpenseAtDate(date, input, income = 0) {
+function annualExpenseAtDate(date, input, income = 0, incomeType = input.incomeType, livingExpenseRate = 0) {
   const baseYear = Math.max(0, new Date(date).getFullYear() - new Date(input.planStartDate).getFullYear());
   const inflationFactor = Math.pow(1 + input.inflation / 100, baseYear);
-  const livingExpense = input.monthlyLivingExpense * 12 * inflationFactor;
+  const livingExpense = livingExpenseRate > 0
+    ? Math.max(0, Number(income) || 0) * livingExpenseRate / 100
+    : input.monthlyLivingExpense * 12 * inflationFactor;
   const resourceExpense = [...heldAssets, ...debtItems]
     .filter((item) => isDateActive(date, item.startDate, item.endDate))
     .flatMap((item) => item.costs)
     .reduce((sum, cost) => sum + cost.annualAmount, 0);
   const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
-  const incomeTax = estimateIncomeTax(income, input);
+  const incomeTax = estimateIncomeTax(income, input, incomeType);
   const assetTax = heldAssets.reduce((sum, item) => sum + assetTaxAtDate(item, date), 0);
   const fixedExpense = fixedExpenses.reduce((sum, item) => sum + fixedExpenseAtDate(item, date), 0);
   return {
@@ -674,7 +706,7 @@ function financialAtAge(age, input) {
       activeStage.sideIncomeGrowthMode
     ));
     const income = mainIncome + sideIncome;
-    const expenses = annualExpenseAtDate(date, input, income);
+    const expenses = annualExpenseAtDate(date, input, income, activeStage.incomeType, activeStage.livingExpenseRate);
     const stageExtraExpense = activeStage.extraMonthlyExpense * 12
       * Math.pow(1 + input.inflation / 100, stageYear);
     return {
@@ -703,7 +735,7 @@ function financialAtAge(age, input) {
     ? Math.max(0, applyAnnualChange(input.sideIncome, input.sideIncomeGrowth, baseYear, input.sideIncomeGrowthMode))
     : 0;
   const income = mainIncome + sideIncome;
-  const expenses = annualExpenseAtDate(date, input, income);
+    const expenses = annualExpenseAtDate(date, input, income, input.incomeType);
   return {
     date,
     income,
@@ -726,7 +758,7 @@ function estimateStageAnnualExpense(stage) {
   const startDate = stage.startDate || input.planStartDate;
   const income = Math.max(0, Number(stage.annualIncome) || 0)
     + Math.max(0, Number(stage.sideIncome) || 0);
-  const expenses = annualExpenseAtDate(startDate, input, income);
+  const expenses = annualExpenseAtDate(startDate, input, income, stage.incomeType, stage.livingExpenseRate);
   const estimatedAge = Math.min(100, Math.max(
     input.currentAge,
     input.currentAge + Math.floor(monthsBetween(input.planStartDate, startDate) / 12)
@@ -892,6 +924,16 @@ function annualCycleMultiplier(cycle) {
   return cycle === "monthly" ? 12 : cycle === "quarterly" ? 4 : 1;
 }
 
+function recurringInvestmentAmountAtAge(item, age) {
+  if (!Array.isArray(item.contributionSchedule) || !item.contributionSchedule.length) {
+    return item.recurringAmount;
+  }
+  const row = item.contributionSchedule
+    .filter((schedule) => age >= schedule.startAge && age <= schedule.endAge)
+    .at(-1);
+  return row ? row.recurringAmount : 0;
+}
+
 function projectPlan() {
   const input = readInputs();
   let liquidBalance = input.assets;
@@ -939,7 +981,7 @@ function projectPlan() {
       if (heldDuringYear) {
         const cycleMultiplier = annualCycleMultiplier(item.cycle);
         const contribution = active
-          ? item.recurringAmount * cycleMultiplier + (startsThisYear ? item.lumpSum : 0)
+          ? recurringInvestmentAmountAtAge(item, age) * cycleMultiplier + (startsThisYear ? item.lumpSum : 0)
           : 0;
         investmentBalances[item.id] = investmentBalances[item.id] * (1 + item.returnRate / 100) + contribution;
         investmentContribution += contribution;
@@ -1125,7 +1167,7 @@ function renderStageManager() {
     <section class="entity-summary modal-entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate || "-"} 至 ${stage.endDate || "持續"}</span>
-      <span>主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>${incomeTypeLabel(stage.incomeType)}｜主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜生活支出 ${stage.livingExpenseRate || "基本"}${stage.livingExpenseRate ? "%" : ""}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions">
         <button type="button" class="detail-btn" data-editor-action="edit-stage-modal">編輯</button>
         <button type="button" class="delete-btn" data-editor-action="delete-stage-modal">刪除</button>
@@ -1158,9 +1200,11 @@ function renderSimpleEditor() {
       <label>年主業收入<input data-draft-field="annualIncome" type="number" min="0" step="10000" value="${editorDraft.annualIncome}"></label>
       <label>主業年增(減)率 %<input data-draft-field="incomeGrowth" type="number" min="-100" max="100" step="0.1" value="${editorDraft.incomeGrowth}"></label>
       <label>主業增減模式<select data-draft-field="incomeGrowthMode"><option value="compound" ${editorDraft.incomeGrowthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.incomeGrowthMode === "simple" ? "selected" : ""}>單利</option></select></label>
+      <label>收入制度<select data-draft-field="incomeType">${Object.entries(INCOME_TYPE_OPTIONS).map(([value, label]) => `<option value="${value}" ${editorDraft.incomeType === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
       <label>年副業收入<input data-draft-field="sideIncome" type="number" min="0" step="10000" value="${editorDraft.sideIncome}"></label>
       <label>副業年增(減)率 %<input data-draft-field="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="${editorDraft.sideIncomeGrowth}"></label>
       <label>副業增減模式<select data-draft-field="sideIncomeGrowthMode"><option value="compound" ${editorDraft.sideIncomeGrowthMode === "compound" ? "selected" : ""}>複利</option><option value="simple" ${editorDraft.sideIncomeGrowthMode === "simple" ? "selected" : ""}>單利</option></select></label>
+      <label>生活支出比例 %<input data-draft-field="livingExpenseRate" type="number" min="0" max="100" step="0.1" value="${editorDraft.livingExpenseRate || 0}"></label>
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
       <label>每月額外支出<input data-draft-field="extraMonthlyExpense" type="number" min="0" step="any" value="${editorDraft.extraMonthlyExpense}"></label>
@@ -1180,6 +1224,14 @@ function renderSimpleEditor() {
     </div>`;
   }
   if (editorType === "investment") {
+    const scheduleRows = editorDraft.contributionSchedule?.length ? editorDraft.contributionSchedule.map((row, index) => `
+      <div class="annual-cost-row" data-contribution-index="${index}">
+        <label>起始年齡<input data-contribution-field="startAge" type="number" min="0" step="1" value="${row.startAge}"></label>
+        <label>結束年齡<input data-contribution-field="endAge" type="number" min="0" step="1" value="${row.endAge}"></label>
+        <label>定期定額<input data-contribution-field="recurringAmount" type="number" min="0" step="1000" value="${row.recurringAmount}"></label>
+        <button type="button" class="delete-btn" data-editor-action="remove-contribution" data-contribution-index="${index}">刪除</button>
+      </div>
+    `).join("") : `<p class="empty-list">尚未設定分年定期定額。</p>`;
     return `<div class="modal-field-grid">
       <label>投資項目<input data-draft-field="name" value="${escapeHtml(editorDraft.name)}"></label>
       <label>一次投入<input data-draft-field="lumpSum" type="number" min="0" step="10000" value="${editorDraft.lumpSum}"></label>
@@ -1192,6 +1244,10 @@ function renderSimpleEditor() {
       <label>預期年報酬率 %<input data-draft-field="returnRate" type="number" step="0.1" value="${editorDraft.returnRate}"></label>
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
       <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
+      <div class="full-field nested-editor">
+        <div class="modal-subsection-head"><strong>分年定期定額</strong><button type="button" class="add-benefit-btn" data-editor-action="add-contribution">新增</button></div>
+        <div class="annual-cost-list">${scheduleRows}</div>
+      </div>
     </div>`;
   }
   return "";
@@ -1474,7 +1530,7 @@ function renderInvestments() {
     <tr data-investment-index="${index}">
       <td><strong>${escapeHtml(item.name)}</strong></td>
       <td>${formatMoney(item.lumpSum)}</td>
-      <td>${formatMoney(item.recurringAmount)}</td>
+      <td>${formatMoney(item.recurringAmount)}${item.contributionSchedule?.length ? `｜分年 ${item.contributionSchedule.length} 段` : ""}</td>
       <td>${item.cycle === "monthly" ? "每月" : item.cycle === "quarterly" ? "每季" : "每年"}</td>
       <td>${item.returnRate}%</td>
       <td>${item.startDate || "-"}</td>
@@ -1569,7 +1625,7 @@ function renderFinanceStages() {
     return `<section class="entity-summary" data-stage-index="${index}">
       <strong>${escapeHtml(stage.name)}</strong>
       <span>${stage.startDate} 至 ${stage.endDate || "持續"}｜${status}</span>
-      <span>主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
+      <span>${incomeTypeLabel(stage.incomeType)}｜主業 ${formatMoney(stage.annualIncome, true)}・${stage.incomeGrowth}% ${growthModeLabel(stage.incomeGrowthMode)}｜副業 ${formatMoney(stage.sideIncome, true)}・${stage.sideIncomeGrowth}% ${growthModeLabel(stage.sideIncomeGrowthMode)}｜生活支出 ${stage.livingExpenseRate || "基本"}${stage.livingExpenseRate ? "%" : ""}｜額外月支出 ${formatMoney(stage.extraMonthlyExpense, true)}｜系統估算年支出 ${formatMoney(estimate.total, true)}｜稅務 ${formatMoney(estimate.tax, true)}</span>
       <div class="entity-summary-actions"><button type="button" class="detail-btn" data-action="edit-stage">編輯第一階段</button></div>
     </section>`;
   }).join("") + (financeStages.length > 1 ? `<button type="button" class="secondary compact-more" data-action="manage-stages">其餘 ${financeStages.length - 1} 個階段｜更多編輯</button>` : "");
@@ -1860,6 +1916,7 @@ function collectState() {
     inputs[id] = document.getElementById(id).value;
   });
   inputs.maritalStatus = document.getElementById("maritalStatus").value;
+  inputs.incomeType = document.getElementById("incomeType").value;
   return {
     inputs,
     lifeStage: document.getElementById("lifeStage").value,
@@ -2076,6 +2133,7 @@ function createEmptyPlanState() {
     returnRate: "4",
     incomeGrowthMode: "compound",
     sideIncomeGrowthMode: "compound",
+    incomeType: "salary",
     ltcYears: "8"
   });
   return {
@@ -2165,6 +2223,7 @@ function bindEvents() {
 
   document.getElementById("lifeStage").addEventListener("change", recalculate);
   document.getElementById("maritalStatus").addEventListener("change", recalculate);
+  document.getElementById("incomeType").addEventListener("change", recalculate);
 
   document.querySelectorAll("[data-apply-recommendation]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2484,7 +2543,7 @@ function bindEvents() {
         if (estimate) {
           estimate.textContent = `${editorDraft.taxCategory === "vehicle" ? "估算牌照稅與公路養管費" : "估算房屋稅"}：每年 ${formatMoney(annualAssetTax(editorDraft))}`;
         }
-      } else if (editorType === "stage" && ["annualIncome", "sideIncome", "incomeGrowth", "sideIncomeGrowth", "incomeGrowthMode", "sideIncomeGrowthMode", "startDate", "extraMonthlyExpense"].includes(draftField)) {
+      } else if (editorType === "stage" && ["annualIncome", "sideIncome", "incomeGrowth", "sideIncomeGrowth", "incomeGrowthMode", "sideIncomeGrowthMode", "incomeType", "livingExpenseRate", "startDate", "extraMonthlyExpense"].includes(draftField)) {
         const estimate = estimateStageAnnualExpense(editorDraft);
         const preview = document.querySelector(".stage-expense-preview span");
         if (preview) {
@@ -2528,6 +2587,14 @@ function bindEvents() {
       editorDraft.costs[Number(row.dataset.costIndex)][costField] = event.target.type === "number"
         ? Number(event.target.value)
         : event.target.value;
+      return;
+    }
+
+    const contributionField = event.target.dataset.contributionField;
+    if (contributionField) {
+      const row = event.target.closest("[data-contribution-index]");
+      if (!row) return;
+      editorDraft.contributionSchedule[Number(row.dataset.contributionIndex)][contributionField] = Number(event.target.value);
     }
   });
 
@@ -2573,6 +2640,18 @@ function bindEvents() {
     } else if (action === "delete-cost") {
       const row = event.target.closest("[data-cost-index]");
       if (row) editorDraft.costs.splice(Number(row.dataset.costIndex), 1);
+    } else if (action === "add-contribution") {
+      const currentAge = numberValue("currentAge") || 24;
+      editorDraft.contributionSchedule = Array.isArray(editorDraft.contributionSchedule) ? editorDraft.contributionSchedule : [];
+      editorDraft.contributionSchedule.push({
+        id: makeId("contribution"),
+        startAge: currentAge,
+        endAge: currentAge,
+        recurringAmount: editorDraft.recurringAmount || 0
+      });
+    } else if (action === "remove-contribution") {
+      const row = event.target.closest("[data-contribution-index]");
+      if (row) editorDraft.contributionSchedule.splice(Number(row.dataset.contributionIndex), 1);
     } else if (action === "add-benefit") {
       editorDraft.benefits.push({
         id: makeId("benefit"),

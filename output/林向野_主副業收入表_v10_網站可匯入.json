@@ -1,0 +1,2637 @@
+{
+  "format": "insurance-planning-complete",
+  "version": 1,
+  "exportedAt": "2026-06-23",
+  "state": {
+    "inputs": {
+      "currentAge": "24",
+      "annualIncome": "630000",
+      "sideIncome": "0",
+      "sideIncomeGrowth": "0",
+      "monthlyLivingExpense": "15750",
+      "dependentsCount": "0",
+      "dependentSupportYears": "0",
+      "assets": "200000",
+      "incomeGrowth": "0",
+      "inflation": "3",
+      "returnRate": "6.52",
+      "medicalDaily": "3000",
+      "accidentTarget": "2000000",
+      "cancerTarget": "2400000",
+      "criticalTarget": "3000000",
+      "ltcMonthly": "0",
+      "ltcYears": "8",
+      "planStartDate": "2026-06-21",
+      "incomeStartDate": "2026-06-21",
+      "incomeEndDate": "2102-06-21",
+      "incomeGrowthMode": "compound",
+      "sideIncomeGrowthMode": "compound",
+      "incomeType": "salary",
+      "maritalStatus": "single"
+    },
+    "lifeStage": "single",
+    "descriptions": {
+      "deathDescription": "",
+      "accidentDescription": "",
+      "medicalDescription": "",
+      "cancerDescription": "",
+      "criticalDescription": "",
+      "ltcDescription": ""
+    },
+    "financeStages": [
+      {
+        "id": "stage-6",
+        "name": "金融研究助理",
+        "startDate": "2026-06-21",
+        "endDate": "2028-06-21",
+        "annualIncome": 630000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "salary",
+        "livingExpenseRate": 30.0,
+        "note": ""
+      },
+      {
+        "id": "stage-7",
+        "name": "初階金融研究員(完成CFA Level 3)",
+        "startDate": "2029-06-21",
+        "endDate": "2032-06-21",
+        "annualIncome": 930000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "salary",
+        "livingExpenseRate": 28.0,
+        "note": ""
+      },
+      {
+        "id": "stage-8",
+        "name": "資深研究員",
+        "startDate": "2033-06-21",
+        "endDate": "2039-06-21",
+        "annualIncome": 1710000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "salary",
+        "livingExpenseRate": 28.0,
+        "note": ""
+      },
+      {
+        "id": "stage-9",
+        "name": "金融研究團隊主管",
+        "startDate": "2040-06-21",
+        "endDate": "2043-06-21",
+        "annualIncome": 2840000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "salary",
+        "livingExpenseRate": 25.0,
+        "note": ""
+      },
+      {
+        "id": "stage-10",
+        "name": "金融顧問(爬坡年，累積客戶)",
+        "startDate": "2044-06-21",
+        "endDate": "2044-06-21",
+        "annualIncome": 1300000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 8333,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 25.0,
+        "note": ""
+      },
+      {
+        "id": "stage-11",
+        "name": "金融顧問(穩定，已累積人脈)",
+        "startDate": "2045-06-21",
+        "endDate": "2046-06-21",
+        "annualIncome": 2200000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 25.0,
+        "note": ""
+      },
+      {
+        "id": "stage-12",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2047-06-21",
+        "endDate": "2047-06-21",
+        "annualIncome": 300000,
+        "sideIncome": 550000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-13",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2048-06-21",
+        "endDate": "2048-06-21",
+        "annualIncome": 309000,
+        "sideIncome": 500000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-14",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2049-06-21",
+        "endDate": "2049-06-21",
+        "annualIncome": 318300,
+        "sideIncome": 450000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-15",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2050-06-21",
+        "endDate": "2050-06-21",
+        "annualIncome": 327800,
+        "sideIncome": 400000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-16",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2051-06-21",
+        "endDate": "2051-06-21",
+        "annualIncome": 337700,
+        "sideIncome": 360000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-17",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2052-06-21",
+        "endDate": "2052-06-21",
+        "annualIncome": 347800,
+        "sideIncome": 320000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-18",
+        "name": "紀錄片自由工作者(逐年成長3%)",
+        "startDate": "2053-06-21",
+        "endDate": "2053-06-21",
+        "annualIncome": 358200,
+        "sideIncome": 290000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-19",
+        "name": "餐車共同經營",
+        "startDate": "2054-06-21",
+        "endDate": "2054-06-21",
+        "annualIncome": 250000,
+        "sideIncome": 260000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-20",
+        "name": "餐車共同經營",
+        "startDate": "2055-06-21",
+        "endDate": "2055-06-21",
+        "annualIncome": 250000,
+        "sideIncome": 230000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-21",
+        "name": "餐車共同經營",
+        "startDate": "2056-06-21",
+        "endDate": "2056-06-21",
+        "annualIncome": 250000,
+        "sideIncome": 210000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-22",
+        "name": "餐車共同經營",
+        "startDate": "2057-06-21",
+        "endDate": "2057-06-21",
+        "annualIncome": 250000,
+        "sideIncome": 190000,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 40.0,
+        "note": ""
+      },
+      {
+        "id": "stage-23",
+        "name": "地方市集與創業輔導企劃",
+        "startDate": "2058-06-21",
+        "endDate": "2063-06-21",
+        "annualIncome": 580000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "project",
+        "livingExpenseRate": 30.0,
+        "note": ""
+      },
+      {
+        "id": "stage-24",
+        "name": "社區與地方創生專案經理",
+        "startDate": "2064-06-21",
+        "endDate": "2068-06-21",
+        "annualIncome": 780000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "project",
+        "livingExpenseRate": 30.0,
+        "note": ""
+      },
+      {
+        "id": "stage-25",
+        "name": "同身分轉顧問(退居幕後，帶新人)",
+        "startDate": "2069-06-21",
+        "endDate": "2077-06-21",
+        "annualIncome": 550000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "consulting",
+        "livingExpenseRate": 28.0,
+        "note": ""
+      },
+      {
+        "id": "stage-26",
+        "name": "成立「第二職涯實驗室」(演講＋出版＋掛名顧問)",
+        "startDate": "2078-06-21",
+        "endDate": "2088-06-21",
+        "annualIncome": 350000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "annual",
+        "livingExpenseRate": 35.0,
+        "note": ""
+      },
+      {
+        "id": "stage-27",
+        "name": "無主要收入，靠版稅與教材授權金",
+        "startDate": "2089-06-21",
+        "endDate": "2102-06-21",
+        "annualIncome": 350000,
+        "sideIncome": 0,
+        "extraMonthlyExpense": 0,
+        "incomeGrowth": 0,
+        "sideIncomeGrowth": 0,
+        "incomeGrowthMode": "compound",
+        "sideIncomeGrowthMode": "compound",
+        "incomeType": "passive",
+        "livingExpenseRate": 35.0,
+        "note": ""
+      }
+    ],
+    "investments": [
+      {
+        "id": "investment-00881",
+        "name": "00881 國泰台灣科技龍頭",
+        "lumpSum": 60000,
+        "recurringAmount": 0,
+        "cycle": "monthly",
+        "returnRate": 7.0,
+        "contributionSchedule": [
+          {
+            "id": "contribution-00881-24",
+            "startAge": 24,
+            "endAge": 24,
+            "recurringAmount": 4123
+          },
+          {
+            "id": "contribution-00881-25",
+            "startAge": 25,
+            "endAge": 25,
+            "recurringAmount": 4008
+          },
+          {
+            "id": "contribution-00881-26",
+            "startAge": 26,
+            "endAge": 26,
+            "recurringAmount": 3947
+          },
+          {
+            "id": "contribution-00881-27",
+            "startAge": 27,
+            "endAge": 27,
+            "recurringAmount": 7090
+          },
+          {
+            "id": "contribution-00881-28",
+            "startAge": 28,
+            "endAge": 28,
+            "recurringAmount": 7026
+          },
+          {
+            "id": "contribution-00881-29",
+            "startAge": 29,
+            "endAge": 29,
+            "recurringAmount": 6960
+          },
+          {
+            "id": "contribution-00881-30",
+            "startAge": 30,
+            "endAge": 30,
+            "recurringAmount": 6888
+          },
+          {
+            "id": "contribution-00881-31",
+            "startAge": 31,
+            "endAge": 31,
+            "recurringAmount": 13990
+          },
+          {
+            "id": "contribution-00881-32",
+            "startAge": 32,
+            "endAge": 32,
+            "recurringAmount": 13919
+          },
+          {
+            "id": "contribution-00881-33",
+            "startAge": 33,
+            "endAge": 33,
+            "recurringAmount": 13844
+          },
+          {
+            "id": "contribution-00881-34",
+            "startAge": 34,
+            "endAge": 34,
+            "recurringAmount": 13766
+          },
+          {
+            "id": "contribution-00881-35",
+            "startAge": 35,
+            "endAge": 35,
+            "recurringAmount": 13630
+          },
+          {
+            "id": "contribution-00881-36",
+            "startAge": 36,
+            "endAge": 36,
+            "recurringAmount": 13546
+          },
+          {
+            "id": "contribution-00881-37",
+            "startAge": 37,
+            "endAge": 37,
+            "recurringAmount": 13455
+          },
+          {
+            "id": "contribution-00881-38",
+            "startAge": 38,
+            "endAge": 38,
+            "recurringAmount": 23617
+          },
+          {
+            "id": "contribution-00881-39",
+            "startAge": 39,
+            "endAge": 39,
+            "recurringAmount": 23519
+          },
+          {
+            "id": "contribution-00881-40",
+            "startAge": 40,
+            "endAge": 40,
+            "recurringAmount": 23382
+          },
+          {
+            "id": "contribution-00881-41",
+            "startAge": 41,
+            "endAge": 41,
+            "recurringAmount": 23275
+          },
+          {
+            "id": "contribution-00881-42",
+            "startAge": 42,
+            "endAge": 42,
+            "recurringAmount": 9394
+          },
+          {
+            "id": "contribution-00881-43",
+            "startAge": 43,
+            "endAge": 43,
+            "recurringAmount": 17093
+          },
+          {
+            "id": "contribution-00881-44",
+            "startAge": 44,
+            "endAge": 44,
+            "recurringAmount": 17314
+          },
+          {
+            "id": "contribution-00881-45",
+            "startAge": 45,
+            "endAge": 45,
+            "recurringAmount": 3141
+          },
+          {
+            "id": "contribution-00881-46",
+            "startAge": 46,
+            "endAge": 46,
+            "recurringAmount": 2680
+          },
+          {
+            "id": "contribution-00881-47",
+            "startAge": 47,
+            "endAge": 47,
+            "recurringAmount": 2212
+          },
+          {
+            "id": "contribution-00881-48",
+            "startAge": 48,
+            "endAge": 48,
+            "recurringAmount": 1748
+          },
+          {
+            "id": "contribution-00881-49",
+            "startAge": 49,
+            "endAge": 49,
+            "recurringAmount": 1361
+          },
+          {
+            "id": "contribution-00881-50",
+            "startAge": 50,
+            "endAge": 50,
+            "recurringAmount": 933
+          },
+          {
+            "id": "contribution-00881-51",
+            "startAge": 51,
+            "endAge": 51,
+            "recurringAmount": 620
+          },
+          {
+            "id": "contribution-00881-52",
+            "startAge": 52,
+            "endAge": 65,
+            "recurringAmount": 0
+          }
+        ],
+        "startDate": "2026-06-21",
+        "endDate": ""
+      },
+      {
+        "id": "investment-00830",
+        "name": "00830 國泰費城半導體",
+        "lumpSum": 40000,
+        "recurringAmount": 0,
+        "cycle": "monthly",
+        "returnRate": 6.0,
+        "contributionSchedule": [
+          {
+            "id": "contribution-00830-24",
+            "startAge": 24,
+            "endAge": 24,
+            "recurringAmount": 2749
+          },
+          {
+            "id": "contribution-00830-25",
+            "startAge": 25,
+            "endAge": 25,
+            "recurringAmount": 2672
+          },
+          {
+            "id": "contribution-00830-26",
+            "startAge": 26,
+            "endAge": 26,
+            "recurringAmount": 2632
+          },
+          {
+            "id": "contribution-00830-27",
+            "startAge": 27,
+            "endAge": 27,
+            "recurringAmount": 4727
+          },
+          {
+            "id": "contribution-00830-28",
+            "startAge": 28,
+            "endAge": 28,
+            "recurringAmount": 4684
+          },
+          {
+            "id": "contribution-00830-29",
+            "startAge": 29,
+            "endAge": 29,
+            "recurringAmount": 4640
+          },
+          {
+            "id": "contribution-00830-30",
+            "startAge": 30,
+            "endAge": 30,
+            "recurringAmount": 4592
+          },
+          {
+            "id": "contribution-00830-31",
+            "startAge": 31,
+            "endAge": 31,
+            "recurringAmount": 9327
+          },
+          {
+            "id": "contribution-00830-32",
+            "startAge": 32,
+            "endAge": 32,
+            "recurringAmount": 9279
+          },
+          {
+            "id": "contribution-00830-33",
+            "startAge": 33,
+            "endAge": 33,
+            "recurringAmount": 9229
+          },
+          {
+            "id": "contribution-00830-34",
+            "startAge": 34,
+            "endAge": 34,
+            "recurringAmount": 9177
+          },
+          {
+            "id": "contribution-00830-35",
+            "startAge": 35,
+            "endAge": 35,
+            "recurringAmount": 9087
+          },
+          {
+            "id": "contribution-00830-36",
+            "startAge": 36,
+            "endAge": 36,
+            "recurringAmount": 9031
+          },
+          {
+            "id": "contribution-00830-37",
+            "startAge": 37,
+            "endAge": 37,
+            "recurringAmount": 8970
+          },
+          {
+            "id": "contribution-00830-38",
+            "startAge": 38,
+            "endAge": 38,
+            "recurringAmount": 15744
+          },
+          {
+            "id": "contribution-00830-39",
+            "startAge": 39,
+            "endAge": 39,
+            "recurringAmount": 15679
+          },
+          {
+            "id": "contribution-00830-40",
+            "startAge": 40,
+            "endAge": 40,
+            "recurringAmount": 15588
+          },
+          {
+            "id": "contribution-00830-41",
+            "startAge": 41,
+            "endAge": 41,
+            "recurringAmount": 15517
+          },
+          {
+            "id": "contribution-00830-42",
+            "startAge": 42,
+            "endAge": 42,
+            "recurringAmount": 6263
+          },
+          {
+            "id": "contribution-00830-43",
+            "startAge": 43,
+            "endAge": 43,
+            "recurringAmount": 11396
+          },
+          {
+            "id": "contribution-00830-44",
+            "startAge": 44,
+            "endAge": 44,
+            "recurringAmount": 11543
+          },
+          {
+            "id": "contribution-00830-45",
+            "startAge": 45,
+            "endAge": 45,
+            "recurringAmount": 2094
+          },
+          {
+            "id": "contribution-00830-46",
+            "startAge": 46,
+            "endAge": 46,
+            "recurringAmount": 1787
+          },
+          {
+            "id": "contribution-00830-47",
+            "startAge": 47,
+            "endAge": 47,
+            "recurringAmount": 1474
+          },
+          {
+            "id": "contribution-00830-48",
+            "startAge": 48,
+            "endAge": 48,
+            "recurringAmount": 1165
+          },
+          {
+            "id": "contribution-00830-49",
+            "startAge": 49,
+            "endAge": 49,
+            "recurringAmount": 907
+          },
+          {
+            "id": "contribution-00830-50",
+            "startAge": 50,
+            "endAge": 50,
+            "recurringAmount": 622
+          },
+          {
+            "id": "contribution-00830-51",
+            "startAge": 51,
+            "endAge": 51,
+            "recurringAmount": 414
+          }
+        ],
+        "startDate": "2026-06-21",
+        "endDate": ""
+      },
+      {
+        "id": "investment-vt",
+        "name": "VT 全世界股票",
+        "lumpSum": 20000,
+        "recurringAmount": 0,
+        "cycle": "monthly",
+        "returnRate": 5.0,
+        "contributionSchedule": [
+          {
+            "id": "contribution-VT-24",
+            "startAge": 24,
+            "endAge": 24,
+            "recurringAmount": 1374
+          },
+          {
+            "id": "contribution-VT-25",
+            "startAge": 25,
+            "endAge": 25,
+            "recurringAmount": 1336
+          },
+          {
+            "id": "contribution-VT-26",
+            "startAge": 26,
+            "endAge": 26,
+            "recurringAmount": 1316
+          },
+          {
+            "id": "contribution-VT-27",
+            "startAge": 27,
+            "endAge": 27,
+            "recurringAmount": 2363
+          },
+          {
+            "id": "contribution-VT-28",
+            "startAge": 28,
+            "endAge": 28,
+            "recurringAmount": 2342
+          },
+          {
+            "id": "contribution-VT-29",
+            "startAge": 29,
+            "endAge": 29,
+            "recurringAmount": 2320
+          },
+          {
+            "id": "contribution-VT-30",
+            "startAge": 30,
+            "endAge": 30,
+            "recurringAmount": 2296
+          },
+          {
+            "id": "contribution-VT-31",
+            "startAge": 31,
+            "endAge": 31,
+            "recurringAmount": 4663
+          },
+          {
+            "id": "contribution-VT-32",
+            "startAge": 32,
+            "endAge": 32,
+            "recurringAmount": 4640
+          },
+          {
+            "id": "contribution-VT-33",
+            "startAge": 33,
+            "endAge": 33,
+            "recurringAmount": 4615
+          },
+          {
+            "id": "contribution-VT-34",
+            "startAge": 34,
+            "endAge": 34,
+            "recurringAmount": 4589
+          },
+          {
+            "id": "contribution-VT-35",
+            "startAge": 35,
+            "endAge": 35,
+            "recurringAmount": 4544
+          },
+          {
+            "id": "contribution-VT-36",
+            "startAge": 36,
+            "endAge": 36,
+            "recurringAmount": 4515
+          },
+          {
+            "id": "contribution-VT-37",
+            "startAge": 37,
+            "endAge": 37,
+            "recurringAmount": 4485
+          },
+          {
+            "id": "contribution-VT-38",
+            "startAge": 38,
+            "endAge": 38,
+            "recurringAmount": 7872
+          },
+          {
+            "id": "contribution-VT-39",
+            "startAge": 39,
+            "endAge": 39,
+            "recurringAmount": 7840
+          },
+          {
+            "id": "contribution-VT-40",
+            "startAge": 40,
+            "endAge": 40,
+            "recurringAmount": 7794
+          },
+          {
+            "id": "contribution-VT-41",
+            "startAge": 41,
+            "endAge": 41,
+            "recurringAmount": 7758
+          },
+          {
+            "id": "contribution-VT-42",
+            "startAge": 42,
+            "endAge": 42,
+            "recurringAmount": 3131
+          },
+          {
+            "id": "contribution-VT-43",
+            "startAge": 43,
+            "endAge": 43,
+            "recurringAmount": 5698
+          },
+          {
+            "id": "contribution-VT-44",
+            "startAge": 44,
+            "endAge": 44,
+            "recurringAmount": 5771
+          },
+          {
+            "id": "contribution-VT-45",
+            "startAge": 45,
+            "endAge": 45,
+            "recurringAmount": 1047
+          },
+          {
+            "id": "contribution-VT-46",
+            "startAge": 46,
+            "endAge": 46,
+            "recurringAmount": 893
+          },
+          {
+            "id": "contribution-VT-47",
+            "startAge": 47,
+            "endAge": 47,
+            "recurringAmount": 737
+          },
+          {
+            "id": "contribution-VT-48",
+            "startAge": 48,
+            "endAge": 48,
+            "recurringAmount": 582
+          },
+          {
+            "id": "contribution-VT-49",
+            "startAge": 49,
+            "endAge": 49,
+            "recurringAmount": 454
+          },
+          {
+            "id": "contribution-VT-50",
+            "startAge": 50,
+            "endAge": 50,
+            "recurringAmount": 311
+          },
+          {
+            "id": "contribution-VT-51",
+            "startAge": 51,
+            "endAge": 51,
+            "recurringAmount": 207
+          },
+          {
+            "id": "contribution-VT-52",
+            "startAge": 52,
+            "endAge": 65,
+            "recurringAmount": 0
+          },
+          {
+            "id": "contribution-VT-66",
+            "startAge": 66,
+            "endAge": 100,
+            "recurringAmount": 0
+          }
+        ],
+        "startDate": "2026-06-21",
+        "endDate": ""
+      },
+      {
+        "id": "investment-0050",
+        "name": "0050 元大台灣50",
+        "lumpSum": 40000,
+        "recurringAmount": 0,
+        "cycle": "monthly",
+        "returnRate": 9.6,
+        "contributionSchedule": [
+          {
+            "id": "contribution-0050-24",
+            "startAge": 24,
+            "endAge": 24,
+            "recurringAmount": 2749
+          },
+          {
+            "id": "contribution-0050-25",
+            "startAge": 25,
+            "endAge": 25,
+            "recurringAmount": 2672
+          },
+          {
+            "id": "contribution-0050-26",
+            "startAge": 26,
+            "endAge": 26,
+            "recurringAmount": 2632
+          },
+          {
+            "id": "contribution-0050-27",
+            "startAge": 27,
+            "endAge": 27,
+            "recurringAmount": 4727
+          },
+          {
+            "id": "contribution-0050-28",
+            "startAge": 28,
+            "endAge": 28,
+            "recurringAmount": 4684
+          },
+          {
+            "id": "contribution-0050-29",
+            "startAge": 29,
+            "endAge": 29,
+            "recurringAmount": 4640
+          },
+          {
+            "id": "contribution-0050-30",
+            "startAge": 30,
+            "endAge": 30,
+            "recurringAmount": 4592
+          },
+          {
+            "id": "contribution-0050-31",
+            "startAge": 31,
+            "endAge": 31,
+            "recurringAmount": 9327
+          },
+          {
+            "id": "contribution-0050-32",
+            "startAge": 32,
+            "endAge": 32,
+            "recurringAmount": 9279
+          },
+          {
+            "id": "contribution-0050-33",
+            "startAge": 33,
+            "endAge": 33,
+            "recurringAmount": 9229
+          },
+          {
+            "id": "contribution-0050-34",
+            "startAge": 34,
+            "endAge": 34,
+            "recurringAmount": 9177
+          },
+          {
+            "id": "contribution-0050-35",
+            "startAge": 35,
+            "endAge": 35,
+            "recurringAmount": 9087
+          },
+          {
+            "id": "contribution-0050-36",
+            "startAge": 36,
+            "endAge": 36,
+            "recurringAmount": 9031
+          },
+          {
+            "id": "contribution-0050-37",
+            "startAge": 37,
+            "endAge": 37,
+            "recurringAmount": 8970
+          },
+          {
+            "id": "contribution-0050-38",
+            "startAge": 38,
+            "endAge": 38,
+            "recurringAmount": 15744
+          },
+          {
+            "id": "contribution-0050-39",
+            "startAge": 39,
+            "endAge": 39,
+            "recurringAmount": 15679
+          },
+          {
+            "id": "contribution-0050-40",
+            "startAge": 40,
+            "endAge": 40,
+            "recurringAmount": 15588
+          },
+          {
+            "id": "contribution-0050-41",
+            "startAge": 41,
+            "endAge": 41,
+            "recurringAmount": 15517
+          },
+          {
+            "id": "contribution-0050-42",
+            "startAge": 42,
+            "endAge": 42,
+            "recurringAmount": 6263
+          },
+          {
+            "id": "contribution-0050-43",
+            "startAge": 43,
+            "endAge": 43,
+            "recurringAmount": 11396
+          },
+          {
+            "id": "contribution-0050-44",
+            "startAge": 44,
+            "endAge": 44,
+            "recurringAmount": 11543
+          },
+          {
+            "id": "contribution-0050-45",
+            "startAge": 45,
+            "endAge": 45,
+            "recurringAmount": 2094
+          },
+          {
+            "id": "contribution-0050-46",
+            "startAge": 46,
+            "endAge": 46,
+            "recurringAmount": 1787
+          },
+          {
+            "id": "contribution-0050-47",
+            "startAge": 47,
+            "endAge": 47,
+            "recurringAmount": 1474
+          },
+          {
+            "id": "contribution-0050-48",
+            "startAge": 48,
+            "endAge": 48,
+            "recurringAmount": 1165
+          },
+          {
+            "id": "contribution-0050-49",
+            "startAge": 49,
+            "endAge": 49,
+            "recurringAmount": 907
+          },
+          {
+            "id": "contribution-0050-50",
+            "startAge": 50,
+            "endAge": 50,
+            "recurringAmount": 622
+          },
+          {
+            "id": "contribution-0050-51",
+            "startAge": 51,
+            "endAge": 51,
+            "recurringAmount": 414
+          },
+          {
+            "id": "contribution-0050-52",
+            "startAge": 52,
+            "endAge": 65,
+            "recurringAmount": 0
+          },
+          {
+            "id": "contribution-0050-66",
+            "startAge": 66,
+            "endAge": 100,
+            "recurringAmount": 0
+          }
+        ],
+        "startDate": "2026-06-21",
+        "endDate": ""
+      },
+      {
+        "id": "investment-00878",
+        "name": "00878 國泰永續高股息",
+        "lumpSum": 40000,
+        "recurringAmount": 0,
+        "cycle": "monthly",
+        "returnRate": 4.0,
+        "contributionSchedule": [
+          {
+            "id": "contribution-00878-24",
+            "startAge": 24,
+            "endAge": 24,
+            "recurringAmount": 2749
+          },
+          {
+            "id": "contribution-00878-25",
+            "startAge": 25,
+            "endAge": 25,
+            "recurringAmount": 2672
+          },
+          {
+            "id": "contribution-00878-26",
+            "startAge": 26,
+            "endAge": 26,
+            "recurringAmount": 2632
+          },
+          {
+            "id": "contribution-00878-27",
+            "startAge": 27,
+            "endAge": 27,
+            "recurringAmount": 4727
+          },
+          {
+            "id": "contribution-00878-28",
+            "startAge": 28,
+            "endAge": 28,
+            "recurringAmount": 4684
+          },
+          {
+            "id": "contribution-00878-29",
+            "startAge": 29,
+            "endAge": 29,
+            "recurringAmount": 4640
+          },
+          {
+            "id": "contribution-00878-30",
+            "startAge": 30,
+            "endAge": 30,
+            "recurringAmount": 4592
+          },
+          {
+            "id": "contribution-00878-31",
+            "startAge": 31,
+            "endAge": 31,
+            "recurringAmount": 9327
+          },
+          {
+            "id": "contribution-00878-32",
+            "startAge": 32,
+            "endAge": 32,
+            "recurringAmount": 9279
+          },
+          {
+            "id": "contribution-00878-33",
+            "startAge": 33,
+            "endAge": 33,
+            "recurringAmount": 9229
+          },
+          {
+            "id": "contribution-00878-34",
+            "startAge": 34,
+            "endAge": 34,
+            "recurringAmount": 9177
+          },
+          {
+            "id": "contribution-00878-35",
+            "startAge": 35,
+            "endAge": 35,
+            "recurringAmount": 9087
+          },
+          {
+            "id": "contribution-00878-36",
+            "startAge": 36,
+            "endAge": 36,
+            "recurringAmount": 9031
+          },
+          {
+            "id": "contribution-00878-37",
+            "startAge": 37,
+            "endAge": 37,
+            "recurringAmount": 8970
+          },
+          {
+            "id": "contribution-00878-38",
+            "startAge": 38,
+            "endAge": 38,
+            "recurringAmount": 15744
+          },
+          {
+            "id": "contribution-00878-39",
+            "startAge": 39,
+            "endAge": 39,
+            "recurringAmount": 15679
+          },
+          {
+            "id": "contribution-00878-40",
+            "startAge": 40,
+            "endAge": 40,
+            "recurringAmount": 15588
+          },
+          {
+            "id": "contribution-00878-41",
+            "startAge": 41,
+            "endAge": 41,
+            "recurringAmount": 15517
+          },
+          {
+            "id": "contribution-00878-42",
+            "startAge": 42,
+            "endAge": 42,
+            "recurringAmount": 6263
+          },
+          {
+            "id": "contribution-00878-43",
+            "startAge": 43,
+            "endAge": 43,
+            "recurringAmount": 11396
+          },
+          {
+            "id": "contribution-00878-44",
+            "startAge": 44,
+            "endAge": 44,
+            "recurringAmount": 11543
+          },
+          {
+            "id": "contribution-00878-45",
+            "startAge": 45,
+            "endAge": 45,
+            "recurringAmount": 2094
+          },
+          {
+            "id": "contribution-00878-46",
+            "startAge": 46,
+            "endAge": 46,
+            "recurringAmount": 1787
+          },
+          {
+            "id": "contribution-00878-47",
+            "startAge": 47,
+            "endAge": 47,
+            "recurringAmount": 1474
+          },
+          {
+            "id": "contribution-00878-48",
+            "startAge": 48,
+            "endAge": 48,
+            "recurringAmount": 1165
+          },
+          {
+            "id": "contribution-00878-49",
+            "startAge": 49,
+            "endAge": 49,
+            "recurringAmount": 907
+          },
+          {
+            "id": "contribution-00878-50",
+            "startAge": 50,
+            "endAge": 50,
+            "recurringAmount": 622
+          },
+          {
+            "id": "contribution-00878-51",
+            "startAge": 51,
+            "endAge": 51,
+            "recurringAmount": 414
+          },
+          {
+            "id": "contribution-00878-52",
+            "startAge": 52,
+            "endAge": 65,
+            "recurringAmount": 0
+          },
+          {
+            "id": "contribution-00878-66",
+            "startAge": 66,
+            "endAge": 100,
+            "recurringAmount": 0
+          }
+        ],
+        "startDate": "2026-06-21",
+        "endDate": ""
+      }
+    ],
+    "fixedExpenses": [
+      {
+        "id": "fixed-rent",
+        "name": "房租",
+        "monthlyAmount": 10000,
+        "annualGrowthRate": 3,
+        "growthMode": "simple",
+        "startDate": "2026-06-21",
+        "endDate": "2102-06-21",
+        "note": ""
+      }
+    ],
+    "heldAssets": [],
+    "debtItems": [],
+    "policies": [
+      {
+        "id": "l66-main",
+        "name": "L66 真康順手術主約",
+        "contractType": "main",
+        "parentId": "",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 31,
+            "annualPremium": 22180
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 43,
+            "annualPremium": 22180
+          }
+        ],
+        "premium": 22180,
+        "startAge": 24,
+        "endAge": 100,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-medical-86097",
+            "category": "medical",
+            "type": "住院手術",
+            "amount": 160000,
+            "unit": "perEvent"
+          },
+          {
+            "id": "benefit-medical-29316",
+            "category": "medical",
+            "type": "門診手術",
+            "amount": 160000,
+            "unit": "perEvent"
+          },
+          {
+            "id": "benefit-medical-52934",
+            "category": "medical",
+            "type": "每次給付",
+            "amount": 80000,
+            "unit": "perEvent"
+          }
+        ]
+      },
+      {
+        "id": "xb7",
+        "name": "XB7 超全傷害附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 31,
+            "annualPremium": 1250
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 75,
+            "annualPremium": 1250
+          }
+        ],
+        "premium": 1250,
+        "startAge": 24,
+        "endAge": 75,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-accident-62278",
+            "category": "accident",
+            "type": "意外身故",
+            "amount": 2000000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-accident-290",
+            "category": "accident",
+            "type": "意外失能",
+            "amount": 2000000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-accident-4362",
+            "category": "accident",
+            "type": "每月給付",
+            "amount": 40000,
+            "unit": "monthly"
+          },
+          {
+            "id": "benefit-accident-22897",
+            "category": "accident",
+            "type": "重大燒燙傷",
+            "amount": 1000000,
+            "unit": "lump"
+          }
+        ]
+      },
+      {
+        "id": "xb9",
+        "name": "XB9 傷害意外醫療附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 31,
+            "annualPremium": 1400
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 75,
+            "annualPremium": 1400
+          }
+        ],
+        "premium": 1400,
+        "startAge": 24,
+        "endAge": 75,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-accident-11111",
+            "category": "accident",
+            "type": "實支實付限額",
+            "amount": 100000,
+            "unit": "lump"
+          }
+        ]
+      },
+      {
+        "id": "xj2",
+        "name": "XJ2 新金骨力傷害附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 44,
+            "annualPremium": 4900
+          },
+          {
+            "id": "premium-45",
+            "startAge": 45,
+            "endAge": 59,
+            "annualPremium": 7400
+          },
+          {
+            "id": "premium-60",
+            "startAge": 60,
+            "endAge": 75,
+            "annualPremium": 11000
+          }
+        ],
+        "premium": 4900,
+        "startAge": 24,
+        "endAge": 75,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-accident-28862",
+            "category": "accident",
+            "type": "意外身故",
+            "amount": 1000000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-accident-65216",
+            "category": "accident",
+            "type": "骨折給付",
+            "amount": 800000,
+            "unit": "perEvent"
+          },
+          {
+            "id": "benefit-accident-14136",
+            "category": "accident",
+            "type": "每次給付",
+            "amount": 300000,
+            "unit": "perEvent"
+          }
+        ]
+      },
+      {
+        "id": "cfj",
+        "name": "CFJ 意外住院日額附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 69,
+            "annualPremium": 1160
+          },
+          {
+            "id": "premium-70",
+            "startAge": 70,
+            "endAge": 80,
+            "annualPremium": 1960
+          }
+        ],
+        "premium": 1160,
+        "startAge": 24,
+        "endAge": 80,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-accident-8000",
+            "category": "accident",
+            "type": "意外住院日額",
+            "amount": 2000,
+            "unit": "daily"
+          },
+          {
+            "id": "benefit-accident-66359",
+            "category": "accident",
+            "type": "骨折給付",
+            "amount": 60000,
+            "unit": "perEvent"
+          }
+        ]
+      },
+      {
+        "id": "px5",
+        "name": "PX5 鍾溢重大疾病附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 24,
+            "annualPremium": 360
+          },
+          {
+            "id": "premium-25",
+            "startAge": 25,
+            "endAge": 25,
+            "annualPremium": 3000
+          },
+          {
+            "id": "premium-26",
+            "startAge": 26,
+            "endAge": 26,
+            "annualPremium": 3300
+          },
+          {
+            "id": "premium-27",
+            "startAge": 27,
+            "endAge": 27,
+            "annualPremium": 3600
+          },
+          {
+            "id": "premium-28",
+            "startAge": 28,
+            "endAge": 28,
+            "annualPremium": 4060
+          },
+          {
+            "id": "premium-29",
+            "startAge": 29,
+            "endAge": 29,
+            "annualPremium": 4600
+          },
+          {
+            "id": "premium-30",
+            "startAge": 30,
+            "endAge": 30,
+            "annualPremium": 5120
+          },
+          {
+            "id": "premium-31",
+            "startAge": 31,
+            "endAge": 31,
+            "annualPremium": 5800
+          },
+          {
+            "id": "premium-32",
+            "startAge": 32,
+            "endAge": 32,
+            "annualPremium": 6560
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 33,
+            "annualPremium": 7480
+          },
+          {
+            "id": "premium-34",
+            "startAge": 34,
+            "endAge": 34,
+            "annualPremium": 8540
+          },
+          {
+            "id": "premium-35",
+            "startAge": 35,
+            "endAge": 35,
+            "annualPremium": 10120
+          },
+          {
+            "id": "premium-36",
+            "startAge": 36,
+            "endAge": 36,
+            "annualPremium": 11500
+          },
+          {
+            "id": "premium-37",
+            "startAge": 37,
+            "endAge": 37,
+            "annualPremium": 13160
+          },
+          {
+            "id": "premium-38",
+            "startAge": 38,
+            "endAge": 38,
+            "annualPremium": 14840
+          },
+          {
+            "id": "premium-39",
+            "startAge": 39,
+            "endAge": 39,
+            "annualPremium": 16780
+          },
+          {
+            "id": "premium-40",
+            "startAge": 40,
+            "endAge": 40,
+            "annualPremium": 17540
+          },
+          {
+            "id": "premium-41",
+            "startAge": 41,
+            "endAge": 41,
+            "annualPremium": 19840
+          },
+          {
+            "id": "premium-42",
+            "startAge": 42,
+            "endAge": 42,
+            "annualPremium": 22440
+          },
+          {
+            "id": "premium-43",
+            "startAge": 43,
+            "endAge": 43,
+            "annualPremium": 24640
+          },
+          {
+            "id": "premium-44",
+            "startAge": 44,
+            "endAge": 44,
+            "annualPremium": 27080
+          },
+          {
+            "id": "premium-45",
+            "startAge": 45,
+            "endAge": 45,
+            "annualPremium": 30180
+          },
+          {
+            "id": "premium-46",
+            "startAge": 46,
+            "endAge": 46,
+            "annualPremium": 33180
+          },
+          {
+            "id": "premium-47",
+            "startAge": 47,
+            "endAge": 47,
+            "annualPremium": 36500
+          },
+          {
+            "id": "premium-48",
+            "startAge": 48,
+            "endAge": 48,
+            "annualPremium": 39660
+          },
+          {
+            "id": "premium-49",
+            "startAge": 49,
+            "endAge": 49,
+            "annualPremium": 43140
+          },
+          {
+            "id": "premium-50",
+            "startAge": 50,
+            "endAge": 50,
+            "annualPremium": 46300
+          },
+          {
+            "id": "premium-51",
+            "startAge": 51,
+            "endAge": 51,
+            "annualPremium": 50060
+          },
+          {
+            "id": "premium-52",
+            "startAge": 52,
+            "endAge": 52,
+            "annualPremium": 54120
+          },
+          {
+            "id": "premium-53",
+            "startAge": 53,
+            "endAge": 53,
+            "annualPremium": 57540
+          },
+          {
+            "id": "premium-54",
+            "startAge": 54,
+            "endAge": 54,
+            "annualPremium": 61220
+          },
+          {
+            "id": "premium-55",
+            "startAge": 55,
+            "endAge": 55,
+            "annualPremium": 65180
+          },
+          {
+            "id": "premium-56",
+            "startAge": 56,
+            "endAge": 56,
+            "annualPremium": 69440
+          },
+          {
+            "id": "premium-57",
+            "startAge": 57,
+            "endAge": 57,
+            "annualPremium": 74000
+          },
+          {
+            "id": "premium-58",
+            "startAge": 58,
+            "endAge": 58,
+            "annualPremium": 78140
+          },
+          {
+            "id": "premium-59",
+            "startAge": 59,
+            "endAge": 59,
+            "annualPremium": 82480
+          },
+          {
+            "id": "premium-60",
+            "startAge": 60,
+            "endAge": 60,
+            "annualPremium": 87080
+          },
+          {
+            "id": "premium-61",
+            "startAge": 61,
+            "endAge": 61,
+            "annualPremium": 92020
+          },
+          {
+            "id": "premium-62",
+            "startAge": 62,
+            "endAge": 62,
+            "annualPremium": 97160
+          },
+          {
+            "id": "premium-63",
+            "startAge": 63,
+            "endAge": 63,
+            "annualPremium": 102340
+          },
+          {
+            "id": "premium-64",
+            "startAge": 64,
+            "endAge": 64,
+            "annualPremium": 107760
+          },
+          {
+            "id": "premium-65",
+            "startAge": 65,
+            "endAge": 65,
+            "annualPremium": 113620
+          }
+        ],
+        "premium": 360,
+        "startAge": 24,
+        "endAge": 65,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-critical-16565",
+            "category": "critical",
+            "type": "重大疾病一次金",
+            "amount": 2600000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-critical-69871",
+            "category": "critical",
+            "type": "重大傷病一次金",
+            "amount": 400000,
+            "unit": "lump"
+          }
+        ]
+      },
+      {
+        "id": "cfu",
+        "name": "CFU 初次罹癌附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 24,
+            "annualPremium": 100
+          },
+          {
+            "id": "premium-25",
+            "startAge": 25,
+            "endAge": 25,
+            "annualPremium": 1460
+          },
+          {
+            "id": "premium-26",
+            "startAge": 26,
+            "endAge": 26,
+            "annualPremium": 1580
+          },
+          {
+            "id": "premium-27",
+            "startAge": 27,
+            "endAge": 27,
+            "annualPremium": 1720
+          },
+          {
+            "id": "premium-28",
+            "startAge": 28,
+            "endAge": 28,
+            "annualPremium": 1960
+          },
+          {
+            "id": "premium-29",
+            "startAge": 29,
+            "endAge": 29,
+            "annualPremium": 2200
+          },
+          {
+            "id": "premium-30",
+            "startAge": 30,
+            "endAge": 30,
+            "annualPremium": 2500
+          },
+          {
+            "id": "premium-31",
+            "startAge": 31,
+            "endAge": 31,
+            "annualPremium": 2820
+          },
+          {
+            "id": "premium-32",
+            "startAge": 32,
+            "endAge": 32,
+            "annualPremium": 3180
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 33,
+            "annualPremium": 3640
+          },
+          {
+            "id": "premium-34",
+            "startAge": 34,
+            "endAge": 34,
+            "annualPremium": 4140
+          },
+          {
+            "id": "premium-35",
+            "startAge": 35,
+            "endAge": 35,
+            "annualPremium": 4720
+          },
+          {
+            "id": "premium-36",
+            "startAge": 36,
+            "endAge": 36,
+            "annualPremium": 5380
+          },
+          {
+            "id": "premium-37",
+            "startAge": 37,
+            "endAge": 37,
+            "annualPremium": 6140
+          },
+          {
+            "id": "premium-38",
+            "startAge": 38,
+            "endAge": 38,
+            "annualPremium": 6960
+          },
+          {
+            "id": "premium-39",
+            "startAge": 39,
+            "endAge": 39,
+            "annualPremium": 7900
+          },
+          {
+            "id": "premium-40",
+            "startAge": 40,
+            "endAge": 40,
+            "annualPremium": 8960
+          },
+          {
+            "id": "premium-41",
+            "startAge": 41,
+            "endAge": 41,
+            "annualPremium": 10160
+          },
+          {
+            "id": "premium-42",
+            "startAge": 42,
+            "endAge": 42,
+            "annualPremium": 11520
+          },
+          {
+            "id": "premium-43",
+            "startAge": 43,
+            "endAge": 43,
+            "annualPremium": 12660
+          },
+          {
+            "id": "premium-44",
+            "startAge": 44,
+            "endAge": 44,
+            "annualPremium": 13900
+          },
+          {
+            "id": "premium-45",
+            "startAge": 45,
+            "endAge": 45,
+            "annualPremium": 15260
+          },
+          {
+            "id": "premium-46",
+            "startAge": 46,
+            "endAge": 46,
+            "annualPremium": 16760
+          },
+          {
+            "id": "premium-47",
+            "startAge": 47,
+            "endAge": 47,
+            "annualPremium": 18420
+          },
+          {
+            "id": "premium-48",
+            "startAge": 48,
+            "endAge": 48,
+            "annualPremium": 20000
+          },
+          {
+            "id": "premium-49",
+            "startAge": 49,
+            "endAge": 49,
+            "annualPremium": 21700
+          },
+          {
+            "id": "premium-50",
+            "startAge": 50,
+            "endAge": 50,
+            "annualPremium": 23580
+          },
+          {
+            "id": "premium-51",
+            "startAge": 51,
+            "endAge": 51,
+            "annualPremium": 25600
+          },
+          {
+            "id": "premium-52",
+            "startAge": 52,
+            "endAge": 52,
+            "annualPremium": 27820
+          },
+          {
+            "id": "premium-53",
+            "startAge": 53,
+            "endAge": 53,
+            "annualPremium": 29540
+          },
+          {
+            "id": "premium-54",
+            "startAge": 54,
+            "endAge": 54,
+            "annualPremium": 31380
+          },
+          {
+            "id": "premium-55",
+            "startAge": 55,
+            "endAge": 55,
+            "annualPremium": 33320
+          },
+          {
+            "id": "premium-56",
+            "startAge": 56,
+            "endAge": 56,
+            "annualPremium": 35400
+          },
+          {
+            "id": "premium-57",
+            "startAge": 57,
+            "endAge": 57,
+            "annualPremium": 37600
+          },
+          {
+            "id": "premium-58",
+            "startAge": 58,
+            "endAge": 58,
+            "annualPremium": 40060
+          },
+          {
+            "id": "premium-59",
+            "startAge": 59,
+            "endAge": 59,
+            "annualPremium": 42700
+          },
+          {
+            "id": "premium-60",
+            "startAge": 60,
+            "endAge": 60,
+            "annualPremium": 45500
+          },
+          {
+            "id": "premium-61",
+            "startAge": 61,
+            "endAge": 61,
+            "annualPremium": 48480
+          },
+          {
+            "id": "premium-62",
+            "startAge": 62,
+            "endAge": 62,
+            "annualPremium": 51660
+          },
+          {
+            "id": "premium-63",
+            "startAge": 63,
+            "endAge": 63,
+            "annualPremium": 54760
+          },
+          {
+            "id": "premium-64",
+            "startAge": 64,
+            "endAge": 64,
+            "annualPremium": 58040
+          },
+          {
+            "id": "premium-65",
+            "startAge": 65,
+            "endAge": 65,
+            "annualPremium": 61520
+          }
+        ],
+        "premium": 100,
+        "startAge": 24,
+        "endAge": 65,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-cancer-37189",
+            "category": "cancer",
+            "type": "初次罹癌一次金",
+            "amount": 2000000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-cancer-86632",
+            "category": "cancer",
+            "type": "癌症一次金",
+            "amount": 400000,
+            "unit": "lump"
+          }
+        ]
+      },
+      {
+        "id": "cv4-m30",
+        "name": "CV4 新實全心意醫療附約 M30",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 24,
+            "annualPremium": 5690
+          },
+          {
+            "id": "premium-25",
+            "startAge": 25,
+            "endAge": 29,
+            "annualPremium": 5750
+          },
+          {
+            "id": "premium-30",
+            "startAge": 30,
+            "endAge": 34,
+            "annualPremium": 6095
+          },
+          {
+            "id": "premium-35",
+            "startAge": 35,
+            "endAge": 39,
+            "annualPremium": 9340
+          },
+          {
+            "id": "premium-40",
+            "startAge": 40,
+            "endAge": 44,
+            "annualPremium": 13050
+          },
+          {
+            "id": "premium-45",
+            "startAge": 45,
+            "endAge": 49,
+            "annualPremium": 15820
+          },
+          {
+            "id": "premium-50",
+            "startAge": 50,
+            "endAge": 54,
+            "annualPremium": 18730
+          },
+          {
+            "id": "premium-55",
+            "startAge": 55,
+            "endAge": 59,
+            "annualPremium": 21750
+          },
+          {
+            "id": "premium-60",
+            "startAge": 60,
+            "endAge": 64,
+            "annualPremium": 26800
+          },
+          {
+            "id": "premium-65",
+            "startAge": 65,
+            "endAge": 69,
+            "annualPremium": 34225
+          },
+          {
+            "id": "premium-70",
+            "startAge": 70,
+            "endAge": 74,
+            "annualPremium": 42090
+          },
+          {
+            "id": "premium-75",
+            "startAge": 75,
+            "endAge": 80,
+            "annualPremium": 54050
+          }
+        ],
+        "premium": 5690,
+        "startAge": 24,
+        "endAge": 80,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-medical-30474",
+            "category": "medical",
+            "type": "住院日額",
+            "amount": 3000,
+            "unit": "daily"
+          },
+          {
+            "id": "benefit-medical-43716",
+            "category": "medical",
+            "type": "實支實付限額",
+            "amount": 300000,
+            "unit": "lump"
+          },
+          {
+            "id": "benefit-medical-97177",
+            "category": "medical",
+            "type": "門診手術",
+            "amount": 25000,
+            "unit": "perEvent"
+          }
+        ]
+      },
+      {
+        "id": "cfl",
+        "name": "CFL 自由配長照附約",
+        "contractType": "rider",
+        "parentId": "l66-main",
+        "productType": "protection",
+        "investmentMode": "lumpSum",
+        "investmentAmount": 0,
+        "investmentCycle": "monthly",
+        "investmentReturnRate": 0,
+        "premiumMode": "stepped",
+        "premiumSchedule": [
+          {
+            "id": "premium-24",
+            "startAge": 24,
+            "endAge": 24,
+            "annualPremium": 800
+          },
+          {
+            "id": "premium-25",
+            "startAge": 25,
+            "endAge": 25,
+            "annualPremium": 810
+          },
+          {
+            "id": "premium-26",
+            "startAge": 26,
+            "endAge": 26,
+            "annualPremium": 830
+          },
+          {
+            "id": "premium-27",
+            "startAge": 27,
+            "endAge": 27,
+            "annualPremium": 855
+          },
+          {
+            "id": "premium-28",
+            "startAge": 28,
+            "endAge": 28,
+            "annualPremium": 865
+          },
+          {
+            "id": "premium-29",
+            "startAge": 29,
+            "endAge": 29,
+            "annualPremium": 885
+          },
+          {
+            "id": "premium-30",
+            "startAge": 30,
+            "endAge": 30,
+            "annualPremium": 900
+          },
+          {
+            "id": "premium-31",
+            "startAge": 31,
+            "endAge": 31,
+            "annualPremium": 910
+          },
+          {
+            "id": "premium-32",
+            "startAge": 32,
+            "endAge": 32,
+            "annualPremium": 925
+          },
+          {
+            "id": "premium-33",
+            "startAge": 33,
+            "endAge": 33,
+            "annualPremium": 950
+          },
+          {
+            "id": "premium-34",
+            "startAge": 34,
+            "endAge": 34,
+            "annualPremium": 980
+          },
+          {
+            "id": "premium-35",
+            "startAge": 35,
+            "endAge": 35,
+            "annualPremium": 1005
+          },
+          {
+            "id": "premium-36",
+            "startAge": 36,
+            "endAge": 36,
+            "annualPremium": 1020
+          },
+          {
+            "id": "premium-37",
+            "startAge": 37,
+            "endAge": 37,
+            "annualPremium": 1030
+          },
+          {
+            "id": "premium-38",
+            "startAge": 38,
+            "endAge": 38,
+            "annualPremium": 1040
+          },
+          {
+            "id": "premium-39",
+            "startAge": 39,
+            "endAge": 39,
+            "annualPremium": 1055
+          },
+          {
+            "id": "premium-40",
+            "startAge": 40,
+            "endAge": 40,
+            "annualPremium": 1060
+          },
+          {
+            "id": "premium-41",
+            "startAge": 41,
+            "endAge": 41,
+            "annualPremium": 1090
+          },
+          {
+            "id": "premium-42",
+            "startAge": 42,
+            "endAge": 42,
+            "annualPremium": 1150
+          },
+          {
+            "id": "premium-43",
+            "startAge": 43,
+            "endAge": 43,
+            "annualPremium": 1295
+          },
+          {
+            "id": "premium-44",
+            "startAge": 44,
+            "endAge": 44,
+            "annualPremium": 1475
+          },
+          {
+            "id": "premium-45",
+            "startAge": 45,
+            "endAge": 45,
+            "annualPremium": 1695
+          },
+          {
+            "id": "premium-46",
+            "startAge": 46,
+            "endAge": 46,
+            "annualPremium": 1950
+          },
+          {
+            "id": "premium-47",
+            "startAge": 47,
+            "endAge": 47,
+            "annualPremium": 2225
+          },
+          {
+            "id": "premium-48",
+            "startAge": 48,
+            "endAge": 48,
+            "annualPremium": 2555
+          },
+          {
+            "id": "premium-49",
+            "startAge": 49,
+            "endAge": 49,
+            "annualPremium": 2970
+          },
+          {
+            "id": "premium-50",
+            "startAge": 50,
+            "endAge": 50,
+            "annualPremium": 3520
+          },
+          {
+            "id": "premium-51",
+            "startAge": 51,
+            "endAge": 51,
+            "annualPremium": 4190
+          },
+          {
+            "id": "premium-52",
+            "startAge": 52,
+            "endAge": 52,
+            "annualPremium": 4865
+          },
+          {
+            "id": "premium-53",
+            "startAge": 53,
+            "endAge": 53,
+            "annualPremium": 5635
+          },
+          {
+            "id": "premium-54",
+            "startAge": 54,
+            "endAge": 54,
+            "annualPremium": 6345
+          },
+          {
+            "id": "premium-55",
+            "startAge": 55,
+            "endAge": 55,
+            "annualPremium": 7115
+          },
+          {
+            "id": "premium-56",
+            "startAge": 56,
+            "endAge": 56,
+            "annualPremium": 7565
+          },
+          {
+            "id": "premium-57",
+            "startAge": 57,
+            "endAge": 57,
+            "annualPremium": 7945
+          },
+          {
+            "id": "premium-58",
+            "startAge": 58,
+            "endAge": 58,
+            "annualPremium": 8390
+          },
+          {
+            "id": "premium-59",
+            "startAge": 59,
+            "endAge": 59,
+            "annualPremium": 9080
+          },
+          {
+            "id": "premium-60",
+            "startAge": 60,
+            "endAge": 60,
+            "annualPremium": 9645
+          },
+          {
+            "id": "premium-61",
+            "startAge": 61,
+            "endAge": 61,
+            "annualPremium": 11050
+          },
+          {
+            "id": "premium-62",
+            "startAge": 62,
+            "endAge": 62,
+            "annualPremium": 12815
+          },
+          {
+            "id": "premium-63",
+            "startAge": 63,
+            "endAge": 63,
+            "annualPremium": 13690
+          },
+          {
+            "id": "premium-64",
+            "startAge": 64,
+            "endAge": 64,
+            "annualPremium": 14510
+          },
+          {
+            "id": "premium-65",
+            "startAge": 65,
+            "endAge": 65,
+            "annualPremium": 19040
+          },
+          {
+            "id": "premium-66",
+            "startAge": 66,
+            "endAge": 66,
+            "annualPremium": 20945
+          },
+          {
+            "id": "premium-67",
+            "startAge": 67,
+            "endAge": 67,
+            "annualPremium": 23450
+          },
+          {
+            "id": "premium-68",
+            "startAge": 68,
+            "endAge": 68,
+            "annualPremium": 26590
+          },
+          {
+            "id": "premium-69",
+            "startAge": 69,
+            "endAge": 69,
+            "annualPremium": 30680
+          },
+          {
+            "id": "premium-70",
+            "startAge": 70,
+            "endAge": 70,
+            "annualPremium": 35875
+          },
+          {
+            "id": "premium-71",
+            "startAge": 71,
+            "endAge": 71,
+            "annualPremium": 42730
+          },
+          {
+            "id": "premium-72",
+            "startAge": 72,
+            "endAge": 72,
+            "annualPremium": 50370
+          },
+          {
+            "id": "premium-73",
+            "startAge": 73,
+            "endAge": 73,
+            "annualPremium": 58270
+          },
+          {
+            "id": "premium-74",
+            "startAge": 74,
+            "endAge": 74,
+            "annualPremium": 66790
+          },
+          {
+            "id": "premium-75",
+            "startAge": 75,
+            "endAge": 75,
+            "annualPremium": 74690
+          }
+        ],
+        "premium": 800,
+        "startAge": 24,
+        "endAge": 75,
+        "note": "",
+        "benefits": [
+          {
+            "id": "benefit-ltc-73438",
+            "category": "ltc",
+            "type": "長照一次金",
+            "amount": 1800000,
+            "unit": "lump"
+          }
+        ]
+      }
+    ]
+  }
+}
