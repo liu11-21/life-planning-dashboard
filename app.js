@@ -604,14 +604,18 @@ function hasSalaryDeduction(incomeType) {
   return ["salary", "project"].includes(incomeType || "salary");
 }
 
-function estimateIncomeTax(income, input, incomeType = "salary") {
-  const annualIncome = Math.max(0, Number(income) || 0);
+function estimateIncomeTax(mainIncome, sideIncome, input, incomeType = "salary") {
+  const main = Math.max(0, Number(mainIncome) || 0);
+  const side = Math.max(0, Number(sideIncome) || 0);
+  const salaryIncome = hasSalaryDeduction(incomeType) ? main : 0;
+  const otherIncome = hasSalaryDeduction(incomeType) ? side : main + side;
+  const annualIncome = salaryIncome + otherIncome;
   if (!annualIncome) return 0;
   const spouseCount = input.maritalStatus === "married" ? 1 : 0;
   const familyMembers = 1 + spouseCount + Math.max(0, Math.floor(input.dependentsCount));
   const exemption = familyMembers * 101000;
   const standardDeduction = spouseCount ? 272000 : 136000;
-  const salaryDeduction = hasSalaryDeduction(incomeType) ? Math.min(227000, annualIncome) : 0;
+  const salaryDeduction = Math.min(227000, salaryIncome);
   const taxableIncome = Math.max(0, annualIncome - exemption - standardDeduction - salaryDeduction);
   const bracket = INCOME_TAX_BRACKETS_115.find((item) => taxableIncome <= item.ceiling);
   return Math.max(0, taxableIncome * bracket.rate - bracket.deduction);
@@ -669,7 +673,8 @@ function fixedExpenseAtDate(item, date) {
   return Math.max(0, applyAnnualChange(item.monthlyAmount * 12, item.annualGrowthRate, yearsActive, item.growthMode));
 }
 
-function annualExpenseAtDate(date, input, income = 0, incomeType = input.incomeType, livingExpenseRate = 0) {
+function annualExpenseAtDate(date, input, mainIncome = 0, sideIncome = 0, incomeType = input.incomeType, livingExpenseRate = 0) {
+  const income = Math.max(0, Number(mainIncome) || 0) + Math.max(0, Number(sideIncome) || 0);
   const baseYear = Math.max(0, new Date(date).getFullYear() - new Date(input.planStartDate).getFullYear());
   const inflationFactor = Math.pow(1 + input.inflation / 100, baseYear);
   const livingExpense = livingExpenseRate > 0
@@ -680,7 +685,7 @@ function annualExpenseAtDate(date, input, income = 0, incomeType = input.incomeT
     .flatMap((item) => item.costs)
     .reduce((sum, cost) => sum + cost.annualAmount, 0);
   const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
-  const incomeTax = estimateIncomeTax(income, input, incomeType);
+  const incomeTax = estimateIncomeTax(mainIncome, sideIncome, input, incomeType);
   const assetTax = heldAssets.reduce((sum, item) => sum + assetTaxAtDate(item, date), 0);
   const fixedExpense = fixedExpenses.reduce((sum, item) => sum + fixedExpenseAtDate(item, date), 0);
   return {
@@ -716,7 +721,7 @@ function financialAtAge(age, input) {
       activeStage.sideIncomeGrowthMode
     ));
     const income = mainIncome + sideIncome;
-    const expenses = annualExpenseAtDate(date, input, income, activeStage.incomeType, activeStage.livingExpenseRate);
+    const expenses = annualExpenseAtDate(date, input, mainIncome, sideIncome, activeStage.incomeType, activeStage.livingExpenseRate);
     const stageExtraExpense = activeStage.extraMonthlyExpense * 12
       * Math.pow(1 + input.inflation / 100, stageYear);
     return {
@@ -745,7 +750,7 @@ function financialAtAge(age, input) {
     ? Math.max(0, applyAnnualChange(input.sideIncome, input.sideIncomeGrowth, baseYear, input.sideIncomeGrowthMode))
     : 0;
   const income = mainIncome + sideIncome;
-    const expenses = annualExpenseAtDate(date, input, income, input.incomeType);
+  const expenses = annualExpenseAtDate(date, input, mainIncome, sideIncome, input.incomeType);
   return {
     date,
     income,
@@ -766,9 +771,10 @@ function financialAtAge(age, input) {
 function estimateStageAnnualExpense(stage) {
   const input = readInputs();
   const startDate = stage.startDate || input.planStartDate;
-  const income = Math.max(0, Number(stage.annualIncome) || 0)
-    + Math.max(0, Number(stage.sideIncome) || 0);
-  const expenses = annualExpenseAtDate(startDate, input, income, stage.incomeType, stage.livingExpenseRate);
+  const mainIncome = Math.max(0, Number(stage.annualIncome) || 0);
+  const sideIncome = Math.max(0, Number(stage.sideIncome) || 0);
+  const income = mainIncome + sideIncome;
+  const expenses = annualExpenseAtDate(startDate, input, mainIncome, sideIncome, stage.incomeType, stage.livingExpenseRate);
   const estimatedAge = Math.min(100, Math.max(
     input.currentAge,
     input.currentAge + Math.floor(monthsBetween(input.planStartDate, startDate) / 12)
