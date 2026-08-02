@@ -1,0 +1,68 @@
+name: 錯誤回報
+description: 回報可重現的程式、介面或計算問題
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感謝回報。請勿貼上真實姓名、身分證號碼、保單號碼、金融帳戶或其他敏感資料。
+  - type: dropdown
+    id: category
+    attributes:
+      label: 問題類型
+      options:
+        - 財務計算
+        - 保險保障計算
+        - 稅務估算
+        - 資產或負債投影
+        - JSON 匯入／匯出
+        - 介面與操作
+        - 瀏覽器相容性
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 問題說明
+      description: 清楚說明實際結果與預期結果。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 重現步驟
+      placeholder: |
+        1. 開啟...
+        2. 輸入...
+        3. 點擊...
+        4. 出現...
+    validations:
+      required: true
+  - type: textarea
+    id: inputs
+    attributes:
+      label: 最小化測試資料
+      description: 僅提供重現問題所需的虛構或匿名資料。
+      render: text
+  - type: input
+    id: browser
+    attributes:
+      label: 瀏覽器與版本
+      placeholder: Chrome 150 / Windows 11
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截圖、錯誤訊息或計算過程
+      description: 涉及公式時，請附上手算結果或可靠資料來源。
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: 確認事項
+      options:
+        - label: 我未附上可識別個人的敏感資料。
+          required: true
+        - label: 我已確認目前沒有相同的 Issue。
+          required: true
