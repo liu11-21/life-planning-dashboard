@@ -4,6 +4,16 @@
 
 > 本專案目前為原型版本，主要用途為財務教育、情境模擬與初步規劃，不構成保險、投資、稅務、法律或其他專業建議。
 
+## 線上試用
+
+合併 GitHub Pages 部署流程並在 Repository 的 Pages 設定選擇 **GitHub Actions** 後，公開展示網址為：
+
+```text
+https://liu11-21.github.io/life-planning-dashboard/
+```
+
+部署流程會自動建立純靜態網站，並在公開頁面顯示教育用途與非專業建議聲明。
+
 ## 專案目標
 
 人生財務規劃往往分散在不同試算表與保險規劃文件中。本專案希望以單一儀表板整合：
@@ -91,16 +101,31 @@ Node.js：
 npx serve .
 ```
 
+## GitHub Pages 部署
+
+專案包含 `.github/workflows/pages.yml`。合併至 `main` 後：
+
+1. 進入 Repository 的 **Settings → Pages**。
+2. 在 **Build and deployment** 的 Source 選擇 **GitHub Actions**。
+3. 到 **Actions** 檢查 `Deploy static site to GitHub Pages` 是否成功。
+4. 完成後開啟線上試用網址。
+
+每次推送至 `main`，工作流程都會重新部署最新版本。
+
 ## 專案結構
 
 ```text
 .
-├── index.html       # 使用者介面
-├── styles.css       # 樣式
-├── app.js           # 試算、狀態管理與圖表邏輯
+├── index.html                         # 使用者介面
+├── styles.css                         # 樣式
+├── app.js                             # 試算、狀態管理與圖表邏輯
+├── docs/CALCULATION_ASSUMPTIONS.md    # 計算模型與限制
+├── .github/workflows/pages.yml        # GitHub Pages 部署
 ├── README.md
 ├── DISCLAIMER.md
 ├── CONTRIBUTING.md
+├── SECURITY.md
+├── ROADMAP.md
 └── LICENSE
 ```
 
@@ -114,7 +139,10 @@ npx serve .
 - 保單條款差異、等待期、除外責任與給付限制
 - 使用者輸入錯誤或資料不完整
 
-詳細內容請參閱 [DISCLAIMER.md](DISCLAIMER.md)。
+詳細內容請參閱：
+
+- [計算假設與模型說明](docs/CALCULATION_ASSUMPTIONS.md)
+- [免責聲明](DISCLAIMER.md)
 
 ## 隱私
 
@@ -128,6 +156,8 @@ npx serve .
 - 雲端儲存
 - 使用者帳戶系統
 
+安全與隱私問題請參閱 [SECURITY.md](SECURITY.md)。
+
 ## 開發方向
 
 優先項目：
@@ -135,11 +165,13 @@ npx serve .
 - [ ] 將財務計算邏輯拆分為獨立模組
 - [ ] 建立所得稅、複利、負債及保費的單元測試
 - [ ] 加入情境壓力測試與敏感度分析
-- [ ] 補充公式、假設與資料來源文件
+- [x] 補充公式、假設與限制文件
 - [ ] 改善行動裝置介面與無障礙支援
-- [ ] 建立公開示範站
+- [x] 建立 GitHub Pages 公開部署流程
 - [ ] 加入版本化的資料格式與匯入驗證
-- [ ] 建立 Issue 與 Pull Request 範本
+- [x] 建立 Issue 與 Pull Request 範本
+
+完整規劃請參閱 [ROADMAP.md](ROADMAP.md)。
 
 ## 如何貢獻
 
@@ -173,4 +205,4 @@ npx serve .
 
 ## 聲明
 
-本專案與任何保險公司、金融機構或政府機關均無官方隸屬、授權或背書關係。
+本專案與任何保險公司、金融機構、政府機關、學校或競賽主辦單位均無官方隸屬、授權或背書關係。
