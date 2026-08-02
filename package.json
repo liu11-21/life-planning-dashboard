@@ -1,0 +1,16 @@
+{
+  "name": "life-planning-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-based open-source life planning and protection gap simulator.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "check:syntax": "node --check app.js",
+    "check:static": "node scripts/validate-static.mjs",
+    "test": "npm run build && npm run check:syntax && npm run check:static"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
