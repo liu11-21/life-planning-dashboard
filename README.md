@@ -6,13 +6,11 @@
 
 ## 線上試用
 
-合併 GitHub Pages 部署流程並在 Repository 的 Pages 設定選擇 **GitHub Actions** 後，公開展示網址為：
+GitHub Pages 公開展示版已上線：
 
-```text
-https://liu11-21.github.io/life-planning-dashboard/
-```
+**https://liu11-21.github.io/life-planning-dashboard/**
 
-部署流程會自動建立純靜態網站，並在公開頁面顯示教育用途與非專業建議聲明。
+公開版使用與 CI 相同的建置流程，並顯示中性開源標語、教育用途與非專業建議聲明。
 
 ## 專案目標
 
@@ -101,16 +99,33 @@ Node.js：
 npx serve .
 ```
 
+## 建置與測試
+
+需要 Node.js 20 以上，不需安裝第三方套件：
+
+```bash
+npm test
+```
+
+此指令會：
+
+- 建立 `_site` 公開靜態網站
+- 檢查 `app.js` JavaScript 語法
+- 驗證必要開源治理文件
+- 驗證公開版中性標語與免責聲明
+- 執行核心財務計算回歸測試
+
+目前測試涵蓋簡化所得稅、單利與複利、保障給付約當換算、財務比率安全除法、定期投入終值、向上取整與上下限。
+
 ## GitHub Pages 部署
 
-專案包含 `.github/workflows/pages.yml`。合併至 `main` 後：
+專案包含 `.github/workflows/pages.yml`。每次推送至 `main` 時：
 
-1. 進入 Repository 的 **Settings → Pages**。
-2. 在 **Build and deployment** 的 Source 選擇 **GitHub Actions**。
-3. 到 **Actions** 檢查 `Deploy static site to GitHub Pages` 是否成功。
-4. 完成後開啟線上試用網址。
+1. 執行完整 `npm test`。
+2. 上傳通過驗證的 `_site`。
+3. 部署至 GitHub Pages。
 
-每次推送至 `main`，工作流程都會重新部署最新版本。
+Repository 的 **Settings → Pages → Source** 應設定為 **GitHub Actions**。
 
 ## 專案結構
 
@@ -119,9 +134,15 @@ npx serve .
 ├── index.html                         # 使用者介面
 ├── styles.css                         # 樣式
 ├── app.js                             # 試算、狀態管理與圖表邏輯
+├── package.json                       # 建置與測試指令
+├── scripts/build-site.mjs             # 公開站建置
+├── scripts/validate-static.mjs        # 靜態內容驗證
+├── tests/core-calculations.test.mjs   # 核心計算回歸測試
 ├── docs/CALCULATION_ASSUMPTIONS.md    # 計算模型與限制
+├── docs/CODEX_FOR_OSS_APPLICATION.md  # 申請內容草稿
+├── .github/workflows/quality.yml      # Pull Request 與主分支檢查
 ├── .github/workflows/pages.yml        # GitHub Pages 部署
-├── README.md
+├── CHANGELOG.md
 ├── DISCLAIMER.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
@@ -163,7 +184,8 @@ npx serve .
 優先項目：
 
 - [ ] 將財務計算邏輯拆分為獨立模組
-- [ ] 建立所得稅、複利、負債及保費的單元測試
+- [x] 建立核心計算回歸測試
+- [ ] 擴充負債、保費、資產耗盡與完整投影測試
 - [ ] 加入情境壓力測試與敏感度分析
 - [x] 補充公式、假設與限制文件
 - [ ] 改善行動裝置介面與無障礙支援
@@ -191,7 +213,7 @@ npx serve .
 本專案適合使用 Codex 協助：
 
 - 將大型前端腳本模組化
-- 建立計算邏輯測試
+- 建立與擴充計算邏輯測試
 - 驗證 JSON 匯入格式
 - 進行回歸測試與錯誤定位
 - 整理雙語文件
