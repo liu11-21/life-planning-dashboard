@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20260621c">
+  <link rel="stylesheet" href="./styles.css?v=20261014a">
 </head>
 <body>
   <main class="app-shell">
@@ -15,13 +15,18 @@
       </div>
       <div class="topbar-right">
         <div class="file-actions">
-          <button id="undoPlan" class="secondary" type="button" disabled title="回到上一步">回到上一步</button>
-          <button id="redoPlan" class="secondary" type="button" disabled title="回到下一步">回到下一步</button>
           <button id="savePlan" type="button">存檔</button>
-          <button id="importPlan" class="secondary" type="button">匯入</button>
-          <button id="exportAll" class="secondary" type="button">匯出完整檔</button>
-          <button id="clearPlan" class="danger-action" type="button">全部清除</button>
-          <input id="importFile" type="file" accept="application/json,.json" hidden>
+          <details class="file-menu">
+            <summary class="file-menu-trigger">資料管理</summary>
+            <div class="file-menu-content">
+              <button id="undoPlan" class="secondary" type="button" disabled title="回到上一步">回到上一步</button>
+              <button id="redoPlan" class="secondary" type="button" disabled title="回到下一步">回到下一步</button>
+              <button id="importPlan" class="secondary" type="button">匯入規劃</button>
+              <button id="exportAll" class="secondary" type="button">匯出完整檔</button>
+              <button id="clearPlan" class="danger-action" type="button">全部清除</button>
+              <input id="importFile" type="file" accept="application/json,.json" hidden>
+            </div>
+          </details>
         </div>
         <div class="status-strip">
           <div>
@@ -41,9 +46,30 @@
       </div>
     </header>
 
+    <nav class="workflow-nav" aria-label="規劃工作區">
+      <div class="workflow-tabs">
+        <button class="workflow-tab" type="button" data-view-target="overview" aria-pressed="true">
+          <span>01</span>總覽
+        </button>
+        <button class="workflow-tab" type="button" data-view-target="finance" aria-pressed="false">
+          <span>02</span>基本資料
+        </button>
+        <button class="workflow-tab" type="button" data-view-target="protection" aria-pressed="false">
+          <span>03</span>保障目標
+        </button>
+        <button class="workflow-tab" type="button" data-view-target="assets" aria-pressed="false">
+          <span>04</span>資產與負債
+        </button>
+        <button class="workflow-tab" type="button" data-view-target="policies" aria-pressed="false">
+          <span>05</span>保單
+        </button>
+      </div>
+      <p id="viewHelp" class="view-help" aria-live="polite">查看試算結果；調整假設後可回到總覽比較變化。</p>
+    </nav>
+
     <section class="grid-layout">
-      <aside class="control-panel">
-        <section class="panel-section">
+      <aside class="control-panel" hidden>
+        <section class="panel-section" data-view-section="finance" hidden>
           <div class="section-head">
             <h2>基本資料</h2>
           </div>
@@ -177,7 +203,7 @@
           </div>
         </section>
 
-        <section class="panel-section protection-section">
+        <section class="panel-section protection-section" data-view-section="protection" hidden>
           <div class="section-head">
             <div>
               <h2>六大保障目標</h2>
@@ -257,7 +283,7 @@
       </aside>
 
       <section class="workspace">
-        <section class="summary-row">
+        <section class="summary-row" data-view-section="overview">
           <article class="metric metric-green">
             <span>目前一次金保障缺口</span>
             <strong id="currentGap">0</strong>
@@ -276,7 +302,7 @@
           </article>
         </section>
 
-        <section class="chart-grid">
+        <section class="chart-grid" data-view-section="overview">
           <article class="chart-panel wide-panel">
             <div class="chart-head">
               <div>
@@ -311,7 +337,7 @@
           </article>
         </section>
 
-        <section class="planning-panel">
+        <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>投資項目</h2>
@@ -327,7 +353,7 @@
           </div>
         </section>
 
-        <section class="planning-panel">
+        <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>不動產</h2>
@@ -338,7 +364,7 @@
           <div id="realEstateRows" class="resource-list"></div>
         </section>
 
-        <section class="planning-panel">
+        <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>其他持有資產</h2>
@@ -349,7 +375,7 @@
           <div id="heldAssetRows" class="resource-list"></div>
         </section>
 
-        <section class="planning-panel">
+        <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>固定支出項</h2>
@@ -360,7 +386,7 @@
           <div id="fixedExpenseRows" class="resource-list"></div>
         </section>
 
-        <section class="planning-panel">
+        <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>負債</h2>
@@ -371,7 +397,7 @@
           <div id="debtRows" class="resource-list"></div>
         </section>
 
-        <section class="policy-panel">
+        <section class="policy-panel" data-view-section="policies" hidden>
           <div class="section-head policy-head">
             <div>
               <h2>現有保單與未來規劃</h2>
@@ -402,7 +428,7 @@
           </div>
         </section>
 
-        <section class="gap-table-panel">
+        <section class="gap-table-panel" data-view-section="overview">
           <div class="section-head">
             <h2>年齡檢查表</h2>
             <p>抓出幾歲需要處理最大缺口。</p>
@@ -430,6 +456,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20260624a"></script>
+  <script src="./app.js?v=20261014a"></script>
 </body>
 </html>

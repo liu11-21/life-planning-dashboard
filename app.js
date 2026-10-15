@@ -222,6 +222,7 @@ let lastRecommendations = {};
 let editorType = "";
 let editorIndex = null;
 let editorDraft = null;
+let activeView = "";
 
 function makeId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -2254,7 +2255,60 @@ async function importPlan(file) {
   }
 }
 
+const VIEW_HELP_TEXT = {
+  overview: "查看試算結果；調整假設後可回到總覽比較變化。",
+  finance: "先填目前收入、支出與家庭狀況，再查看系統更新的試算結果。",
+  protection: "設定六大保障目標；可參考建議值，也能保留自己的規劃數字。",
+  assets: "整理投資、不動產、其他資產、固定支出與負債。",
+  policies: "管理現有保單與未來規劃，並查看各項保障的缺口影響。"
+};
+
+function setActiveView(view) {
+  if (!Object.hasOwn(VIEW_HELP_TEXT, view)) return;
+  activeView = view;
+
+  document.querySelectorAll("[data-view-section]").forEach((section) => {
+    section.hidden = section.dataset.viewSection !== view;
+  });
+
+  const showControls = view === "finance" || view === "protection";
+  const showWorkspace = view === "overview" || view === "assets" || view === "policies";
+  document.querySelector(".control-panel").hidden = !showControls;
+  document.querySelector(".workspace").hidden = !showWorkspace;
+  document.querySelector(".grid-layout").dataset.activeView = view;
+
+  document.querySelectorAll("[data-view-target]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.viewTarget === view));
+  });
+  document.getElementById("viewHelp").textContent = VIEW_HELP_TEXT[view];
+
+  if (view === "overview") {
+    requestAnimationFrame(() => {
+      drawLineChart();
+      drawBarChart();
+    });
+  }
+}
+
 function bindEvents() {
+  document.querySelectorAll("[data-view-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.viewTarget === activeView) return;
+      setActiveView(button.dataset.viewTarget);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest(".file-menu")) return;
+    document.querySelector(".file-menu").open = false;
+  });
+
+  document.querySelector(".file-menu-content").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (button && button.id !== "importPlan") document.querySelector(".file-menu").open = false;
+  });
+
   INPUT_IDS.forEach((id) => {
     document.getElementById(id).addEventListener("input", () => {
       if (id === "currentAge") {
@@ -2471,7 +2525,10 @@ function bindEvents() {
   });
   document.getElementById("importFile").addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
-    if (file) await importPlan(file);
+    if (file) {
+      document.querySelector(".file-menu").open = false;
+      await importPlan(file);
+    }
     event.target.value = "";
   });
   document.getElementById("exportAll").addEventListener("click", exportAll);
@@ -2738,6 +2795,7 @@ function bindEvents() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && editorDraft) closeEntityEditor();
+    if (event.key === "Escape") document.querySelector(".file-menu").open = false;
     const isEditing = ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName);
     if (isEditing || !(event.ctrlKey || event.metaKey)) return;
     const key = event.key.toLowerCase();
@@ -2766,4 +2824,5 @@ renderRealEstate();
 renderResources("asset");
 renderResources("debt");
 bindEvents();
+setActiveView("overview");
 recalculate();

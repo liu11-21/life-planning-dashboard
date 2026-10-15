@@ -23,6 +23,10 @@ html {
   font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
 }
@@ -92,7 +96,7 @@ h2 {
 
 .file-actions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   justify-content: end;
 }
@@ -100,6 +104,131 @@ h2 {
 .file-actions button {
   min-height: 34px;
   padding: 6px 11px;
+}
+
+.file-menu {
+  position: relative;
+}
+
+.file-menu-trigger {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #b9cec5;
+  border-radius: 6px;
+  color: var(--green);
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 11px;
+  white-space: nowrap;
+}
+
+.file-menu-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.file-menu-trigger::after {
+  content: "▾";
+  font-size: 11px;
+}
+
+.file-menu[open] .file-menu-trigger,
+.file-menu-trigger:hover {
+  background: var(--surface-soft);
+}
+
+.file-menu-content {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 6px;
+  min-width: 190px;
+  padding: 9px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 7px);
+  z-index: 30;
+}
+
+.file-menu:not([open]) > .file-menu-content {
+  display: none;
+}
+
+.file-menu-content button {
+  text-align: left;
+  width: 100%;
+}
+
+.file-menu-content .danger-action {
+  border-top: 1px solid var(--line);
+  margin-top: 3px;
+  padding-top: 9px;
+}
+
+.workflow-nav {
+  background: var(--bg);
+  margin: 0 auto 14px;
+  max-width: 1480px;
+  padding: 8px 0 10px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.workflow-tabs {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(22, 40, 35, 0.07);
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 5px;
+  scrollbar-width: thin;
+}
+
+.workflow-tab {
+  align-items: center;
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  display: flex;
+  flex: 1 0 auto;
+  gap: 9px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+
+.workflow-tab span {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.workflow-tab:hover {
+  background: var(--surface-soft);
+  color: var(--green);
+}
+
+.workflow-tab[aria-pressed="true"] {
+  background: var(--green);
+  border-color: var(--green);
+  color: #ffffff;
+}
+
+.view-help {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 8px 4px 0;
 }
 
 .save-status {
@@ -140,8 +269,8 @@ h2 {
 
 .grid-layout {
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(300px, 350px) minmax(0, 1fr);
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0 auto;
   max-width: 1480px;
 }
@@ -192,7 +321,7 @@ h2 {
 .input-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 label {
@@ -226,7 +355,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus,
-button:focus {
+button:focus,
+.file-menu-trigger:focus {
   border-color: var(--green-2);
   box-shadow: 0 0 0 3px rgba(47, 155, 109, 0.18);
   outline: none;
@@ -234,7 +364,8 @@ button:focus {
 
 .protection-grid {
   display: grid;
-  gap: 0;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .recommendation-overview {
@@ -257,17 +388,13 @@ button:focus {
 }
 
 .protection-item {
-  border-top: 1px solid var(--line);
-  padding: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
 }
 
 .protection-item:first-child {
-  border-top: 0;
-  padding-top: 2px;
-}
-
-.protection-item:last-child {
-  padding-bottom: 0;
+  padding-top: 14px;
 }
 
 .protection-item h3 {
@@ -1121,7 +1248,8 @@ td select {
     grid-template-columns: 1fr;
   }
 
-  .control-panel {
+  .input-grid,
+  .protection-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1161,6 +1289,7 @@ td select {
   .status-strip,
   .summary-row,
   .input-grid,
+  .protection-grid,
   .control-panel,
   .age-table {
     grid-template-columns: 1fr;
