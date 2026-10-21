@@ -151,37 +151,25 @@ a { color: #accfff; }
 :is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary) {
   --liquid-x: 50%;
   --liquid-y: 50%;
-  --liquid-drift-x: 0px;
-  --liquid-drift-y: 0px;
   isolation: isolate;
   overflow: hidden;
   position: relative;
 }
 :is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary)::before {
-  background: radial-gradient(ellipse 80px 45px at var(--liquid-x) var(--liquid-y), #e8faffa6, #74caed66 25%, #9bb9ff24 45%, transparent 75%),
-    repeating-radial-gradient(ellipse at var(--liquid-x) var(--liquid-y), transparent 0 17px, #c1eeff52 19px, #72b1de38 21px, transparent 25px 42px),
-    linear-gradient(130deg, #e3f6ff24, transparent 35%, #87c2ed17 70%, #e1f5ff38);
-  border: 1px solid #d1edff66;
+  background: radial-gradient(ellipse 110px 70px at var(--liquid-x) var(--liquid-y), #bddfff1f, transparent 75%),
+    linear-gradient(135deg, #d6edff26, transparent 45%, #c1e0f51a);
+  border: 1px solid #d1edff40;
   border-radius: inherit;
   content: "";
-  inset: -8px;
-  opacity: 0.16;
+  inset: 0;
+  opacity: 0.24;
   pointer-events: none;
   position: absolute;
-  transform: translate(var(--liquid-drift-x), var(--liquid-drift-y)) scale(1.08);
-  transition: opacity 260ms ease, transform 200ms ease-out;
+  transition: opacity 260ms ease;
   z-index: -1;
 }
-.liquid-ripple {
-  background: radial-gradient(ellipse, #94cfff0a 25%, transparent 40%, #a4e5ff59 48%, #f1fcffb3 54%, #5caddf80 58%, transparent 65%);
-  border: 2px solid #c3efffb3;
-  box-shadow: inset 0 0 20px #ade4ff66, 0 0 16px #78bbeb4d;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: -1;
-}
-.liquid-ripple::after { border: 2px solid #e6faff99; border-radius: inherit; content: ""; inset: 15%; position: absolute; }
+button:not(.age-item) > .liquid-water, .file-menu-trigger > .liquid-water { clip-path: inset(1px round 999px); }
+summary:not(.file-menu-trigger) > .liquid-water { clip-path: inset(1px round 12px); }
 button { background: linear-gradient(145deg, #608ee8, #3b5fba); border-color: #9ec9ff73; color: #fff; box-shadow: inset 0 1px 0 #e6f5ff73, inset 0 -2px 0 #0c1e3e70, 0 6px 15px #0005; }
 button:hover { background-color: #5c84d8; }
 :is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger, button.modal-close) {
@@ -209,7 +197,7 @@ button:focus-visible, .file-menu-trigger:focus-visible { outline: 2px solid #bdd
   .edit-modal-header, .edit-modal-actions { -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
 }
 @media (hover: hover) and (pointer: fine) {
-  :is(button, .file-menu-trigger, summary).is-liquid-hover::before { opacity: 0.95; }
+  :is(button, .file-menu-trigger, summary).is-liquid-hover::before { opacity: 0.7; }
   :is(.mission-panel, .metric, .panel-section, .planning-panel, .policy-panel, .chart-panel, .gap-table-panel, .age-snapshot, .protection-item, .scope-grid article, .age-item).is-water-active {
     border-color: #d5edff99;
     box-shadow: 0 30px 65px #0000009e, 0 10px 24px #0008, 0 0 30px #699ec017, inset 0 2px 1px #effbffa6, inset 0 -2px 2px #7ba6ce52;
@@ -226,7 +214,7 @@ button:focus-visible, .file-menu-trigger:focus-visible { outline: 2px solid #bdd
   :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after { padding: 3px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .liquid-water, .liquid-ripple { display: none; }
+  .liquid-water { display: none; }
   :is(button, .file-menu-trigger, summary)::before { transform: none; transition: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -236,10 +224,10 @@ button:focus-visible, .file-menu-trigger:focus-visible { outline: 2px solid #bdd
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  .liquid-water, .liquid-ripple, :is(button, .file-menu-trigger, summary)::before { display: none; }
+  .liquid-water, :is(button, .file-menu-trigger, summary)::before { display: none; }
 }
 @media (forced-colors: active) {
-  .liquid-water, .liquid-ripple, :is(button, .file-menu-trigger, summary)::before { display: none; }
+  .liquid-water, :is(button, .file-menu-trigger, summary)::before { display: none; }
   :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after { display: none; }
 }
 
