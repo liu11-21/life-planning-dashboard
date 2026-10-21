@@ -223,6 +223,8 @@ let editorType = "";
 let editorIndex = null;
 let editorDraft = null;
 let activeView = "";
+let editorReturnFocus = null;
+let pendingCalculation = null;
 
 function makeId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -233,9 +235,15 @@ function isoDate(date) {
 }
 
 function addYearsToIso(dateString, years) {
-  const date = dateString ? new Date(`${dateString}T12:00:00`) : new Date();
-  date.setFullYear(date.getFullYear() + years);
-  return isoDate(date);
+  return addMonthsToIso(dateString || isoDate(new Date()), years * 12);
+}
+
+function addMonthsToIso(dateString, months) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+  const target = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(date.getUTCDate(), lastDay));
+  return isoDate(target);
 }
 
 function ensureDateDefaults() {
@@ -259,9 +267,7 @@ function ageToDate(age) {
 
 function dateToAge(dateString, input) {
   if (!dateString) return null;
-  return input.currentAge
-    + new Date(dateString).getFullYear()
-    - new Date(input.planStartDate).getFullYear();
+  return input.currentAge + Math.floor(monthsBetween(input.planStartDate, dateString) / 12);
 }
 
 function defaultUnit(category, type = "") {
@@ -274,6 +280,9 @@ function defaultUnit(category, type = "") {
 function normalizePolicies(list) {
   return list.map((source) => {
     const policy = { ...source, id: source.id || makeId("policy") };
+    policy.premium = Math.max(0, Number(source.premium) || 0);
+    policy.startAge = Number.isFinite(Number(source.startAge)) ? Number(source.startAge) : readInputs().currentAge;
+    policy.endAge = Number.isFinite(Number(source.endAge)) ? Number(source.endAge) : 100;
     policy.contractType = source.contractType === "rider" ? "rider" : "main";
     policy.parentId = policy.contractType === "rider" ? (source.parentId || "") : "";
     policy.productType = source.productType === "investmentLinked" ? "investmentLinked" : "protection";
@@ -321,8 +330,12 @@ function normalizePolicies(list) {
 }
 
 function numberValue(id) {
-  const value = Number(document.getElementById(id).value);
-  return Number.isFinite(value) ? value : 0;
+  const element = document.getElementById(id);
+  const value = Number(element.value);
+  if (!Number.isFinite(value)) return 0;
+  const minimum = element.min === "" ? -Infinity : Number(element.min);
+  const maximum = element.max === "" ? Infinity : Number(element.max);
+  return Math.max(minimum, Math.min(maximum, value));
 }
 
 function readInputs() {
@@ -330,7 +343,7 @@ function readInputs() {
   INPUT_IDS.forEach((id) => {
     values[id] = numberValue(id);
   });
-  values.currentAge = Math.max(18, Math.min(80, values.currentAge));
+  values.currentAge = Math.round(Math.max(18, Math.min(80, values.currentAge)));
   DATE_IDS.forEach((id) => {
     values[id] = document.getElementById(id).value;
   });
@@ -563,15 +576,17 @@ function calculateMonthlyLoanPayment(principal, annualRate, years) {
   if (!months || !amount) return 0;
   const monthlyRate = Math.max(0, Number(annualRate) || 0) / 1200;
   if (!monthlyRate) return amount / months;
-  const factor = Math.pow(1 + monthlyRate, months);
-  return amount * monthlyRate * factor / (factor - 1);
+  const logGrowth = Math.log1p(monthlyRate) * months;
+  return amount * monthlyRate * Math.exp(logGrowth) / Math.expm1(logGrowth);
 }
 
 function monthsBetween(startDate, targetDate) {
   if (!startDate || !targetDate) return 0;
-  const start = new Date(`${startDate}T12:00:00`);
-  const target = new Date(`${targetDate}T12:00:00`);
-  return Math.max(0, (target.getFullYear() - start.getFullYear()) * 12 + target.getMonth() - start.getMonth());
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const target = new Date(`${targetDate}T00:00:00Z`);
+  let months = (target.getUTCFullYear() - start.getUTCFullYear()) * 12 + target.getUTCMonth() - start.getUTCMonth();
+  if (months > 0 && addMonthsToIso(startDate, months) > targetDate) months -= 1;
+  return Math.max(0, months);
 }
 
 function debtBalanceAtDate(item, date) {
@@ -579,26 +594,42 @@ function debtBalanceAtDate(item, date) {
   const principal = Math.max(0, Number(item.value) || 0);
   const payment = Math.max(0, Number(item.monthlyPayment) || 0);
   const elapsedMonths = monthsBetween(item.startDate, date);
-  if (!payment || !elapsedMonths) return principal;
+  if (!elapsedMonths) return principal;
   const monthlyRate = Math.max(0, Number(item.interestRate) || 0) / 1200;
   if (!monthlyRate) return Math.max(0, principal - payment * elapsedMonths);
-  const factor = Math.pow(1 + monthlyRate, elapsedMonths);
-  return Math.max(0, principal * factor - payment * (factor - 1) / monthlyRate);
+  const logGrowth = Math.log1p(monthlyRate) * elapsedMonths;
+  return Math.max(0, principal * Math.exp(logGrowth) - payment * Math.expm1(logGrowth) / monthlyRate);
 }
 
-function debtPaymentForYear(item, date) {
-  let balance = debtBalanceAtDate(item, date);
+function debtScheduleForYear(item, date, includeStartPayoff = false) {
+  const yearEnd = addYearsToIso(date, 1);
+  const startDate = item.startDate || date;
+  if (startDate >= yearEnd) return { payment: 0, balance: 0 };
+  if (item.endDate && item.endDate <= date) {
+    const payment = includeStartPayoff && item.endDate === date ? debtBalanceAtDate(item, date) : 0;
+    return { payment, balance: 0 };
+  }
+  const cutoff = item.endDate && item.endDate < yearEnd ? item.endDate : yearEnd;
+  let balance = startDate > date ? Math.max(0, Number(item.value) || 0) : debtBalanceAtDate(item, date);
   const payment = Math.max(0, Number(item.monthlyPayment) || 0);
-  if (!balance || !payment) return 0;
   const monthlyRate = Math.max(0, Number(item.interestRate) || 0) / 1200;
+  const months = monthsBetween(startDate, cutoff) - monthsBetween(startDate, date);
   let total = 0;
-  for (let month = 0; month < 12 && balance > 0; month += 1) {
+  for (let month = 0; month < months && balance > 0; month += 1) {
     const amountDue = balance * (1 + monthlyRate);
     const paid = Math.min(payment, amountDue);
     balance = Math.max(0, amountDue - paid);
     total += paid;
   }
-  return total;
+  if (item.endDate && item.endDate <= yearEnd) {
+    total += balance;
+    balance = 0;
+  }
+  return { payment: total, balance };
+}
+
+function debtPaymentForYear(item, date, includeStartPayoff = false) {
+  return debtScheduleForYear(item, date, includeStartPayoff).payment;
 }
 
 function hasSalaryDeduction(incomeType) {
@@ -647,7 +678,7 @@ function applyAnnualChange(value, annualRate, years, mode = "compound") {
   const factor = mode === "simple"
     ? 1 + rate * Math.max(0, years)
     : Math.pow(1 + rate, Math.max(0, years));
-  return Number(value || 0) * factor;
+  return Number(value || 0) * Math.max(0, factor);
 }
 
 function growthModeLabel(mode) {
@@ -685,7 +716,7 @@ function annualExpenseAtDate(date, input, mainIncome = 0, sideIncome = 0, income
     .filter((item) => isDateActive(date, item.startDate, item.endDate))
     .flatMap((item) => item.costs)
     .reduce((sum, cost) => sum + cost.annualAmount, 0);
-  const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date), 0);
+  const debtRepayment = debtItems.reduce((sum, item) => sum + debtPaymentForYear(item, date, date === input.planStartDate), 0);
   const incomeTax = estimateIncomeTax(mainIncome, sideIncome, input, incomeType);
   const assetTax = heldAssets.reduce((sum, item) => sum + assetTaxAtDate(item, date), 0);
   const fixedExpense = fixedExpenses.reduce((sum, item) => sum + fixedExpenseAtDate(item, date), 0);
@@ -708,7 +739,7 @@ function financialAtAge(age, input) {
     (stage) => isDateActive(date, stage.startDate, stage.endDate)
   ).at(-1);
   if (activeStage) {
-    const stageYear = Math.max(0, new Date(date).getFullYear() - new Date(activeStage.startDate).getFullYear());
+    const stageYear = Math.floor(monthsBetween(activeStage.startDate, date) / 12);
     const mainIncome = Math.max(0, applyAnnualChange(
       activeStage.annualIncome,
       activeStage.incomeGrowth,
@@ -915,11 +946,10 @@ function safeRatio(numerator, denominator) {
   return numerator / denominator * 100;
 }
 
-function financialRatiosAtAge(financial, premium, liquidAssets, investmentAssets, heldAssetValue, debtValue) {
-  const activeDebtItems = debtItems.filter((item) => isDateActive(financial.date, item.startDate, item.endDate));
-  const shortTermDebtValue = activeDebtItems
+function financialRatiosAtAge(financial, premium, { liquidAssets, investmentAssets, heldAssetValue, debtValue }) {
+  const shortTermDebtValue = debtItems
     .filter(isShortTermConsumerDebt)
-    .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
+    .reduce((sum, item) => sum + debtScheduleForYear(item, financial.date).balance, 0);
   const financingDebtValue = Math.max(0, debtValue - shortTermDebtValue);
   const positiveLiquidAssets = Math.max(0, liquidAssets);
   const financingAssets = Math.max(0, investmentAssets) + Math.max(0, heldAssetValue);
@@ -945,10 +975,43 @@ function periodicContributionFutureValue(amount, annualRate, cycle) {
   const periods = annualCycleMultiplier(cycle);
   const periodicAmount = Math.max(0, Number(amount) || 0);
   if (!periods || !periodicAmount) return 0;
-  const rate = Number(annualRate) / 100;
+  const rate = Math.max(-100, Number(annualRate) || 0) / 100;
   if (!rate) return periodicAmount * periods;
-  const periodRate = Math.pow(1 + rate, 1 / periods) - 1;
-  return periodicAmount * ((Math.pow(1 + periodRate, periods) - 1) / periodRate) * (1 + periodRate);
+  if (rate === -1) return 0;
+  const periodRate = Math.expm1(Math.log1p(rate) / periods);
+  return periodicAmount * rate / periodRate * (1 + periodRate);
+}
+
+function investmentForYear(item, openingBalance, date, recurringAmount, firstYear) {
+  const yearEnd = addYearsToIso(date, 1);
+  const origin = item.startDate || date;
+  if (origin >= yearEnd || (item.endDate && item.endDate < date)) {
+    return { balance: 0, contribution: 0, liquidation: openingBalance };
+  }
+  const start = origin > date ? origin : date;
+  const end = item.endDate && item.endDate < yearEnd ? item.endDate : yearEnd;
+  if (end < start) return { balance: 0, contribution: 0, liquidation: openingBalance };
+  const yearDays = (Date.parse(yearEnd) - Date.parse(date)) / 86400000;
+  const rate = Math.max(-100, Number(item.returnRate) || 0) / 100;
+  const growth = (from) => Math.pow(1 + rate, Math.max(0, (Date.parse(end) - Date.parse(from)) / 86400000 / yearDays));
+  let contribution = firstYear || origin >= date ? Math.max(0, Number(item.lumpSum) || 0) : 0;
+  let balance = (openingBalance + contribution) * growth(start);
+  const step = item.cycle === "quarterly" ? 3 : item.cycle === "yearly" ? 12 : 1;
+  let month = Math.floor(monthsBetween(origin, start) / step) * step;
+  let dueDate = addMonthsToIso(origin, month);
+  while (dueDate < start) {
+    month += step;
+    dueDate = addMonthsToIso(origin, month);
+  }
+  while (dueDate < end) {
+    const amount = Math.max(0, Number(recurringAmount) || 0);
+    contribution += amount;
+    balance += amount * growth(dueDate);
+    month += step;
+    dueDate = addMonthsToIso(origin, month);
+  }
+  const liquidates = Boolean(item.endDate && item.endDate <= yearEnd);
+  return { balance: liquidates ? 0 : balance, contribution, liquidation: liquidates ? balance : 0 };
 }
 
 function recurringInvestmentAmountAtAge(item, age) {
@@ -997,80 +1060,60 @@ function projectPlan() {
       gaps[item.key] = Math.max(0, needs[item.key] - coverage[item.key]);
     });
 
-    const previousDate = age === input.currentAge ? "" : dateForAge(age - 1, input);
     const rebalanceRows = investments
       .map((item) => ({
         id: item.id,
-        row: item.rebalanceSchedule?.find((schedule) => schedule.age === age)
+        row: item.rebalanceSchedule?.find((schedule) => schedule.age === age),
+        active: (!item.endDate || item.endDate > financial.date)
+          && item.startDate < addYearsToIso(financial.date, 1)
       }))
-      .filter(({ row }) => row);
+      .filter(({ row, active }) => row && active);
+    let rebalanceLiquidation = 0;
     if (rebalanceRows.length) {
-      const rebalanceTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
-      Object.keys(investmentBalances).forEach((id) => {
-        investmentBalances[id] = 0;
-      });
+      const total = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
+      const weightSum = rebalanceRows.reduce((sum, { row }) => sum + Math.max(0, Number(row.targetWeight) || 0), 0);
+      Object.keys(investmentBalances).forEach((id) => { investmentBalances[id] = 0; });
       rebalanceRows.forEach(({ id, row }) => {
-        investmentBalances[id] = rebalanceTotal * Math.max(0, Number(row.targetWeight) || 0);
+        investmentBalances[id] = total * Math.max(0, Number(row.targetWeight) || 0) / Math.max(1, weightSum);
       });
+      rebalanceLiquidation = total - Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
     }
     let investmentContribution = 0;
-    let investmentLiquidation = 0;
+    let investmentLiquidation = rebalanceLiquidation;
     investments.forEach((item) => {
-      const active = isDateActive(financial.date, item.startDate, item.endDate);
-      const startsThisYear = active && (!previousDate || previousDate < item.startDate);
-      const heldDuringYear = active || (
-        investmentBalances[item.id] > 0
-        && item.endDate
-        && previousDate
-        && previousDate < item.endDate
-        && financial.date >= item.endDate
-      );
-      if (heldDuringYear) {
-        const cycleMultiplier = annualCycleMultiplier(item.cycle);
-        const recurringAmount = active ? recurringInvestmentAmountAtAge(item, age) : 0;
-        const recurringContribution = recurringAmount * cycleMultiplier;
-        const lumpSum = active && startsThisYear ? item.lumpSum : 0;
-        investmentBalances[item.id] = investmentBalances[item.id] * (1 + item.returnRate / 100)
-          + lumpSum * (1 + item.returnRate / 100)
-          + periodicContributionFutureValue(recurringAmount, item.returnRate, item.cycle);
-        investmentContribution += recurringContribution + lumpSum;
-      }
-      if (investmentBalances[item.id] > 0 && item.endDate && financial.date >= item.endDate) {
-        investmentLiquidation += investmentBalances[item.id];
-        investmentBalances[item.id] = 0;
-      }
+      const result = investmentForYear(item, investmentBalances[item.id], financial.date,
+        recurringInvestmentAmountAtAge(item, age), age === input.currentAge);
+      investmentBalances[item.id] = result.balance;
+      investmentContribution += result.contribution;
+      investmentLiquidation += result.liquidation;
     });
 
     let policyInvestmentContribution = 0;
     let policyInvestmentLiquidation = 0;
-    policies
-      .filter((policy) => policy.productType === "investmentLinked")
-      .forEach((policy) => {
-        const activeInvestment = age >= policy.startAge && age <= policy.endAge;
-        if (activeInvestment) {
-          const startsThisYear = age === policy.startAge
-            || (age === input.currentAge && policy.startAge <= input.currentAge);
-          const contribution = policy.investmentMode === "recurring"
-            ? policy.investmentAmount * annualCycleMultiplier(policy.investmentCycle)
-            : startsThisYear ? policy.investmentAmount : 0;
-          policyInvestmentBalances[policy.id] = policyInvestmentBalances[policy.id]
-            * (1 + policy.investmentReturnRate / 100)
-            + contribution;
-          policyInvestmentContribution += contribution;
-        }
-        if (policyInvestmentBalances[policy.id] > 0 && age >= policy.endAge) {
-          policyInvestmentLiquidation += policyInvestmentBalances[policy.id];
-          policyInvestmentBalances[policy.id] = 0;
-        }
-      });
+    policies.filter((policy) => policy.productType === "investmentLinked").forEach((policy) => {
+      const item = {
+        startDate: dateForAge(policy.startAge, input),
+        endDate: dateForAge(policy.endAge + 1, input),
+        lumpSum: policy.investmentMode === "lumpSum" ? policy.investmentAmount : 0,
+        cycle: policy.investmentCycle,
+        returnRate: policy.investmentReturnRate
+      };
+      const amount = policy.investmentMode === "recurring" ? policy.investmentAmount : 0;
+      const result = investmentForYear(item, policyInvestmentBalances[policy.id], financial.date,
+        amount, age === input.currentAge);
+      policyInvestmentBalances[policy.id] = result.balance;
+      policyInvestmentContribution += result.contribution;
+      policyInvestmentLiquidation += result.liquidation;
+    });
 
     const totalInvestmentContribution = investmentContribution + policyInvestmentContribution;
     const totalInvestmentLiquidation = investmentLiquidation + policyInvestmentLiquidation;
 
     const cashGrowthRate = Math.max(-100, Number(input.cashReturnRate) || 0) / 100;
-    const liquidGrowthFactor = age === input.currentAge ? 1 : 1 + cashGrowthRate;
-    liquidBalance = liquidBalance * liquidGrowthFactor
-      + income - expense - premium - premiumCashCharge - totalInvestmentContribution + totalInvestmentLiquidation;
+    const openingCash = liquidBalance;
+    const cashInterest = age === input.currentAge ? 0 : Math.max(0, openingCash) * cashGrowthRate;
+    const operatingSurplus = income - expense - premium;
+    liquidBalance += cashInterest + operatingSurplus - totalInvestmentContribution + totalInvestmentLiquidation;
     const marketInvestmentTotal = Object.values(investmentBalances).reduce((sum, value) => sum + value, 0);
     const policyInvestmentTotal = Object.values(policyInvestmentBalances).reduce((sum, value) => sum + value, 0);
     const investmentTotal = marketInvestmentTotal + policyInvestmentTotal;
@@ -1080,16 +1123,12 @@ function projectPlan() {
       .filter(isRealEstateAsset)
       .reduce((sum, item) => sum + assetValueAtDate(item, financial.date), 0);
     const debtValue = debtItems
-      .reduce((sum, item) => sum + debtBalanceAtDate(item, financial.date), 0);
+      .reduce((sum, item) => sum + debtScheduleForYear(item, financial.date).balance, 0);
     const netAssets = liquidBalance + investmentTotal + heldAssetValue - debtValue;
     const financialRatios = financialRatiosAtAge(
       financial,
       premium,
-      premiumCashCharge,
-      liquidBalance,
-      investmentTotal,
-      heldAssetValue,
-      debtValue
+      { liquidAssets: liquidBalance, investmentAssets: investmentTotal, heldAssetValue, debtValue }
     );
 
     rows.push({
@@ -1104,6 +1143,12 @@ function projectPlan() {
       assetTax: financial.assetTax,
       fixedExpense: financial.fixedExpense,
       premium,
+      premiumCashCharge,
+      openingCash,
+      cashInterest,
+      operatingSurplus,
+      consumptionExpense: financial.consumptionExpense,
+      debtRepayment: financial.debtRepayment,
       assets: netAssets,
       liquidAssets: liquidBalance,
       investmentAssets: investmentTotal,
@@ -1240,8 +1285,7 @@ function openStageManager() {
   document.getElementById("editModalTitle").textContent = "人生階段｜更多編輯";
   document.querySelector('#editModalForm button[type="submit"]').textContent = "完成";
   renderEditorFields();
-  document.getElementById("editModal").hidden = false;
-  document.body.classList.add("modal-open");
+  showEntityEditor();
 }
 
 function renderSimpleEditor() {
@@ -1341,7 +1385,8 @@ function renderResourceEditor() {
       ${debtFields}
       ${assetTaxFields}
       <label>開始日<input data-draft-field="startDate" type="date" value="${editorDraft.startDate}"></label>
-      <label>結束日<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
+      <label>${editorType === "debt" ? "貸款到期清償日" : "持有結束日"}<input data-draft-field="endDate" type="date" value="${editorDraft.endDate}"></label>
+      ${editorType === "debt" ? '<p class="modal-help full-field">到期時會一次清償剩餘本息；持續按月攤還可將到期日留白。</p>' : ""}
       <label class="full-field">文字敘述<textarea data-draft-field="note" rows="3">${escapeHtml(editorDraft.note)}</textarea></label>
     </div>
     <div class="modal-subsection">
@@ -1410,6 +1455,28 @@ function renderPolicyEditor() {
     ${editorDraft.contractType === "main" ? `<div class="modal-subsection"><div class="modal-subsection-head"><div><strong>附約</strong><p class="modal-help">${editorIndex === null ? "請先儲存主約，再回來新增附約。" : "附約只在此主約的二級選單顯示。"}</p></div><button type="button" class="add-benefit-btn" data-editor-action="add-rider" ${editorIndex === null ? "disabled" : ""}>新增附約</button></div><div class="entity-summary-list">${riderRows}</div></div>` : ""}`;
 }
 
+function validateEditorFields() {
+  if (!editorDraft) return true;
+  const fields = document.getElementById("editModalFields");
+  const endDate = fields.querySelector('[data-draft-field="endDate"]');
+  const endAge = fields.querySelector('[data-draft-field="endAge"]');
+  if (endDate) endDate.setCustomValidity(editorDraft.startDate && editorDraft.endDate
+    && editorDraft.endDate < editorDraft.startDate ? "結束日需晚於或等於開始日" : "");
+  if (endAge) endAge.setCustomValidity(Number(editorDraft.endAge) < Number(editorDraft.startAge)
+    ? "保障結束年齡不可早於起保年齡" : "");
+  return document.getElementById("editModalForm").checkValidity();
+}
+
+function showEntityEditor() {
+  const modal = document.getElementById("editModal");
+  if (modal.hidden) editorReturnFocus = document.activeElement;
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => {
+    modal.querySelector('#editModalFields input, #editModalFields select, #editModalFields button')?.focus();
+  });
+}
+
 function renderEditorFields() {
   const fields = document.getElementById("editModalFields");
   fields.innerHTML = editorType === "stage-list"
@@ -1419,6 +1486,7 @@ function renderEditorFields() {
     : (editorType === "asset" || editorType === "debt")
       ? renderResourceEditor()
       : renderSimpleEditor();
+  validateEditorFields();
 }
 
 function openEntityEditor(type, index = null) {
@@ -1428,8 +1496,7 @@ function openEntityEditor(type, index = null) {
   document.getElementById("editModalTitle").textContent = editorTitle(type, index === null);
   document.querySelector('#editModalForm button[type="submit"]').textContent = "儲存";
   renderEditorFields();
-  document.getElementById("editModal").hidden = false;
-  document.body.classList.add("modal-open");
+  showEntityEditor();
 }
 
 function openRealEstateEditor(index = null) {
@@ -1459,8 +1526,7 @@ function openRiderEditor(parentId, index = null) {
   document.getElementById("editModalTitle").textContent = "新增附約";
   document.querySelector('#editModalForm button[type="submit"]').textContent = "儲存";
   renderEditorFields();
-  document.getElementById("editModal").hidden = false;
-  document.body.classList.add("modal-open");
+  showEntityEditor();
 }
 
 function closeEntityEditor() {
@@ -1469,6 +1535,8 @@ function closeEntityEditor() {
   editorType = "";
   editorIndex = null;
   editorDraft = null;
+  if (editorReturnFocus?.isConnected) editorReturnFocus.focus({ preventScroll: true });
+  editorReturnFocus = null;
 }
 
 function commitEntityEditor() {
@@ -1696,18 +1764,74 @@ function renderSummary() {
   document.getElementById("currentAgeLabel").textContent = input.currentAge;
   document.getElementById("currentGap").textContent = formatMoney(current.totalGap, true);
   document.getElementById("worstAge").textContent = `${worst.age}歲`;
-  document.getElementById("depletionAge").textContent = depletion ? `${depletion.age}歲` : "未耗盡";
+  document.getElementById("depletionAge").textContent = depletion ? `${depletion.age}歲` : "未轉負";
+  document.getElementById("depletionAge").dataset.state = depletion ? "negative" : "positive";
   document.getElementById("age100Assets").textContent = formatMoney(age100.assets, true);
 
   const status = document.getElementById("survivalStatus");
-  status.textContent = depletion ? `撐到${depletion.age - 1}歲` : "可達100歲";
-  status.style.color = depletion ? "#b8463d" : "#166c50";
+  status.textContent = depletion ? `${depletion.age}歲轉負` : "未轉負";
+  status.style.color = depletion ? "#d64150" : "#247562";
 
   const ageSlider = document.getElementById("selectedAge");
   ageSlider.min = input.currentAge;
   if (Number(ageSlider.value) < input.currentAge) {
     ageSlider.value = input.currentAge;
   }
+}
+
+function renderMission() {
+  const current = projection[0];
+  const firstCashRisk = projection.find((row) => row.liquidAssets < 0);
+  document.getElementById("overviewNetAssets").textContent = formatMoney(current.assets);
+  const surplus = document.getElementById("overviewSurplus");
+  surplus.textContent = formatMoney(current.operatingSurplus, true);
+  surplus.dataset.state = current.operatingSurplus < 0 ? "negative" : "positive";
+  const annualOutflow = current.expense + current.premium;
+  document.getElementById("overviewRunway").textContent = annualOutflow > 0
+    ? `${(Math.max(0, current.liquidAssets) / annualOutflow * 12).toFixed(1)} 個月` : "—";
+  document.getElementById("overviewCashRisk").textContent = firstCashRisk ? `${firstCashRisk.age}歲` : "未出現";
+  document.getElementById("overviewCashRisk").dataset.state = firstCashRisk ? "negative" : "positive";
+  document.getElementById("overviewPeriod").textContent = `${current.date} 起的一年・${current.financeStage}・新臺幣估算`;
+  document.getElementById("trajectoryRange").textContent = `${current.age} → 100歲`;
+  const values = projection.map((row) => row.assets);
+  const minimum = Math.min(...values, 0);
+  const maximum = Math.max(...values, 1);
+  const points = values.map((value, index) =>
+    `${(index / Math.max(1, values.length - 1) * 600).toFixed(1)},${(96 - (value - minimum) / (maximum - minimum) * 88).toFixed(1)}`);
+  const line = `M${points.join(" L")}`;
+  document.getElementById("trajectoryLine").setAttribute("d", line);
+  document.getElementById("trajectoryArea").setAttribute("d", `${line} L600,108 L0,108 Z`);
+}
+
+function renderSelectedYear() {
+  const age = Number(document.getElementById("selectedAge").value);
+  const row = projection.find((item) => item.age === age) || projection[0];
+  document.getElementById("selectedAgeReadout").textContent = `${row.age}歲`;
+  document.getElementById("cashflowYearLabel").textContent = `${row.age}歲・${row.date} 起一年`;
+  const items = [
+    ["期初現金", row.openingCash], ["現金利息", row.cashInterest],
+    ["年度收入", row.income], ["生活與持有支出", -row.consumptionExpense],
+    ["所得稅", -row.incomeTax], ["貸款還款（含到期清償）", -row.debtRepayment],
+    ["年度保費", -row.premium], ["投資投入", -row.investmentContribution],
+    ["投資收回（含再平衡）", row.investmentLiquidation], ["期末現金", row.liquidAssets, true],
+    ["還款後負債餘額", row.debtValue], ["淨資產", row.assets, true]
+  ];
+  if (row.premiumCashCharge > 0) items.push(["保費中由存款支應（已含於保費）", row.premiumCashCharge]);
+  document.getElementById("yearCashflow").innerHTML = items.map(([label, value, total]) =>
+    `<div class="cashflow-item${total ? " total" : ""}"><span>${label}</span><strong>${formatMoney(value)}</strong></div>`).join("");
+  document.querySelectorAll("[data-inspect-age]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(Number(button.dataset.inspectAge) === row.age));
+  });
+}
+
+function selectProjectionAge(age) {
+  const slider = document.getElementById("selectedAge");
+  slider.value = clamp(Math.round(Number(age)), projection[0].age, 100);
+  renderFinancialRatios();
+  renderEquivalentAssets();
+  renderSelectedYear();
+  drawLineChart();
+  drawBarChart();
 }
 
 function renderFinancialRatios() {
@@ -1763,11 +1887,11 @@ function renderAgeTable() {
       );
       const riskClass = row.assets < 0 || ratio > 0.7 ? "risk" : ratio > 0.35 ? "warn" : "";
       return `
-        <article class="age-item ${riskClass}">
+        <button type="button" class="age-item ${riskClass}" data-inspect-age="${age}" aria-pressed="false">
           <span>${age}歲</span>
           <strong>缺口 ${formatMoney(row.totalGap, true)}</strong>
-          <small>資產 ${formatMoney(row.assets, true)}｜${row.financeStage}｜${row.activeCount}項保障</small>
-        </article>
+          <small>淨資產 ${formatMoney(row.assets, true)}｜${escapeHtml(row.financeStage)}｜${row.activeCount}項保障</small>
+        </button>
       `;
     })
     .join("");
@@ -1792,13 +1916,13 @@ function drawGrid(context, bounds, yMin, yMax, formatter) {
   for (let index = 0; index <= 4; index += 1) {
     const y = bounds.top + ((bounds.bottom - bounds.top) * index) / 4;
     const value = yMax - ((yMax - yMin) * index) / 4;
-    context.strokeStyle = "#e3e9e6";
+    context.strokeStyle = "#e9ebf0";
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(bounds.left, y);
     context.lineTo(bounds.right, y);
     context.stroke();
-    context.fillStyle = "#647276";
+    context.fillStyle = "#737780";
     context.fillText(formatter(value), bounds.left - 8, y);
   }
 }
@@ -1823,6 +1947,7 @@ function drawLine(context, values, color, bounds, yMin, yMax) {
 
 function drawLineChart() {
   const canvas = document.getElementById("lineChart");
+  if (!projection.length || !canvas.clientWidth) return;
   const { context, width, height } = setupCanvas(canvas);
   const bounds = { left: 70, right: width - 18, top: 48, bottom: height - 38 };
   const gapValues = projection.map((row) => row.totalGap);
@@ -1837,66 +1962,64 @@ function drawLineChart() {
   yMax += padding;
 
   drawGrid(context, bounds, yMin, yMax, (value) => formatMoney(value, true));
-  drawLine(context, gapValues, "#166c50", bounds, yMin, yMax);
-  drawLine(context, cashValues, "#26383d", bounds, yMin, yMax);
-  drawLine(context, investmentValues, "#377f8f", bounds, yMin, yMax);
-  drawLine(context, realEstateValues, "#b27716", bounds, yMin, yMax);
+  drawLine(context, gapValues, "#d64150", bounds, yMin, yMax);
+  drawLine(context, cashValues, "#303747", bounds, yMin, yMax);
+  drawLine(context, investmentValues, "#4877df", bounds, yMin, yMax);
+  drawLine(context, realEstateValues, "#9b825d", bounds, yMin, yMax);
 
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const selectedIndex = Math.max(0, selectedAge - projection[0].age);
   const selectedX =
     bounds.left +
     ((bounds.right - bounds.left) * selectedIndex) / Math.max(1, projection.length - 1);
+  context.strokeStyle = "#9daac0";
+  context.lineWidth = 1;
+  context.setLineDash([3, 5]);
+  context.beginPath();
+  context.moveTo(selectedX, bounds.top);
+  context.lineTo(selectedX, bounds.bottom);
+  context.stroke();
+  context.setLineDash([]);
   if (chartHoverActive) {
     const selectedRow = projection[selectedIndex] || projection[0];
-    context.strokeStyle = "#b8463d";
-    context.lineWidth = 1.5;
-    context.setLineDash([5, 4]);
-    context.beginPath();
-    context.moveTo(selectedX, bounds.top);
-    context.lineTo(selectedX, bounds.bottom);
-    context.stroke();
-    context.setLineDash([]);
-
-    const tooltipWidth = 232;
+    const tooltipWidth = Math.min(232, width - 20);
     const tooltipHeight = 174;
-    const tooltipX = selectedX + tooltipWidth + 14 > bounds.right
-      ? selectedX - tooltipWidth - 12
-      : selectedX + 12;
+    const tooltipX = clamp(selectedX + tooltipWidth + 14 > bounds.right
+      ? selectedX - tooltipWidth - 12 : selectedX + 12, 8, width - tooltipWidth - 8);
     const tooltipY = bounds.top + 12;
     context.fillStyle = "rgba(255, 255, 255, 0.97)";
-    context.strokeStyle = "#cbd7d3";
+    context.strokeStyle = "#dfe2e8";
     context.lineWidth = 1;
     context.fillRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
     context.strokeRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
     context.textAlign = "left";
     context.textBaseline = "top";
-    context.fillStyle = "#1e2a2f";
+    context.fillStyle = "#20232b";
     context.font = '700 13px "Microsoft JhengHei", sans-serif';
     context.fillText(`${selectedRow.age}歲`, tooltipX + 10, tooltipY + 9);
     context.font = '11px "Microsoft JhengHei", sans-serif';
-    context.fillStyle = "#166c50";
+    context.fillStyle = "#d64150";
     context.fillText(`一次金缺口 ${formatMoney(selectedRow.totalGap, true)}`, tooltipX + 10, tooltipY + 32);
-    context.fillStyle = "#26383d";
+    context.fillStyle = "#303747";
     context.fillText(`現金資產 ${formatMoney(selectedRow.liquidAssets, true)}`, tooltipX + 10, tooltipY + 51);
-    context.fillStyle = "#377f8f";
+    context.fillStyle = "#4877df";
     context.fillText(`投資資產 ${formatMoney(selectedRow.investmentAssets, true)}`, tooltipX + 10, tooltipY + 70);
-    context.fillStyle = "#647276";
+    context.fillStyle = "#737780";
     context.fillText(`其中投資型保單 ${formatMoney(selectedRow.policyInvestmentAssets, true)}`, tooltipX + 10, tooltipY + 89);
-    context.fillStyle = "#b27716";
+    context.fillStyle = "#9b825d";
     context.fillText(`不動產 ${formatMoney(selectedRow.realEstateValue, true)}`, tooltipX + 10, tooltipY + 108);
-    context.fillStyle = "#1e2a2f";
+    context.fillStyle = "#20232b";
     context.fillText(`約當總和 ${formatMoney(selectedRow.equivalentAssets, true)}`, tooltipX + 10, tooltipY + 127);
-    context.fillStyle = "#647276";
+    context.fillStyle = "#737780";
     context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 146);
   }
 
-  context.fillStyle = "#647276";
+  context.fillStyle = "#737780";
   context.font = '11px "Microsoft JhengHei", sans-serif';
   context.textAlign = "center";
   context.textBaseline = "top";
   const firstAge = projection[0].age;
-  [firstAge, 40, 60, 80, 100]
+  [...new Set([firstAge, 40, 60, 80, 100])]
     .filter((age) => age >= firstAge)
     .forEach((age) => {
       const index = age - firstAge;
@@ -1906,26 +2029,27 @@ function drawLineChart() {
 
   context.textAlign = "left";
   context.textBaseline = "middle";
-  context.fillStyle = "#166c50";
+  context.fillStyle = "#d64150";
   context.fillRect(bounds.left, 8, 14, 3);
-  context.fillStyle = "#1e2a2f";
+  context.fillStyle = "#20232b";
   context.fillText("保障缺口", bounds.left + 20, 10);
-  context.fillStyle = "#26383d";
+  context.fillStyle = "#303747";
   context.fillRect(bounds.left + 88, 8, 14, 3);
-  context.fillStyle = "#1e2a2f";
+  context.fillStyle = "#20232b";
   context.fillText("現金資產", bounds.left + 108, 10);
-  context.fillStyle = "#377f8f";
+  context.fillStyle = "#4877df";
   context.fillRect(bounds.left, 27, 14, 3);
-  context.fillStyle = "#1e2a2f";
+  context.fillStyle = "#20232b";
   context.fillText("投資資產", bounds.left + 20, 29);
-  context.fillStyle = "#b27716";
+  context.fillStyle = "#9b825d";
   context.fillRect(bounds.left + 88, 27, 14, 3);
-  context.fillStyle = "#1e2a2f";
+  context.fillStyle = "#20232b";
   context.fillText("不動產", bounds.left + 108, 29);
 }
 
 function drawBarChart() {
   const canvas = document.getElementById("barChart");
+  if (!projection.length || !canvas.clientWidth) return;
   const { context, width, height } = setupCanvas(canvas);
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const row = projection.find((item) => item.age === selectedAge) || projection[0];
@@ -1933,7 +2057,7 @@ function drawBarChart() {
   const maxValue = Math.max(...values, 1);
   const bounds = { left: 58, right: width - 12, top: 22, bottom: height - 54 };
   const slot = (bounds.right - bounds.left) / values.length;
-  const colors = ["#166c50", "#377f8f", "#6b8d5a", "#b27716", "#b8463d", "#765b89"];
+  const colors = ["#d64150", "#4877df", "#7589b5", "#9b825d", "#d64150", "#8f92a8"];
 
   drawGrid(context, bounds, 0, maxValue * 1.1, (value) => formatMoney(value, true));
   values.forEach((value, index) => {
@@ -1943,12 +2067,12 @@ function drawBarChart() {
     const y = bounds.bottom - barHeight;
     context.fillStyle = colors[index];
     context.fillRect(x, y, barWidth, barHeight);
-    context.fillStyle = "#1e2a2f";
+    context.fillStyle = "#20232b";
     context.font = '10px "Microsoft JhengHei", sans-serif';
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.fillText(formatMoney(value, true), x + barWidth / 2, Math.max(bounds.top + 12, y - 5));
-    context.fillStyle = "#647276";
+    context.fillStyle = "#737780";
     context.textBaseline = "top";
     context.fillText(CATEGORY_DEFS[index].short, x + barWidth / 2, bounds.bottom + 10);
   });
@@ -2015,7 +2139,12 @@ function setFileStatus(message, type = "") {
 }
 
 function saveState(showStatus = false) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+  } catch {
+    setFileStatus("此瀏覽器無法儲存，請使用匯出完整檔備份", "error");
+    return;
+  }
   if (showStatus) {
     const time = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
     setFileStatus(`已存檔 ${time}`, "success");
@@ -2023,7 +2152,12 @@ function saveState(showStatus = false) {
 }
 
 function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  let saved = null;
+  try {
+    saved = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    setFileStatus("此瀏覽器無法讀取存檔，請使用匯入／匯出", "error");
+  }
   if (!saved) {
     policies = normalizePolicies(structuredClone(samplePolicies));
     financeStages = [];
@@ -2212,24 +2346,40 @@ function clearPlan() {
   setFileStatus("已清除全部資料，可按「回到上一步」復原", "success");
 }
 
+function scheduleRecalculate() {
+  if (pendingCalculation !== null) return;
+  pendingCalculation = requestAnimationFrame(() => {
+    pendingCalculation = null;
+    recalculate();
+  });
+}
+
 function recalculate() {
+  if (pendingCalculation !== null) {
+    cancelAnimationFrame(pendingCalculation);
+    pendingCalculation = null;
+  }
   recordHistory();
   projection = projectPlan();
   renderComputedExpense();
   renderRecommendations();
   renderSummary();
+  renderMission();
   renderFinancialRatios();
   renderEquivalentAssets();
   renderAgeTable();
+  renderSelectedYear();
   drawLineChart();
   drawBarChart();
   saveState();
 }
 
 function exportAll() {
+  recalculate();
   const payload = {
     format: "insurance-planning-complete",
     version: 1,
+    calculationVersion: "2026.10",
     exportedAt: new Date().toISOString(),
     state: collectState(),
     projection
@@ -2315,14 +2465,14 @@ function bindEvents() {
         renderPolicies();
         renderFinanceStages();
       }
-      recalculate();
+      scheduleRecalculate();
     });
   });
 
   DATE_IDS.forEach((id) => {
     document.getElementById(id).addEventListener("input", () => {
       renderFinanceStages();
-      recalculate();
+      scheduleRecalculate();
     });
   });
 
@@ -2484,8 +2634,20 @@ function bindEvents() {
     });
   });
 
+  document.getElementById("selectedAge").addEventListener("input", (event) => {
+    chartHoverActive = false;
+    selectProjectionAge(event.target.value);
+  });
+  document.getElementById("ageTable").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-inspect-age]");
+    if (!button) return;
+    chartHoverActive = false;
+    selectProjectionAge(button.dataset.inspectAge);
+    document.getElementById("lineChart").scrollIntoView({ block: "center", behavior: "smooth" });
+  });
   const lineCanvas = document.getElementById("lineChart");
   lineCanvas.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
     const rect = lineCanvas.getBoundingClientRect();
     const left = 70;
     const right = rect.width - 18;
@@ -2493,12 +2655,8 @@ function bindEvents() {
     const index = Math.round(
       ((pointerX - left) / Math.max(1, right - left)) * Math.max(1, projection.length - 1)
     );
-    document.getElementById("selectedAge").value = projection[index].age;
     chartHoverActive = true;
-    drawLineChart();
-    drawBarChart();
-    renderFinancialRatios();
-    renderEquivalentAssets();
+    selectProjectionAge(projection[index].age);
   });
   lineCanvas.addEventListener("pointerleave", () => {
     chartHoverActive = false;
@@ -2516,7 +2674,10 @@ function bindEvents() {
     recalculate();
   });
 
-  document.getElementById("savePlan").addEventListener("click", () => saveState(true));
+  document.getElementById("savePlan").addEventListener("click", () => {
+    recalculate();
+    saveState(true);
+  });
   document.getElementById("undoPlan").addEventListener("click", undoPlan);
   document.getElementById("redoPlan").addEventListener("click", redoPlan);
   document.getElementById("clearPlan").addEventListener("click", clearPlan);
@@ -2614,6 +2775,10 @@ function bindEvents() {
 
   document.getElementById("editModalForm").addEventListener("submit", (event) => {
     event.preventDefault();
+    if (!validateEditorFields()) {
+      document.getElementById("editModalForm").reportValidity();
+      return;
+    }
     if (editorType === "stage-list") closeEntityEditor();
     else if (editorDraft) commitEntityEditor();
   });
@@ -2662,6 +2827,7 @@ function bindEvents() {
           preview.textContent = `系統估算年支出 ${formatMoney(estimate.total)}｜月均 ${formatMoney(estimate.total / 12)}｜其中稅務 ${formatMoney(estimate.tax)}`;
         }
       }
+      validateEditorFields();
       return;
     }
 
@@ -2794,7 +2960,26 @@ function bindEvents() {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && editorDraft) closeEntityEditor();
+    const modal = document.getElementById("editModal");
+    if (!modal.hidden) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeEntityEditor();
+      } else if (event.key === "Tab") {
+        const focusable = [...modal.querySelectorAll('button, input, select, textarea, [tabindex="0"]')]
+          .filter((element) => !element.disabled && element.getClientRects().length);
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (event.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+      return;
+    }
     if (event.key === "Escape") document.querySelector(".file-menu").open = false;
     const isEditing = ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName);
     if (isEditing || !(event.ctrlKey || event.metaKey)) return;

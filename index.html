@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20261014a">
+  <link rel="stylesheet" href="./styles.css?v=20261021a">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Cathay planning prototype</p>
-        <h1>人生規劃儀表板</h1>
+        <p class="eyebrow">Open-source life planning simulator</p>
+        <h1>人生規劃儀表板<span class="title-mark" aria-hidden="true"> / </span></h1>
+        <p class="topbar-caption">讓每一個選擇，都有方向。</p>
       </div>
       <div class="topbar-right">
         <div class="file-actions">
@@ -38,7 +39,7 @@
             <strong>100歲</strong>
           </div>
           <div>
-            <span>結果</span>
+            <span>淨資產狀態</span>
             <strong id="survivalStatus">計算中</strong>
           </div>
         </div>
@@ -73,16 +74,15 @@
           <div class="section-head">
             <h2>基本資料</h2>
           </div>
-          <div class="input-grid">
-            <label>
+<fieldset class="form-group"><legend>01 / 個人與家庭</legend><p class="form-help">先建立目前的生活狀態。</p><div class="input-grid"><label>
               現在年齡
               <input id="currentAge" type="number" min="18" max="80" value="24">
             </label>
-            <label>
+<label>
               試算基準日
               <input id="planStartDate" type="date">
             </label>
-            <label>
+<label>
               人生階段
               <select id="lifeStage">
                 <option value="single">單身</option>
@@ -92,11 +92,26 @@
                 <option value="preRetirement">退休前</option>
               </select>
             </label>
-            <label>
+<label>
+              婚姻狀態
+              <select id="maritalStatus">
+                <option value="single">單身</option>
+                <option value="married">已婚</option>
+              </select>
+            </label>
+<label>
+              受扶養人數
+              <input id="dependentsCount" type="number" min="0" max="20" step="1" value="0">
+            </label>
+<label>
+              預計扶養年數
+              <input id="dependentSupportYears" type="number" min="0" max="40" step="1" value="0">
+            </label></div></fieldset>
+<fieldset class="form-group"><legend>02 / 收入與生活</legend><p class="form-help">金額以新臺幣計。修改後會即時更新試算。</p><div class="input-grid"><label>
               年收入
               <input id="annualIncome" type="number" min="0" step="10000" value="720000">
             </label>
-            <label>
+<label>
               收入制度
               <select id="incomeType">
                 <option value="salary">月薪制</option>
@@ -106,90 +121,75 @@
                 <option value="passive">被動為主</option>
               </select>
             </label>
-            <label>
+<label>
               年副業收入
               <input id="sideIncome" type="number" min="0" step="10000" value="0">
             </label>
-            <label>
-              副業年增(減)率 %
-              <input id="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="0">
-            </label>
-            <label>
-              副業增減模式
-              <select id="sideIncomeGrowthMode"><option value="compound">複利</option><option value="simple">單利</option></select>
-            </label>
-            <label>
+<label>
               收入開始日
               <input id="incomeStartDate" type="date">
             </label>
-            <label>
+<label>
               收入結束日
               <input id="incomeEndDate" type="date">
             </label>
-            <label>
-              目前可投資資產
-              <input id="assets" type="number" min="0" step="10000" value="250000">
-            </label>
-            <label>
-              目前估算年支出
-              <output id="computedAnnualExpense" class="computed-output">0</output>
-            </label>
-            <label>
+<label>
               月生活費
               <input id="monthlyLivingExpense" type="number" min="0" step="any" value="35000">
             </label>
-            <label>
-              目前估算年稅務支出
-              <output id="computedAnnualTax" class="computed-output">0</output>
-            </label>
-            <label>
-              婚姻狀態
-              <select id="maritalStatus">
-                <option value="single">單身</option>
-                <option value="married">已婚</option>
-              </select>
-            </label>
-            <label>
-              受扶養人數
-              <input id="dependentsCount" type="number" min="0" max="20" step="1" value="0">
-            </label>
-            <label>
-              預計扶養年數
-              <input id="dependentSupportYears" type="number" min="0" max="40" step="1" value="0">
-            </label>
-            <label>
+<label>
               主業年增(減)率 %
               <input id="incomeGrowth" type="number" min="-100" max="100" step="0.1" value="2">
             </label>
-            <label>
+<label>
               主業增減模式
               <select id="incomeGrowthMode"><option value="compound">複利</option><option value="simple">單利</option></select>
             </label>
-            <label>
+<label>
+              副業年增(減)率 %
+              <input id="sideIncomeGrowth" type="number" min="-100" max="100" step="0.1" value="0">
+            </label>
+<label>
+              副業增減模式
+              <select id="sideIncomeGrowthMode"><option value="compound">複利</option><option value="simple">單利</option></select>
+            </label>
+<label>
+              目前可投資資產
+              <input id="assets" type="number" min="0" step="10000" value="250000">
+            </label>
+<label>
+              目前估算年支出
+              <output id="computedAnnualExpense" class="computed-output">0</output>
+            </label>
+<label>
+              目前估算年稅務支出
+              <output id="computedAnnualTax" class="computed-output">0</output>
+            </label></div></fieldset>
+<details class="advanced-settings"><summary>進階投影參數<span>利率、通膨與保費來源</span></summary><fieldset class="form-group"><legend>03 / 投影假設</legend><p class="form-help">保費超過收入支應上限的部分，列為存款支應；保費總額僅扣除一次。</p><div class="input-grid"><label>
               通膨率 %
               <input id="inflation" type="number" min="0" max="8" step="0.1" value="2">
             </label>
-            <label>
-              投資年化報酬 %
+<label>
+              新投資預設年報酬 %
               <input id="returnRate" type="number" min="-5" max="12" step="0.1" value="4">
             </label>
-            <label>
+<label>
               現金年利率 %
               <input id="cashReturnRate" type="number" min="-5" max="12" step="0.001" value="0.695">
             </label>
-            <label>
-              保費現金扣除門檻 %
+<label>
+              收入支應保費上限 %
               <input id="premiumCashCapRate" type="number" min="0" max="100" step="0.1" value="0">
             </label>
-            <label>
-              保費扣現起始年齡
+<label>
+              保費來源分攤起始年齡
               <input id="premiumCashCapStartAge" type="number" min="0" max="100" step="1" value="52">
             </label>
-            <label>
-              保費扣現結束年齡
+<label>
+              保費來源分攤結束年齡
               <input id="premiumCashCapEndAge" type="number" min="0" max="100" step="1" value="65">
-            </label>
-          </div>
+            </label></div></fieldset>
+</details>
           <div class="future-finance-block">
             <div class="future-finance-head">
               <div>
@@ -283,6 +283,29 @@
       </aside>
 
       <section class="workspace">
+        <section class="mission-panel" data-view-section="overview" aria-label="財務駕駛艙">
+          <div class="mission-main">
+            <div class="mission-kicker"><span>LIFE / VISION</span><span class="live-indicator">即時推演</span></div>
+            <h2>為下一站，做好準備。</h2>
+            <p class="mission-label">本年度預估淨資產</p>
+            <div class="mission-value"><strong id="overviewNetAssets">—</strong><span>NT$</span></div>
+            <p id="overviewPeriod" class="mission-note">依年度收入、支出與投資變動估算。</p>
+          </div>
+          <div class="mission-instruments">
+            <div class="instrument-grid">
+              <div><span>年收支結餘</span><strong id="overviewSurplus">—</strong><small>投資投入前</small></div>
+              <div><span>現金可支應</span><strong id="overviewRunway">—</strong><small>以期末現金估算</small></div>
+              <div><span>首次現金缺口</span><strong id="overviewCashRisk">—</strong><small>不含變賣投資或房產</small></div>
+            </div>
+            <div class="trajectory-caption"><span>淨資產軌跡</span><span id="trajectoryRange">現在 → 100歲</span></div>
+            <svg class="wealth-sparkline" viewBox="0 0 600 108" role="img" aria-label="目前至100歲的淨資產走勢">
+              <defs><linearGradient id="trajectoryFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7fa8ff" stop-opacity="0.25"/><stop offset="100%" stop-color="#7fa8ff" stop-opacity="0"/></linearGradient></defs>
+              <path id="trajectoryArea" fill="url(#trajectoryFill)"/>
+              <path id="trajectoryLine" fill="none" stroke="#9dbaff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </section>
+
         <section class="summary-row" data-view-section="overview">
           <article class="metric metric-green">
             <span>目前一次金保障缺口</span>
@@ -293,11 +316,11 @@
             <strong id="worstAge">0歲</strong>
           </article>
           <article class="metric metric-red">
-            <span>資產耗盡年齡</span>
+            <span>淨資產轉負年齡</span>
             <strong id="depletionAge">未耗盡</strong>
           </article>
           <article class="metric metric-slate">
-            <span>100歲資產</span>
+            <span>100歲預估淨資產</span>
             <strong id="age100Assets">0</strong>
           </article>
         </section>
@@ -307,23 +330,27 @@
             <div class="chart-head">
               <div>
                 <h2>到100歲缺口與資產線</h2>
-                <p>深綠線為保障缺口；墨色為現金；藍綠為投資；金色為不動產。</p>
+                <p>紅色為保障缺口；墨色為現金；藍色為投資；灰金色為不動產。</p>
               </div>
               <div class="equivalent-assets">
                 <span id="equivalentAssetsAge">24歲約當現金總和</span>
                 <strong id="equivalentAssetsTotal">0</strong>
                 <small>現金＋投資＋不動產</small>
               </div>
-              <input id="selectedAge" type="hidden" value="24">
+
             </div>
             <canvas id="lineChart" width="960" height="330" aria-label="缺口與資產折線圖"></canvas>
-            <section class="ratio-monitor" aria-live="polite">
-              <div class="ratio-monitor-head">
-                <h3 id="ratioMonitorAge">24歲財務比率</h3>
-                <span>隨圖表游標更新</span>
-              </div>
-              <div id="financialRatioGrid" class="ratio-grid"></div>
-            </section>
+            <div class="age-selector">
+              <label for="selectedAge">探索年齡 <output id="selectedAgeReadout" for="selectedAge">24歲</output></label>
+              <input id="selectedAge" type="range" min="24" max="100" step="1" value="24" aria-label="選擇試算年齡">
+              <span>100歲</span>
+            </div>
+            <details class="cashflow-details">
+              <summary>年度收支明細<span id="cashflowYearLabel">24歲</span></summary>
+              <div id="yearCashflow" class="cashflow-grid"></div>
+              <p class="form-help">年度期末現金＝期初現金＋利息＋收入−支出−保費−投資投入＋投資收回。淨資產另加投資、持有資產並扣除還款後的負債。</p>
+            </details>
+
           </article>
 
           <article class="chart-panel">
@@ -336,6 +363,14 @@
             <canvas id="barChart" width="520" height="330" aria-label="保障缺口直條圖"></canvas>
           </article>
         </section>
+
+        <section class="ratio-monitor chart-panel ratios-panel" data-view-section="overview" aria-live="polite">
+              <div class="ratio-monitor-head">
+                <h3 id="ratioMonitorAge">24歲財務比率</h3>
+                <span>滑動年齡或移動圖表游標</span>
+              </div>
+              <div id="financialRatioGrid" class="ratio-grid"></div>
+            </section>
 
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
@@ -431,7 +466,7 @@
         <section class="gap-table-panel" data-view-section="overview">
           <div class="section-head">
             <h2>年齡檢查表</h2>
-            <p>抓出幾歲需要處理最大缺口。</p>
+            <p>選擇年齡，查看當年的保障與財務狀態。</p>
           </div>
           <div id="ageTable" class="age-table"></div>
         </section>
@@ -456,6 +491,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20261014a"></script>
+  <script src="./app.js?v=20261021a"></script>
 </body>
 </html>
