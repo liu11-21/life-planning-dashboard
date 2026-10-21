@@ -1,66 +1,153 @@
-/* Shared liquid material. Solid surfaces remain the fallback without backdrop filters. */
+/* Graphite cockpit with a sculpted glass rim and a separate water layer. */
 :root {
-  --glass-fill: #f6f9fd;
-  --glass-edge: #ffffffc7;
-  --glass-shadow: 0 12px 36px #28477209, inset 0 1px 0 #ffffffed, inset 0 -1px 0 #abc4e525;
-  --glass-glint: linear-gradient(135deg, #ffffffc7 0%, #ffffff28 27%, transparent 48%, #e1efff32 76%, #ffffff80 100%);
+  color-scheme: dark;
+  --bg: #080b10;
+  --surface: #141a23;
+  --surface-soft: #202a37;
+  --ink: #f1f5fc;
+  --muted: #a4b0c2;
+  --line: #b2c8e41f;
+  --green: #91b8ff;
+  --green-2: #b1ceff;
+  --cyan: #88bfff;
+  --amber: #dfc293;
+  --red: #ff8d9d;
+  --positive: #8bdfc3;
+  --shadow: 0 20px 48px #00000066;
+  --glass-fill: #131c29;
+  --glass-edge: #b6d1f14d;
+  --glass-shadow: 0 20px 44px #00000075, 0 5px 12px #00000066, inset 0 1px 0 #edfbff7a, inset 0 -2px 1px #749fc03b;
+  --chart-grid: #b7cee41c;
+  --chart-text: #edf3fc;
+  --chart-muted: #a7b6cb;
+  --chart-cash: #e0edff;
+  --chart-investment: #8ab6ff;
+  --chart-gap: #ff8d9d;
+  --chart-estate: #dfc293;
+  --chart-tooltip: #101925f5;
+  --chart-border: #91b7dd59;
 }
-
+html { background: var(--bg); }
 body {
-  background: radial-gradient(ellipse at 2% 0%, #c7e1f4a6, transparent 38%),
-    radial-gradient(ellipse at 100% 28%, #d6d9f699, transparent 42%),
-    radial-gradient(ellipse at 12% 77%, #d2e9ed80, transparent 38%), #eff3f8;
+  background: radial-gradient(ellipse at 8% 0%, #22354f70, transparent 35%),
+    radial-gradient(ellipse at 100% 32%, #1e32474d, transparent 38%),
+    radial-gradient(ellipse at 4% 78%, #15303a3d, transparent 38%), #080b10;
+  color: var(--ink);
 }
 
-:is(.topbar, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
-  .chart-panel, .metric, .age-snapshot, .edit-modal-dialog, .file-menu-content) {
+:is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+  .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog) {
+  --water-x: 50%;
+  --water-y: 40%;
+  --water-angle: 135deg;
   background-color: var(--glass-fill);
-  background-image: var(--glass-glint);
+  background-image: radial-gradient(ellipse at var(--water-x) var(--water-y), #6d9cb52c, transparent 66%),
+    linear-gradient(135deg, #c3e3ff0f, transparent 38%, #6a9ec00a 70%, #c4e6ff09);
   border: 1px solid var(--glass-edge);
   box-shadow: var(--glass-shadow);
+  isolation: isolate;
 }
-
+/* Position only ordinary panels; sticky snapshots and the modal keep their positioning. */
+:is(.topbar, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+  .chart-panel, .metric, .protection-item, .scope-grid article) { position: relative; }
 .topbar { border-radius: 28px; padding: clamp(18px, 2vw, 28px); }
+.topbar:has(.file-menu[open]) { z-index: 40; }
 .topbar > *, .topbar-right, .save-status { min-width: 0; }
 .save-status { overflow-wrap: anywhere; }
-.workflow-nav { background: #edf3fa; border-radius: 26px; }
-.workflow-tabs { background: #dce6f080; border-color: #ffffff94; box-shadow: inset 0 1px 2px #ffffffc7, inset 0 -1px 2px #8aa7cc1a; }
-.workflow-active-track { background: linear-gradient(145deg, #39495b, #202c3c 62%, #3d5067); box-shadow: inset 0 1px 0 #ffffff38, inset 0 -1px 0 #8bb3e338, 0 4px 14px #20334b26; }
-.view-help { color: #596b80; }
 
-/* Nested content shares its parent's material rather than stacking large blur layers. */
-:is(.protection-item, .advanced-settings, .scope-grid article, .recommendation-overview,
-  .empty-list, .finance-stage-empty, .scope-notice, .resource-detail, .policy-detail-menu) {
-  background-color: #eef4fb80;
-  background-image: var(--glass-glint);
-  border-color: #c4d3e566;
-  box-shadow: inset 0 1px 0 #ffffffe0;
+:is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+  .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after {
+  border: 1px solid #d8f0ff66;
+  border-radius: inherit;
+  box-shadow: inset 0 2px 2px #effbff5c, inset 2px 0 3px #9ebfe52e, inset -2px 0 3px #5683a933, inset 0 -3px 3px #0000008c;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
 }
-.entity-summary { border-color: #b6c9e04d; }
-table th { background: #e7eff8b8; }
-table td { border-color: #c5d3e552; }
-.ratio-item { border-color: #bdcfe36b; }
-.metric-glyph { background: linear-gradient(145deg, #ffffffb3, #d8e8fb99); box-shadow: inset 0 1px 0 #ffffff, 0 3px 9px #365f8e0a; }
-
-.mission-panel {
-  background: radial-gradient(ellipse at 100% 0%, #709ac335, transparent 65%),
-    linear-gradient(135deg, #253448f5, #131d2af7 58%, #243b53f2);
-  border-color: #a6c9e54d;
-  box-shadow: 0 18px 44px #19345414, inset 0 1px 0 #d5ebff52, inset 0 -1px 0 #719bc633;
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+    .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after {
+    background: conic-gradient(from var(--water-angle), #edfaffd9, #abcde73b 12%, #bde6ff99 21%, #20364e66 32%, #d3f1ffad 48%, #2d4d6f66 63%, #a1c7e53d 80%, #edfaffd9);
+    border: 0;
+    padding: 5px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.65;
+    transition: opacity 240ms ease;
+  }
 }
-.mission-panel::before { background: linear-gradient(120deg, #e4f3ff0d, transparent 35%, transparent 65%, #b2dcff0a); border-radius: inherit; }
-.mission-panel::after { border: 1px solid #d2e7ff0e; border-radius: inherit; content: ""; inset: 4px; pointer-events: none; position: absolute; }
+.liquid-water {
+  border: 0;
+  border-radius: inherit;
+  clip-path: inset(6px round 20px);
+  display: block;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  max-width: none;
+  opacity: 0.92;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: -2;
+}
+/* The chart keeps its own canvas dimensions and colors; only this canvas is decorative. */
+.mission-panel { background-color: #101b2a; border-radius: 30px; }
+.mission-panel::before { background: linear-gradient(120deg, #b3d5ff08, transparent 45%, #91d6ed08); border-radius: inherit; z-index: -3; }
+.mission-main, .mission-instruments { position: relative; }
+.workflow-nav { background: #111925ee; border-radius: 26px; }
+.workflow-tabs { background: #090f1880; border-color: #a5c5e536; box-shadow: inset 0 1px 1px #c7e3ff29, 0 4px 20px #0003; }
+.workflow-tab { color: #b3bfd1; box-shadow: none; }
+.workflow-tab:hover { background: #afc9ee12; color: #fff; }
+.workflow-active-track { background: linear-gradient(145deg, #627b98, #34465f 58%, #4f6c89); box-shadow: inset 0 1px 0 #e4f4ff80, inset 0 -1px 0 #a7d0f54d, 0 4px 14px #0005; }
+.workflow-tab[aria-pressed="true"] { color: #fff; }
+.view-help, label { color: #b1bed1; }
+.eyebrow { color: #91a7c4; }
+.title-mark { color: #7493b9; }
+.status-strip strong, .metric strong, .snapshot-grid dd { color: var(--ink); }
+.save-status.success { color: #8bdfc3; }
+.save-status.error { color: var(--red); }
+.section-head h2 .ui-icon, .chart-head h2 .ui-icon, .disclosure-label .ui-icon, .protection-item h3 .ui-icon { color: #a8c8f1; }
+.metric-glyph { background: linear-gradient(140deg, #8cbaff26, #416b9d12); color: #b5d5ff; box-shadow: inset 0 1px 0 #c7e1ff4d; }
+.metric-red .metric-glyph { background: #ff8d9d12; color: #ffb2be; }
+.metric-amber .metric-glyph { background: #dfc29314; color: #dfc293; }
+.ratio-item[data-state="good"] strong { color: #8bdfc3; }
+.ratio-item[data-state="warn"] strong { color: #f2c894; }
+.ratio-item[data-state="na"] strong { color: #a4b0c2; }
+:is(.entity-summary, .ratio-item, .form-group, .cashflow-item, .cashflow-details, .equivalent-assets) { border-color: var(--line); }
+:is(.advanced-settings, .recommendation-overview, .empty-list, .finance-stage-empty,
+  .scope-notice, .resource-detail, .policy-detail-menu, .resource-main, .policy-detail-row td) {
+  background: linear-gradient(145deg, #b2d0f20b, transparent), #101a27;
+  border-color: #a6c5e52e;
+  box-shadow: inset 0 1px 0 #bcdcff1c;
+}
+.scope-grid article > span { color: #a7c7f5; }
+.resource-main { border-radius: 16px; }
+.status-now { background: #83c8ff1a; color: #b1d9ff; }
+.status-future { background: #d6b47a1a; color: #dfc293; }
 
 :is(input:not([type="range"]), select, textarea) {
-  background: linear-gradient(145deg, #ffffffb3, #eaf1f98c);
-  border-color: #bdcde085;
-  box-shadow: inset 0 1px 3px #3b58700a, 0 1px 0 #ffffffc7;
+  background: linear-gradient(145deg, #8eb8df0a, transparent), #0b131f;
+  border-color: #8aafd33d;
+  box-shadow: inset 0 2px 5px #0005, 0 1px 0 #c4dfff14;
+  color: #f1f5fc;
 }
-:is(input:not([type="range"]), select, textarea):focus { background-color: #fff; box-shadow: 0 0 0 3px #507bc51f, inset 0 1px 0 #fff; }
-.edit-modal-backdrop { background: #182c455c; }
-.edit-modal-header, .edit-modal-actions { background: #f7faff; border-color: #c7d5e580; }
+:is(input, select, textarea)::placeholder { color: #8393a9; opacity: 1; }
+:is(input:not([type="range"]), select, textarea):focus { background-color: #15243a; border-color: #a5caff; box-shadow: 0 0 0 3px #91b8ff26, inset 0 1px 0 #c6e0ff1f; }
+select option { background: #131c29; color: #f1f5fc; }
+input[type="range"] { accent-color: #a5caff; }
+.edit-modal-backdrop { background: #02060dba; }
+.edit-modal-header, .edit-modal-actions { background: #111c2bf5; border-color: #aac8e62e; }
+.file-menu-content { background: #142032f5; border-color: #bedcfa59; box-shadow: 0 18px 55px #0009, inset 0 1px 0 #dcf1ff70; }
+.site-disclaimer { background: #101925 !important; border-color: #93b4d433 !important; color: #b1bed1 !important; }
+.site-disclaimer strong { color: #eef5ff !important; }
+a { color: #accfff; }
 
-/* Optical layers sit behind the label. They never move or distort control text. */
+/* The water lens and ripples are drawn behind control labels. */
 :is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary) {
   --liquid-x: 50%;
   --liquid-y: 50%;
@@ -71,78 +158,90 @@ table td { border-color: #c5d3e552; }
   position: relative;
 }
 :is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary)::before {
-  background: radial-gradient(ellipse 95px 65px at var(--liquid-x) var(--liquid-y), #ffffffb8, #d2efff38 42%, transparent 75%),
-    linear-gradient(125deg, #ffffff4d, transparent 35%, #b3dfff1a 60%, #ffffff52);
-  border: 1px solid #ffffff45;
+  background: radial-gradient(ellipse 80px 45px at var(--liquid-x) var(--liquid-y), #e8faffa6, #74caed66 25%, #9bb9ff24 45%, transparent 75%),
+    repeating-radial-gradient(ellipse at var(--liquid-x) var(--liquid-y), transparent 0 17px, #c1eeff52 19px, #72b1de38 21px, transparent 25px 42px),
+    linear-gradient(130deg, #e3f6ff24, transparent 35%, #87c2ed17 70%, #e1f5ff38);
+  border: 1px solid #d1edff66;
   border-radius: inherit;
   content: "";
-  inset: 0;
-  opacity: 0.3;
+  inset: -8px;
+  opacity: 0.16;
   pointer-events: none;
   position: absolute;
-  transform: translate(var(--liquid-drift-x), var(--liquid-drift-y)) scale(1.06);
-  transition: opacity 300ms ease, transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate(var(--liquid-drift-x), var(--liquid-drift-y)) scale(1.08);
+  transition: opacity 260ms ease, transform 200ms ease-out;
   z-index: -1;
 }
 .liquid-ripple {
-  background: radial-gradient(ellipse, transparent 48%, #c3eaff26 55%, #ffffff80 62%, #b8dfff4d 66%, transparent 72%);
-  border: 1px solid #ffffff73;
-  box-shadow: inset 0 0 16px #ffffff45, 0 0 14px #b2dfff26;
+  background: radial-gradient(ellipse, #94cfff0a 25%, transparent 40%, #a4e5ff59 48%, #f1fcffb3 54%, #5caddf80 58%, transparent 65%);
+  border: 2px solid #c3efffb3;
+  box-shadow: inset 0 0 20px #ade4ff66, 0 0 16px #78bbeb4d;
   opacity: 0;
   pointer-events: none;
   position: absolute;
   z-index: -1;
 }
-.liquid-ripple::after { border: 1px solid #ffffff70; border-radius: inherit; content: ""; inset: 14%; position: absolute; }
-button { background-image: linear-gradient(140deg, #ffffff24, transparent 48%, #afccff1a); box-shadow: inset 0 1px 0 #ffffff47, inset 0 -1px 0 #122d5221, 0 4px 12px #224a7a0a; }
-:is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger) { background-color: #ffffff99; border-color: #b9cce0b3; box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #d0e0f34d, 0 3px 10px #244e7a07; }
-:is(button.delete-btn, button.danger-action) { border-color: #dfb6c380; }
-.workflow-tab { box-shadow: none; }
-.age-item { background-color: #f1f6fc91; border-color: #becfe77a; box-shadow: inset 0 1px 0 #ffffffeb, inset 0 -1px 0 #d5e4f13b; }
+.liquid-ripple::after { border: 2px solid #e6faff99; border-radius: inherit; content: ""; inset: 15%; position: absolute; }
+button { background: linear-gradient(145deg, #608ee8, #3b5fba); border-color: #9ec9ff73; color: #fff; box-shadow: inset 0 1px 0 #e6f5ff73, inset 0 -2px 0 #0c1e3e70, 0 6px 15px #0005; }
+button:hover { background-color: #5c84d8; }
+:is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger, button.modal-close) {
+  background: linear-gradient(145deg, #a9cceb1a, #6d9ecb08), #1c2a3cc7;
+  border-color: #abccec4d;
+  color: #e3efff;
+  box-shadow: inset 0 1px 0 #d8edff66, inset 0 -2px 1px #02081180, 0 5px 14px #0005;
+}
+:is(button.secondary, button.detail-btn, .file-menu-trigger):hover, .file-menu[open] .file-menu-trigger { background: #2b4059; color: #fff; }
+:is(button.delete-btn, button.danger-action) { border-color: #e99dab4d; color: #ffb4c1; }
+:is(button.delete-btn, button.danger-action):hover { background: #532a3c; }
+.workflow-tab { background: transparent; box-shadow: none; }
+.age-item { background: radial-gradient(ellipse at var(--water-x) var(--water-y), #7395bb26, transparent 75%), #172233; border-color: #b1cce14d; box-shadow: var(--glass-shadow); color: var(--ink); }
+.age-item:hover { background-color: #20344d; }
 .age-item.warn { border-left-color: var(--amber); }
 .age-item.risk { border-left-color: var(--red); }
-.age-item[aria-pressed="true"] { background-color: #ddeafdcc; border-color: #829fe6; box-shadow: inset 0 0 0 1px #849feb73, inset 0 1px 0 #fff, 0 5px 16px #4b78b312; }
+.age-item[aria-pressed="true"] { background-color: #294366; border-color: #b3d5ffad; box-shadow: inset 0 0 0 1px #a8d0ff66, 0 12px 30px #0006; }
+button:focus-visible, .file-menu-trigger:focus-visible { outline: 2px solid #bddcff; outline-offset: 3px; }
 
 @supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
-  :root { --glass-fill: #ffffffa8; }
-  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot) {
-    -webkit-backdrop-filter: blur(12px) saturate(135%);
-    backdrop-filter: blur(12px) saturate(135%);
-  }
-  /* Stronger blur is reserved for the floating layers. */
-  .workflow-nav { background: #edf4fba3; -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%); }
-  .file-menu-content, .edit-modal-dialog { background-color: #f8fbffdc; -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
-  .edit-modal-header, .edit-modal-actions { background: #f7faffeb; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  :root { --glass-fill: #151f2edb; }
+  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item) { -webkit-backdrop-filter: blur(14px) saturate(125%); backdrop-filter: blur(14px) saturate(125%); }
+  .workflow-nav { background: #111b2bd9; -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
+  .file-menu-content, .edit-modal-dialog { -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); }
+  .edit-modal-header, .edit-modal-actions { -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
 }
-
 @media (hover: hover) and (pointer: fine) {
-  .is-liquid-hover::before { opacity: 0.95; }
-  button.is-liquid-hover:not(:disabled):not(.workflow-tab):not(.age-item), .file-menu-trigger.is-liquid-hover {
-    box-shadow: inset 0 1px 0 #ffffffa6, inset 0 -1px 0 #a7cbed66, 0 7px 20px #3b648820;
+  :is(button, .file-menu-trigger, summary).is-liquid-hover::before { opacity: 0.95; }
+  :is(.mission-panel, .metric, .panel-section, .planning-panel, .policy-panel, .chart-panel, .gap-table-panel, .age-snapshot, .protection-item, .scope-grid article, .age-item).is-water-active {
+    border-color: #d5edff99;
+    box-shadow: 0 30px 65px #0000009e, 0 10px 24px #0008, 0 0 30px #699ec017, inset 0 2px 1px #effbffa6, inset 0 -2px 2px #7ba6ce52;
   }
-  .age-item.is-liquid-hover { box-shadow: inset 0 1px 0 #fff, 0 7px 20px #3b648818; }
+  .is-water-active::after { opacity: 0.95; }
+  button.is-liquid-hover:not(:disabled):not(.workflow-tab):not(.age-item), .file-menu-trigger.is-liquid-hover { box-shadow: inset 0 2px 1px #f1fcffc7, inset 0 -2px 1px #85c2f38c, 0 10px 28px #0008, 0 0 16px #82ceff33; }
+  .metric:hover, .protection-item:hover { transform: translateY(-4px); }
 }
 @media (max-width: 760px) {
   .topbar { border-radius: 24px; padding: 18px 16px; }
-  .investment-table tr, .policy-table tr { background: var(--glass-glint), #eff5fb91; border-color: #bdcfe580; box-shadow: inset 0 1px 0 #fff; }
-  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric) { -webkit-backdrop-filter: blur(8px) saturate(125%); backdrop-filter: blur(8px) saturate(125%); }
+  .investment-table tr, .policy-table tr { background: linear-gradient(140deg, #b2d5ff0c, transparent), #131f30; border-color: #a9c9e83d; box-shadow: inset 0 1px 0 #d7edff52, 0 10px 24px #0004; }
+  .investment-table td + td, .policy-table td + td { border-color: var(--line); }
+  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric) { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after { padding: 3px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .liquid-ripple { display: none; }
+  .liquid-water, .liquid-ripple { display: none; }
   :is(button, .file-menu-trigger, summary)::before { transform: none; transition: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
-  :root { --glass-fill: #f7faff; }
-  :is(.topbar, .workflow-nav, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
-    .chart-panel, .metric, .age-snapshot, .edit-modal-dialog, .file-menu-content, .edit-modal-header, .edit-modal-actions) {
+  :root { --glass-fill: #152030; }
+  :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog, .file-menu-content, .workflow-nav, .edit-modal-header, .edit-modal-actions) {
     background: var(--glass-fill);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  :is(button, .file-menu-trigger, summary)::before, .liquid-ripple { display: none; }
-  :is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger, .age-item) { background-color: #f7faff; }
-  :is(input:not([type="range"]), select, textarea) { background: #f1f5fa; }
+  .liquid-water, .liquid-ripple, :is(button, .file-menu-trigger, summary)::before { display: none; }
 }
 @media (forced-colors: active) {
-  :is(button, .file-menu-trigger, summary)::before, .liquid-ripple { display: none; }
+  .liquid-water, .liquid-ripple, :is(button, .file-menu-trigger, summary)::before { display: none; }
+  :is(.topbar, .mission-panel, .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot, .protection-item, .scope-grid article, .age-item, .edit-modal-dialog)::after { display: none; }
 }
+
+.recommendation-row button, .add-benefit-btn { background: linear-gradient(145deg, #a9cceb1a, #6d9ecb08), #1c2a3c; border-color: #abccec4d; color: #dceaff; box-shadow: inset 0 1px 0 #d8edff66, 0 5px 14px #0005; }
+.status-pill { border-color: #b2c8e447; }

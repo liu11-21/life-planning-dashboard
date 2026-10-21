@@ -1815,7 +1815,7 @@ function renderSummary() {
 
   const status = document.getElementById("survivalStatus");
   status.textContent = depletion ? `${depletion.age}歲轉負` : "未轉負";
-  status.style.color = depletion ? "#d64150" : "#247562";
+  status.style.color = depletion ? "var(--red)" : "var(--positive, #247562)";
 
   const ageSlider = document.getElementById("selectedAge");
   ageSlider.min = input.currentAge;
@@ -1968,20 +1968,32 @@ function setupCanvas(canvas) {
   return { context, width, height };
 }
 
-function drawGrid(context, bounds, yMin, yMax, formatter) {
+function chartTheme() {
+  const style = getComputedStyle(document.documentElement);
+  const color = (name, fallback) => style.getPropertyValue(`--chart-${name}`).trim() || fallback;
+  return {
+    grid: color("grid", "#e9ebf0"), text: color("text", "#20232b"),
+    muted: color("muted", "#737780"), cash: color("cash", "#303747"),
+    investment: color("investment", "#4877df"), gap: color("gap", "#d64150"),
+    estate: color("estate", "#9b825d"), tooltip: color("tooltip", "rgba(255, 255, 255, 0.97)"),
+    border: color("border", "#dfe2e8")
+  };
+}
+
+function drawGrid(context, bounds, yMin, yMax, formatter, theme = chartTheme()) {
   context.font = '11px "Microsoft JhengHei", sans-serif';
   context.textAlign = "right";
   context.textBaseline = "middle";
   for (let index = 0; index <= 4; index += 1) {
     const y = bounds.top + ((bounds.bottom - bounds.top) * index) / 4;
     const value = yMax - ((yMax - yMin) * index) / 4;
-    context.strokeStyle = "#e9ebf0";
+    context.strokeStyle = theme.grid;
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(bounds.left, y);
     context.lineTo(bounds.right, y);
     context.stroke();
-    context.fillStyle = "#737780";
+    context.fillStyle = theme.muted;
     context.fillText(formatter(value), bounds.left - 8, y);
   }
 }
@@ -2008,6 +2020,7 @@ function drawLineChart() {
   const canvas = document.getElementById("lineChart");
   if (!projection.length || !canvas.clientWidth) return;
   const { context, width, height } = setupCanvas(canvas);
+  const theme = chartTheme();
   const bounds = { left: width < 360 ? 54 : 70, right: width - 18, top: 48, bottom: height - 38 };
   const gapValues = projection.map((row) => row.totalGap);
   const cashValues = projection.map((row) => row.liquidAssets);
@@ -2020,18 +2033,18 @@ function drawLineChart() {
   yMin -= padding;
   yMax += padding;
 
-  drawGrid(context, bounds, yMin, yMax, (value) => formatMoney(value, true));
-  drawLine(context, gapValues, "#d64150", bounds, yMin, yMax);
-  drawLine(context, cashValues, "#303747", bounds, yMin, yMax);
-  drawLine(context, investmentValues, "#4877df", bounds, yMin, yMax);
-  drawLine(context, realEstateValues, "#9b825d", bounds, yMin, yMax);
+  drawGrid(context, bounds, yMin, yMax, (value) => formatMoney(value, true), theme);
+  drawLine(context, gapValues, theme.gap, bounds, yMin, yMax);
+  drawLine(context, cashValues, theme.cash, bounds, yMin, yMax);
+  drawLine(context, investmentValues, theme.investment, bounds, yMin, yMax);
+  drawLine(context, realEstateValues, theme.estate, bounds, yMin, yMax);
 
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const selectedIndex = Math.max(0, selectedAge - projection[0].age);
   const selectedX =
     bounds.left +
     ((bounds.right - bounds.left) * selectedIndex) / Math.max(1, projection.length - 1);
-  context.strokeStyle = "#9daac0";
+  context.strokeStyle = theme.border;
   context.lineWidth = 1;
   context.setLineDash([3, 5]);
   context.beginPath();
@@ -2046,8 +2059,8 @@ function drawLineChart() {
     const tooltipX = clamp(selectedX + tooltipWidth + 14 > bounds.right
       ? selectedX - tooltipWidth - 12 : selectedX + 12, 8, width - tooltipWidth - 8);
     const tooltipY = bounds.top + 12;
-    context.fillStyle = "rgba(255, 255, 255, 0.97)";
-    context.strokeStyle = "#dfe2e8";
+    context.fillStyle = theme.tooltip;
+    context.strokeStyle = theme.border;
     context.lineWidth = 1;
     context.beginPath();
     if (context.roundRect) context.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 12);
@@ -2056,27 +2069,27 @@ function drawLineChart() {
     context.stroke();
     context.textAlign = "left";
     context.textBaseline = "top";
-    context.fillStyle = "#20232b";
+    context.fillStyle = theme.text;
     context.font = '700 13px "Microsoft JhengHei", sans-serif';
     context.fillText(`${selectedRow.age}歲`, tooltipX + 10, tooltipY + 9);
     context.font = '11px "Microsoft JhengHei", sans-serif';
-    context.fillStyle = "#d64150";
+    context.fillStyle = theme.gap;
     context.fillText(`一次金缺口 ${formatMoney(selectedRow.totalGap, true)}`, tooltipX + 10, tooltipY + 32);
-    context.fillStyle = "#303747";
+    context.fillStyle = theme.cash;
     context.fillText(`現金資產 ${formatMoney(selectedRow.liquidAssets, true)}`, tooltipX + 10, tooltipY + 51);
-    context.fillStyle = "#4877df";
+    context.fillStyle = theme.investment;
     context.fillText(`投資資產 ${formatMoney(selectedRow.investmentAssets, true)}`, tooltipX + 10, tooltipY + 70);
-    context.fillStyle = "#737780";
+    context.fillStyle = theme.muted;
     context.fillText(`其中投資型保單 ${formatMoney(selectedRow.policyInvestmentAssets, true)}`, tooltipX + 10, tooltipY + 89);
-    context.fillStyle = "#9b825d";
+    context.fillStyle = theme.estate;
     context.fillText(`不動產 ${formatMoney(selectedRow.realEstateValue, true)}`, tooltipX + 10, tooltipY + 108);
-    context.fillStyle = "#20232b";
+    context.fillStyle = theme.text;
     context.fillText(`約當總和 ${formatMoney(selectedRow.equivalentAssets, true)}`, tooltipX + 10, tooltipY + 127);
-    context.fillStyle = "#737780";
+    context.fillStyle = theme.muted;
     context.fillText(`階段 ${selectedRow.financeStage}`, tooltipX + 10, tooltipY + 146);
   }
 
-  context.fillStyle = "#737780";
+  context.fillStyle = theme.muted;
   context.font = '11px "Microsoft JhengHei", sans-serif';
   context.textAlign = "center";
   context.textBaseline = "top";
@@ -2091,21 +2104,21 @@ function drawLineChart() {
 
   context.textAlign = "left";
   context.textBaseline = "middle";
-  context.fillStyle = "#d64150";
+  context.fillStyle = theme.gap;
   context.fillRect(bounds.left, 8, 14, 3);
-  context.fillStyle = "#20232b";
+  context.fillStyle = theme.text;
   context.fillText("保障缺口", bounds.left + 20, 10);
-  context.fillStyle = "#303747";
+  context.fillStyle = theme.cash;
   context.fillRect(bounds.left + 88, 8, 14, 3);
-  context.fillStyle = "#20232b";
+  context.fillStyle = theme.text;
   context.fillText("現金資產", bounds.left + 108, 10);
-  context.fillStyle = "#4877df";
+  context.fillStyle = theme.investment;
   context.fillRect(bounds.left, 27, 14, 3);
-  context.fillStyle = "#20232b";
+  context.fillStyle = theme.text;
   context.fillText("投資資產", bounds.left + 20, 29);
-  context.fillStyle = "#9b825d";
+  context.fillStyle = theme.estate;
   context.fillRect(bounds.left + 88, 27, 14, 3);
-  context.fillStyle = "#20232b";
+  context.fillStyle = theme.text;
   context.fillText("不動產", bounds.left + 108, 29);
 }
 
@@ -2113,15 +2126,16 @@ function drawBarChart() {
   const canvas = document.getElementById("barChart");
   if (!projection.length || !canvas.clientWidth) return;
   const { context, width, height } = setupCanvas(canvas);
+  const theme = chartTheme();
   const selectedAge = Number(document.getElementById("selectedAge").value);
   const row = projection.find((item) => item.age === selectedAge) || projection[0];
   const values = CATEGORY_DEFS.map((item) => row.gaps[item.key]);
   const maxValue = Math.max(...values, 1);
   const bounds = { left: 58, right: width - 12, top: 22, bottom: height - 54 };
   const slot = (bounds.right - bounds.left) / values.length;
-  const colors = ["#d64150", "#4877df", "#7589b5", "#9b825d", "#d64150", "#8f92a8"];
+  const colors = [theme.gap, theme.investment, "#adbee9", theme.estate, theme.gap, "#c2b3e2"];
 
-  drawGrid(context, bounds, 0, maxValue * 1.1, (value) => formatMoney(value, true));
+  drawGrid(context, bounds, 0, maxValue * 1.1, (value) => formatMoney(value, true), theme);
   values.forEach((value, index) => {
     const barWidth = Math.min(46, slot * 0.58);
     const x = bounds.left + slot * index + (slot - barWidth) / 2;
@@ -2132,12 +2146,12 @@ function drawBarChart() {
     if (context.roundRect) context.roundRect(x, y, barWidth, barHeight, Math.min(7, barHeight / 2));
     else context.rect(x, y, barWidth, barHeight);
     context.fill();
-    context.fillStyle = "#20232b";
+    context.fillStyle = theme.text;
     context.font = '10px "Microsoft JhengHei", sans-serif';
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.fillText(formatMoney(value, true), x + barWidth / 2, Math.max(bounds.top + 12, y - 5));
-    context.fillStyle = "#737780";
+    context.fillStyle = theme.muted;
     context.textBaseline = "top";
     context.fillText(CATEGORY_DEFS[index].short, x + barWidth / 2, bounds.bottom + 10);
   });
