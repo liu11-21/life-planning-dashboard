@@ -253,6 +253,7 @@ function updateDisplayValue(id, value) {
 }
 
 function updateNavigationIndicator(scrollActive = false) {
+  document.documentElement.style.setProperty("--workflow-height", `${document.querySelector(".workflow-nav").offsetHeight}px`);
   const tabs = document.querySelector(".workflow-tabs");
   const selected = tabs.querySelector('.workflow-tab[aria-pressed="true"]');
   if (!selected) return;
@@ -1665,19 +1666,20 @@ function renderPolicies() {
     .map((policy) => {
       const index = policies.findIndex((item) => item.id === policy.id);
       const future = policy.startAge > currentAge;
+      const ended = policy.endAge < currentAge;
       const summary = policy.benefits.slice(0, 2).map(benefitLabel).join("<br>");
       const more = policy.benefits.length > 2 ? `<small>另有 ${policy.benefits.length - 2} 項</small>` : "";
       return `
         <tr data-index="${index}">
-          <td><strong>${escapeHtml(policy.name)}</strong>${policy.productType === "investmentLinked" ? "<small>投資型保險</small>" : ""}</td>
-          <td><div class="coverage-summary">${summary || "尚無細項"}${more}</div></td>
-          <td>${policy.premiumMode === "stepped" ? "非平準" : "平準"}</td>
-          <td>${formatMoney(premiumAtAge(policy, currentAge))}</td>
-          <td>${policy.startAge}</td>
-          <td>${policy.endAge}</td>
-          <td><span class="status-pill ${future ? "status-future" : "status-now"}">${future ? "未來" : "現有"}</span></td>
-          <td>${escapeHtml(policy.note || "-")}</td>
-          <td><div class="row-actions">
+          <td data-label="保單名稱"><strong>${escapeHtml(policy.name)}</strong>${policy.productType === "investmentLinked" ? "<small>投資型保險</small>" : ""}</td>
+          <td data-label="保障細項"><div class="coverage-summary">${summary || "尚無細項"}${more}</div></td>
+          <td data-label="保費型態">${policy.premiumMode === "stepped" ? "非平準" : "平準"}</td>
+          <td data-label="年保費">${formatMoney(premiumAtAge(policy, currentAge))}</td>
+          <td data-label="開始年齡">${policy.startAge}</td>
+          <td data-label="結束年齡">${policy.endAge}</td>
+          <td data-label="狀態"><span class="status-pill ${future || ended ? "status-future" : "status-now"}">${ended ? "已結束" : future ? "未來" : "現有"}</span></td>
+          <td data-label="備註">${escapeHtml(policy.note || "-")}</td>
+          <td data-label="操作"><div class="row-actions">
             <button type="button" class="detail-btn" data-action="edit-policy">更多編輯</button>
             <button type="button" class="delete-btn" data-action="delete" aria-label="刪除保單">刪除</button>
           </div></td>
@@ -1691,14 +1693,14 @@ function renderInvestments() {
   const container = document.getElementById("investmentRows");
   container.innerHTML = investments.length ? investments.map((item, index) => `
     <tr data-investment-index="${index}">
-      <td><strong>${escapeHtml(item.name)}</strong></td>
-      <td>${formatMoney(item.lumpSum)}</td>
-      <td>${formatMoney(item.recurringAmount)}${item.contributionSchedule?.length ? `｜分年 ${item.contributionSchedule.length} 段` : ""}</td>
-      <td>${item.cycle === "monthly" ? "每月" : item.cycle === "quarterly" ? "每季" : "每年"}</td>
-      <td>${item.returnRate}%</td>
-      <td>${item.startDate || "-"}</td>
-      <td>${item.endDate || "持續"}</td>
-      <td><div class="row-actions"><button type="button" class="detail-btn" data-action="edit-investment">更多編輯</button><button type="button" class="delete-btn" data-action="delete-investment">刪除</button></div></td>
+      <td data-label="投資名稱"><strong>${escapeHtml(item.name)}</strong></td>
+      <td data-label="一次投入">${formatMoney(item.lumpSum)}</td>
+      <td data-label="定期投入">${formatMoney(item.recurringAmount)}${item.contributionSchedule?.length ? `｜分年 ${item.contributionSchedule.length} 段` : ""}</td>
+      <td data-label="投入週期">${item.cycle === "monthly" ? "每月" : item.cycle === "quarterly" ? "每季" : "每年"}</td>
+      <td data-label="年報酬率">${item.returnRate}%</td>
+      <td data-label="開始日期">${item.startDate || "-"}</td>
+      <td data-label="結束日期">${item.endDate || "持續"}</td>
+      <td data-label="操作"><div class="row-actions"><button type="button" class="detail-btn" data-action="edit-investment">更多編輯</button><button type="button" class="delete-btn" data-action="delete-investment">刪除</button></div></td>
     </tr>
   `).join("") : `<tr><td colspan="8" class="empty-list">尚未加入投資項目。</td></tr>`;
 }
@@ -1849,6 +1851,17 @@ function renderMission() {
 function renderSelectedYear() {
   const age = Number(document.getElementById("selectedAge").value);
   const row = projection.find((item) => item.age === age) || projection[0];
+  document.getElementById("ageSnapshotTitle").textContent = `${row.age}歲`;
+  document.getElementById("ageSnapshotPeriod").textContent = `${row.date} 起一年`;
+  for (const [id, value] of Object.entries({
+    ageSnapshotAssets: row.assets, ageSnapshotGap: row.totalGap,
+    ageSnapshotCash: row.liquidAssets, ageSnapshotSurplus: row.operatingSurplus
+  })) {
+    const element = document.getElementById(id);
+    element.textContent = formatMoney(value, true);
+    element.dataset.state = value < 0 ? "negative" : "positive";
+  }
+  document.getElementById("ageSnapshotStage").textContent = `${row.financeStage} · ${row.activeCount} 項保障`;
   document.getElementById("selectedAgeReadout").textContent = `${row.age}歲`;
   document.getElementById("cashflowYearLabel").textContent = `${row.age}歲・${row.date} 起一年`;
   const items = [
@@ -1911,6 +1924,8 @@ function renderAgeTable() {
     30,
     40,
     50,
+    60,
+    projection.find((row) => row.liquidAssets < 0)?.age,
     dateToAge(input.incomeEndDate, input),
     70,
     80,
@@ -1934,6 +1949,7 @@ function renderAgeTable() {
           <span>${age}歲</span>
           <strong>缺口 ${formatMoney(row.totalGap, true)}</strong>
           <small>淨資產 ${formatMoney(row.assets, true)}｜${escapeHtml(row.financeStage)}｜${row.activeCount}項保障</small>
+          <small class="age-card-detail">現金 ${formatMoney(row.liquidAssets, true)}<br>年收支結餘 ${formatMoney(row.operatingSurplus, true)}</small>
         </button>
       `;
     })
@@ -1942,7 +1958,7 @@ function renderAgeTable() {
 
 function setupCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
-  const width = Math.max(300, canvas.clientWidth);
+  const width = Math.max(1, canvas.clientWidth);
   const height = Math.max(260, canvas.clientHeight);
   canvas.width = width * ratio;
   canvas.height = height * ratio;
@@ -1992,7 +2008,7 @@ function drawLineChart() {
   const canvas = document.getElementById("lineChart");
   if (!projection.length || !canvas.clientWidth) return;
   const { context, width, height } = setupCanvas(canvas);
-  const bounds = { left: 70, right: width - 18, top: 48, bottom: height - 38 };
+  const bounds = { left: width < 360 ? 54 : 70, right: width - 18, top: 48, bottom: height - 38 };
   const gapValues = projection.map((row) => row.totalGap);
   const cashValues = projection.map((row) => row.liquidAssets);
   const investmentValues = projection.map((row) => row.investmentAssets);
@@ -2417,6 +2433,10 @@ function recalculate() {
   renderFinancialRatios();
   renderEquivalentAssets();
   renderAgeTable();
+  const input = readInputs();
+  document.getElementById("modelIncomeNotice").textContent = input.incomeEndDate
+    ? "已設定基礎收入結束日；各人生階段仍依各自日期與收入設定計算。"
+    : "尚未設定基礎收入結束日：沒有其他階段覆蓋時，模型會將基礎收入延續至 100 歲。請在基本資料中填入預計退休日期，並另列退休後收入。";
   renderSelectedYear();
   drawLineChart();
   drawBarChart();
@@ -2488,6 +2508,13 @@ function setActiveView(view) {
       drawBarChart();
     });
   }
+}
+
+function scrollToPlanningSection(target, focusTarget) {
+  focusTarget?.focus({ preventScroll: true });
+  const offset = document.querySelector(".workflow-nav").offsetHeight + 16;
+  window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset),
+    behavior: prefersReducedMotion() ? "instant" : "smooth" });
 }
 
 function bindEvents() {
@@ -2697,13 +2724,19 @@ function bindEvents() {
     if (!button) return;
     chartHoverActive = false;
     selectProjectionAge(button.dataset.inspectAge);
-    document.getElementById("lineChart").scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "instant" : "smooth" });
+    document.getElementById("ageSelectionStatus").textContent = `已選擇 ${button.dataset.inspectAge} 歲，年度快照已更新。`;
+  });
+  document.getElementById("viewSelectedAgeChart").addEventListener("click", () => {
+    scrollToPlanningSection(document.getElementById("projectionCharts"), document.getElementById("projectionChartTitle"));
+  });
+  document.getElementById("viewAgeChecklist").addEventListener("click", () => {
+    scrollToPlanningSection(document.getElementById("ageChecklist"), document.getElementById("ageChecklistTitle"));
   });
   const lineCanvas = document.getElementById("lineChart");
   lineCanvas.addEventListener("pointermove", (event) => {
     if (event.pointerType === "touch") return;
     const rect = lineCanvas.getBoundingClientRect();
-    const left = 70;
+    const left = rect.width < 360 ? 54 : 70;
     const right = rect.width - 18;
     const pointerX = Math.max(left, Math.min(right, event.clientX - rect.left));
     const index = Math.round(
@@ -3047,11 +3080,20 @@ function bindEvents() {
     }
   });
 
-  window.addEventListener("resize", () => {
-    updateNavigationIndicator();
-    drawLineChart();
-    drawBarChart();
-  });
+  let resizeFrame;
+  const refreshLayout = () => {
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      updateNavigationIndicator();
+      drawLineChart();
+      drawBarChart();
+    });
+  };
+  window.addEventListener("resize", refreshLayout);
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(refreshLayout);
+    document.querySelectorAll(".workflow-nav, .chart-panel").forEach((panel) => observer.observe(panel));
+  }
 }
 
 ensureDateDefaults();

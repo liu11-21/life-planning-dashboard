@@ -2,9 +2,9 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20261021b">
+  <link rel="stylesheet" href="./styles.css?v=20261021c">
 </head>
 <body>
   <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -358,11 +358,11 @@
           </article>
         </section>
 
-        <section class="chart-grid" data-view-section="overview">
+        <section id="projectionCharts" class="chart-grid" data-view-section="overview">
           <article class="chart-panel wide-panel">
             <div class="chart-head">
               <div>
-                <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg>到100歲缺口與資產線</h2>
+                <h2 id="projectionChartTitle" tabindex="-1"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg>到100歲缺口與資產線</h2>
                 <p>紅色為保障缺口；墨色為現金；藍色為投資；灰金色為不動產。</p>
               </div>
               <div class="equivalent-assets">
@@ -377,6 +377,10 @@
               <label for="selectedAge">探索年齡 <output id="selectedAgeReadout" for="selectedAge">24歲</output></label>
               <input id="selectedAge" type="range" min="24" max="100" step="1" value="24" aria-label="選擇試算年齡">
               <span>100歲</span>
+            </div>
+            <div class="chart-tools">
+              <span>拖曳年齡，查看當年狀態</span>
+              <button id="viewAgeChecklist" type="button" class="secondary">年齡檢查表 <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-clock"></use></svg></button>
             </div>
             <details class="cashflow-details">
               <summary><span class="disclosure-label"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-list"></use></svg>年度收支明細</span><span id="cashflowYearLabel">24歲</span></summary>
@@ -496,12 +500,40 @@
           </div>
         </section>
 
-        <section class="gap-table-panel" data-view-section="overview">
-          <div class="section-head">
-            <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-clock"></use></svg>年齡檢查表</h2>
-            <p>選擇年齡，查看當年的保障與財務狀態。</p>
+        <details class="chart-panel model-scope-panel" data-view-section="overview">
+          <summary><span class="disclosure-label"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-shield"></use></svg>試算涵蓋範圍</span><span>查看仍需補入的規劃</span></summary>
+          <div class="scope-intro">
+            <p>收入成長、生活與固定支出、簡化稅務、保費、投資、貸款及持有資產估值已納入試算。</p>
+            <p id="modelIncomeNotice" class="scope-notice"></p>
           </div>
-          <div id="ageTable" class="age-table"></div>
+          <div class="scope-grid">
+            <article><span class="scope-badge">需自行補入</span><h3>退休與家庭階段</h3><p>勞保、勞退、退休金、子女教育及父母照顧沒有自動推估。可在收入階段與支出中補入預計金額。</p></article>
+            <article><span class="scope-badge">估值不含交易款</span><h3>買房、換車與借款</h3><p>持有資產的估值不會自動帶入購買支出、出售收入或貸款撥款，還需要規劃對應的資金來源。</p></article>
+            <article><span class="scope-badge">仍需核對</span><h3>保單繳費與理賠條件</h3><p>繳費期與保障期尚未獨立設定；同類給付會加總，未判斷是否能同時理賠。疾病或失能事件也不會自動改變收入與支出。</p></article>
+            <article><span class="scope-badge">固定假設</span><h3>市場與未來稅務</h3><p>尚未模擬報酬波動、投資稅費、匯率與未來稅制。收入和生活費仍以年度取樣，受扶養免稅人數沿用目前設定。</p></article>
+          </div>
+        </details>
+
+        <section id="ageChecklist" class="gap-table-panel" data-view-section="overview">
+          <div class="section-head">
+            <h2 id="ageChecklistTitle" tabindex="-1"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-clock"></use></svg>年齡檢查表</h2>
+            <p>選擇年齡，在此比較當年的保障與財務狀態。</p>
+          </div>
+          <div class="age-review-layout">
+            <section class="age-snapshot" aria-labelledby="ageSnapshotTitle">
+              <div class="snapshot-head"><span>年度快照</span><h3 id="ageSnapshotTitle">24歲</h3><p id="ageSnapshotPeriod"></p></div>
+              <dl class="snapshot-grid">
+                <div><dt>期末淨資產</dt><dd id="ageSnapshotAssets">—</dd></div>
+                <div><dt>一次金缺口</dt><dd id="ageSnapshotGap">—</dd></div>
+                <div><dt>期末現金</dt><dd id="ageSnapshotCash">—</dd></div>
+                <div><dt>年收支結餘</dt><dd id="ageSnapshotSurplus">—</dd></div>
+              </dl>
+              <p id="ageSnapshotStage" class="snapshot-stage"></p>
+              <button id="viewSelectedAgeChart" class="secondary" type="button">在圖表中查看 <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg></button>
+            </section>
+            <div id="ageTable" class="age-table"></div>
+          </div>
+          <p id="ageSelectionStatus" class="sr-only" role="status" aria-live="polite"></p>
         </section>
       </section>
     </section>
@@ -524,6 +556,6 @@
     </section>
   </div>
 
-  <script src="./app.js?v=20261021b"></script>
+  <script src="./app.js?v=20261021c"></script>
 </body>
 </html>

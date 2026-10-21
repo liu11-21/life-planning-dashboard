@@ -1591,3 +1591,109 @@ input[type="range"] { border-radius: 999px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Light glass stays limited to smaller surfaces so scrolling remains inexpensive. */
+:root { --workflow-height: 104px; }
+body { background: radial-gradient(ellipse at 5% 8%, #dfe8f780, transparent 35%), radial-gradient(ellipse at 95% 35%, #e5e9f580, transparent 42%), var(--bg); }
+.app-shell { padding-inline: max(env(safe-area-inset-left), clamp(12px, 2.8vw, 40px)); padding-bottom: max(32px, env(safe-area-inset-bottom)); }
+.workspace { overflow: visible; min-width: 0; }
+.workflow-nav { background: #f3f5f8; padding-top: max(10px, env(safe-area-inset-top)); }
+.metric, .age-snapshot, .file-menu-panel { background: #fafbfd; }
+.age-snapshot { border: 1px solid #e1e7f0; border-radius: 22px; padding: 22px; }
+@supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
+  .workflow-nav { background: #f4f6faac; -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); }
+  .metric, .age-snapshot, .file-menu-panel { background: #ffffffb8; -webkit-backdrop-filter: blur(16px) saturate(125%); backdrop-filter: blur(16px) saturate(125%); box-shadow: inset 0 1px 0 #ffffffd9, 0 8px 28px #23334b06; }
+  .edit-modal-header { background: #ffffffe8; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .workflow-nav, .metric, .age-snapshot, .file-menu-panel, .edit-modal-header { background: #fafbfd; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.chart-tools { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 10px; }
+.chart-tools > span { color: var(--muted); font-size: 12px; }
+.chart-tools button, .age-snapshot button { align-items: center; display: inline-flex; gap: 8px; justify-content: center; min-height: 44px; }
+.age-review-layout { align-items: start; display: grid; gap: 22px; grid-template-columns: minmax(250px, .8fr) minmax(0, 1.7fr); }
+.age-review-layout .age-table { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.age-snapshot { position: sticky; top: calc(var(--workflow-height) + 12px); }
+.snapshot-head > span { color: var(--muted); font-size: 11px; letter-spacing: 1px; }
+.snapshot-head h3 { font-size: 28px; font-weight: 500; margin: 8px 0 4px; }
+.snapshot-head p, .snapshot-stage { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 0; }
+.snapshot-grid { display: grid; gap: 18px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 22px 0; }
+.snapshot-grid dt { color: var(--muted); font-size: 11px; margin-bottom: 7px; }
+.snapshot-grid dd { color: var(--ink); font-size: clamp(18px, 1.7vw, 24px); font-weight: 500; margin: 0; overflow-wrap: anywhere; }
+.snapshot-grid dd[data-state="negative"] { color: var(--red); }
+.age-snapshot button { margin-top: 18px; width: 100%; }
+.age-item { min-height: 112px; overflow-wrap: anywhere; }
+.age-item[aria-pressed="true"] { box-shadow: inset 0 0 0 1px #849feb; }
+.model-scope-panel { overflow: visible; }
+.model-scope-panel summary { cursor: pointer; font-size: 14px; font-weight: 600; line-height: 1.7; }
+.model-scope-panel summary .ui-icon { margin: 0 7px; vertical-align: middle; }
+.model-scope-panel summary > span { color: var(--muted); display: block; font-size: 12px; font-weight: 400; margin-top: 5px; }
+.scope-intro { font-size: 13px; line-height: 1.8; margin: 22px 0; }
+.scope-notice { background: #f0f3fa; border-radius: 12px; padding: 14px 16px; }
+.scope-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.scope-grid article { border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.scope-grid article > span { color: #5270a0; font-size: 11px; }
+.scope-grid h3 { font-size: 14px; margin: 9px 0; }
+.scope-grid p { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 0; }
+.sr-only { border: 0; clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; white-space: nowrap; width: 1px; }
+.mission-value strong, .instrument-grid strong, .metric strong, .entity-summary { overflow-wrap: anywhere; }
+.instrument-grid strong { white-space: normal; }
+.entity-summary-actions { flex-wrap: wrap; }
+.edit-modal-dialog { max-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); top: calc(24px + env(safe-area-inset-top)); overscroll-behavior: contain; }
+.edit-modal-actions { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+@media (max-width: 1120px) {
+  .age-review-layout { grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr); }
+  .age-review-layout .age-table { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .entity-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .entity-summary-actions { justify-content: start; }
+}
+@media (max-width: 760px) {
+  .age-review-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .age-snapshot { padding: 16px; position: static; }
+  .snapshot-head { align-items: baseline; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+  .snapshot-head h3 { font-size: 23px; margin: 0; }
+  .snapshot-head p { font-size: 10px; }
+  .snapshot-grid { gap: 12px; margin: 14px 0 10px; }
+  .snapshot-grid dd { font-size: 19px; }
+  .snapshot-grid dt { margin-bottom: 4px; }
+  .age-snapshot button { margin-top: 10px; }
+  .snapshot-stage { font-size: 11px; }
+  .age-item { padding: 14px 12px; }
+  .age-item strong { font-size: 14px; }
+  .scope-grid, .entity-summary { grid-template-columns: minmax(0, 1fr); }
+  .mission-value strong { font-size: clamp(28px, 8.5vw, 42px); }
+  .instrument-grid strong { font-size: clamp(16px, 4.7vw, 20px); }
+  .mission-kicker { gap: 12px; letter-spacing: 2px; }
+  .live-indicator { white-space: nowrap; }
+  button, .file-menu-trigger { min-height: 44px; }
+  .modal-close { height: 44px; width: 44px; flex: 0 0 auto; }
+  input:not([type="range"]), select, textarea { font-size: 16px; }
+  .edit-modal-dialog { border-radius: 22px; max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); top: calc(12px + env(safe-area-inset-top)); width: calc(100% - 24px); }
+  .edit-modal-header, .edit-modal-fields, .edit-modal-actions { padding-inline: 18px; }
+  /* Keep table semantics in HTML and label every value on narrow screens. */
+  .investment-table, .policy-table { min-width: 0; width: 100%; }
+  .investment-table thead, .policy-table thead { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; width: 1px; }
+  .investment-table tbody, .policy-table tbody { display: grid; gap: 14px; }
+  .investment-table tr, .policy-table tr { background: #f8f9fc; border: 1px solid var(--line); border-radius: 18px; display: block; padding: 8px 14px; }
+  .investment-table td, .policy-table td { border: 0; display: grid; gap: 12px; grid-template-columns: minmax(70px, .65fr) minmax(0, 1.35fr); overflow-wrap: anywhere; padding: 10px 0; white-space: normal; }
+  .investment-table td + td, .policy-table td + td { border-top: 1px solid #e8ebf2; }
+  .investment-table td::before, .policy-table td::before { color: var(--muted); content: attr(data-label); font-size: 11px; font-weight: 400; }
+  .investment-table td[colspan], .policy-table td[colspan] { display: block; }
+  .investment-table td[colspan]::before, .policy-table td[colspan]::before { content: none; }
+  .row-actions { flex-wrap: wrap; }
+}
+@media (max-height: 680px) {
+  .age-snapshot { position: static; }
+}
+@media (max-width: 360px) {
+  .panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel { padding: 16px; }
+  .mission-panel { padding-inline: 18px; }
+  .instrument-grid { gap: 8px; }
+  .instrument-grid > div + div { padding-left: 8px; }
+  .mission-kicker { font-size: 9px; letter-spacing: 1px; }
+}
+
+@media (pointer: coarse) {
+  input:not([type="range"]), select, textarea { font-size: 16px; }
+  button, .file-menu-trigger { min-height: 44px; }
+}
