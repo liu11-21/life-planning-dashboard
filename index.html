@@ -4,9 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>人生規劃儀表板</title>
-  <link rel="stylesheet" href="./styles.css?v=20261021a">
+  <link rel="stylesheet" href="./styles.css?v=20261021b">
 </head>
 <body>
+  <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+      <symbol id="icon-wallet" viewBox="0 0 24 24"><path d="M20 8V6a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v10H6a3 3 0 0 1-3-3V7"/><path d="M20 13h-4a2 2 0 0 0 0 4h4"/></symbol>
+      <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6m-12 5 3 3 5-5"/></symbol>
+      <symbol id="icon-save" viewBox="0 0 24 24"><path d="M18 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6z"/><path d="M7 3v6h9V3M7 21v-8h10v8"/></symbol>
+      <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8h18"/></symbol>
+      <symbol id="icon-undo" viewBox="0 0 24 24"><path d="m8 4-5 5 5 5M3 9h11a7 7 0 0 1 0 14" transform="translate(0 -2)"/></symbol>
+      <symbol id="icon-redo" viewBox="0 0 24 24"><path d="m16 4 5 5-5 5m5-5H10a7 7 0 0 0 0 14" transform="translate(0 -2)"/></symbol>
+      <symbol id="icon-import" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+      <symbol id="icon-export" viewBox="0 0 24 24"><path d="M12 16V4m-4 4 4-4 4 4M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+      <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+      <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM20 3v4m-2-2h4"/></symbol>
+      <symbol id="icon-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-10m-6 0h6v6"/></symbol>
+      <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="icon-activity" viewBox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"/></symbol>
+      <symbol id="icon-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5z"/></symbol>
+      <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></symbol>
+      <symbol id="icon-car" viewBox="0 0 24 24"><path d="m5 8 2-5h10l2 5M3 8h18v10H3zM5 18v3m14-3v3M6 12h2m8 0h2"/></symbol>
+      <symbol id="icon-receipt" viewBox="0 0 24 24"><path d="M5 3v18l3-2 4 2 4-2 3 2V3l-3 2-4-2-4 2zM9 9h6m-6 4h6"/></symbol>
+      <symbol id="icon-credit" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-1 1-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+      <symbol id="icon-medical" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><path d="M12 8v8m-4-4h8"/></symbol>
+      <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 16v-4m5 4V8m5 8V5"/></symbol>
+      <symbol id="icon-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M3 6h1m-1 6h1m-1 6h1"/></symbol>
+    </defs>
+  </svg>
   <main class="app-shell">
     <header class="topbar">
       <div>
@@ -16,15 +48,15 @@
       </div>
       <div class="topbar-right">
         <div class="file-actions">
-          <button id="savePlan" type="button">存檔</button>
+          <button id="savePlan" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-save"></use></svg>存檔</button>
           <details class="file-menu">
-            <summary class="file-menu-trigger">資料管理</summary>
+            <summary class="file-menu-trigger"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-folder"></use></svg>資料管理<svg class="ui-icon disclosure-icon" aria-hidden="true" focusable="false"><use href="#icon-chevron"></use></svg></summary>
             <div class="file-menu-content">
-              <button id="undoPlan" class="secondary" type="button" disabled title="回到上一步">回到上一步</button>
-              <button id="redoPlan" class="secondary" type="button" disabled title="回到下一步">回到下一步</button>
-              <button id="importPlan" class="secondary" type="button">匯入規劃</button>
-              <button id="exportAll" class="secondary" type="button">匯出完整檔</button>
-              <button id="clearPlan" class="danger-action" type="button">全部清除</button>
+              <button id="undoPlan" class="secondary" type="button" disabled title="回到上一步"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-undo"></use></svg>回到上一步</button>
+              <button id="redoPlan" class="secondary" type="button" disabled title="回到下一步"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-redo"></use></svg>回到下一步</button>
+              <button id="importPlan" class="secondary" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-import"></use></svg>匯入規劃</button>
+              <button id="exportAll" class="secondary" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-export"></use></svg>匯出完整檔</button>
+              <button id="clearPlan" class="danger-action" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trash"></use></svg>全部清除</button>
               <input id="importFile" type="file" accept="application/json,.json" hidden>
             </div>
           </details>
@@ -49,20 +81,21 @@
 
     <nav class="workflow-nav" aria-label="規劃工作區">
       <div class="workflow-tabs">
+        <div class="workflow-active-track" aria-hidden="true"></div>
         <button class="workflow-tab" type="button" data-view-target="overview" aria-pressed="true">
-          <span>01</span>總覽
+          <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-grid"></use></svg>總覽
         </button>
         <button class="workflow-tab" type="button" data-view-target="finance" aria-pressed="false">
-          <span>02</span>基本資料
+          <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-user"></use></svg>基本資料
         </button>
         <button class="workflow-tab" type="button" data-view-target="protection" aria-pressed="false">
-          <span>03</span>保障目標
+          <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-shield"></use></svg>保障目標
         </button>
         <button class="workflow-tab" type="button" data-view-target="assets" aria-pressed="false">
-          <span>04</span>資產與負債
+          <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-wallet"></use></svg>資產與負債
         </button>
         <button class="workflow-tab" type="button" data-view-target="policies" aria-pressed="false">
-          <span>05</span>保單
+          <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-file"></use></svg>保單
         </button>
       </div>
       <p id="viewHelp" class="view-help" aria-live="polite">查看試算結果；調整假設後可回到總覽比較變化。</p>
@@ -72,7 +105,7 @@
       <aside class="control-panel" hidden>
         <section class="panel-section" data-view-section="finance" hidden>
           <div class="section-head">
-            <h2>基本資料</h2>
+            <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-user"></use></svg>基本資料</h2>
           </div>
 <fieldset class="form-group"><legend>01 / 個人與家庭</legend><p class="form-help">先建立目前的生活狀態。</p><div class="input-grid"><label>
               現在年齡
@@ -196,7 +229,7 @@
                 <h3>未來收入支出規劃</h3>
                 <p>依起訖日套用升遷或轉職收入，支出與稅務由系統計算。</p>
               </div>
-              <button id="addFinanceStage" class="secondary" type="button">更多編輯</button>
+              <button id="addFinanceStage" class="secondary" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>更多編輯</button>
             </div>
             <div id="financeStageRows" class="finance-stage-list"></div>
             <p class="stage-rule">日期重疊時，以最後一個符合的階段為準。</p>
@@ -206,7 +239,7 @@
         <section class="panel-section protection-section" data-view-section="protection" hidden>
           <div class="section-head">
             <div>
-              <h2>六大保障目標</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-shield"></use></svg>六大保障目標</h2>
               <p>設定保障數值，並補充規劃原因或調整條件。</p>
             </div>
           </div>
@@ -217,7 +250,7 @@
           </div>
           <div class="protection-grid">
             <article class="protection-item protection-death">
-              <h3>身故保障</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-shield"></use></svg>身故保障</h3>
               <div class="recommendation-row">
                 <span>建議保額</span><strong id="deathRecommendation">計算中</strong>
               </div>
@@ -226,7 +259,7 @@
               <label>文字敘述<textarea id="deathDescription" rows="2" placeholder="例如：房貸與家庭責任期間優先補足"></textarea></label>
             </article>
             <article class="protection-item protection-accident">
-              <h3>意外失能</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-activity"></use></svg>意外失能</h3>
               <div class="recommendation-row">
                 <span>建議保額</span><strong id="accidentRecommendation">計算中</strong>
                 <button type="button" data-apply-recommendation="accidentTarget">套用</button>
@@ -236,7 +269,7 @@
               <label>文字敘述<textarea id="accidentDescription" rows="2" placeholder="例如：工作通勤及收入中斷風險"></textarea></label>
             </article>
             <article class="protection-item protection-medical">
-              <h3>醫療保障</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-medical"></use></svg>醫療保障</h3>
               <div class="recommendation-row">
                 <span>建議日額</span><strong id="medicalRecommendation">計算中</strong>
                 <button type="button" data-apply-recommendation="medicalDaily">套用</button>
@@ -246,7 +279,7 @@
               <label>文字敘述<textarea id="medicalDescription" rows="2" placeholder="例如：包含住院、手術與實支實付需求"></textarea></label>
             </article>
             <article class="protection-item protection-cancer">
-              <h3>癌症保障</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-heart"></use></svg>癌症保障</h3>
               <div class="recommendation-row">
                 <span>建議一次金</span><strong id="cancerRecommendation">計算中</strong>
                 <button type="button" data-apply-recommendation="cancerTarget">套用</button>
@@ -256,7 +289,7 @@
               <label>文字敘述<textarea id="cancerDescription" rows="2" placeholder="例如：治療費用與停工期間生活費"></textarea></label>
             </article>
             <article class="protection-item protection-critical">
-              <h3>重大傷病</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-medical"></use></svg>重大傷病</h3>
               <div class="recommendation-row">
                 <span>建議一次金</span><strong id="criticalRecommendation">計算中</strong>
                 <button type="button" data-apply-recommendation="criticalTarget">套用</button>
@@ -266,7 +299,7 @@
               <label>文字敘述<textarea id="criticalDescription" rows="2" placeholder="例如：確診後立即取得一筆週轉金"></textarea></label>
             </article>
             <article class="protection-item protection-ltc">
-              <h3>長期照顧</h3>
+              <h3><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-heart"></use></svg>長期照顧</h3>
               <div class="recommendation-row">
                 <span>建議月給付</span><strong id="ltcRecommendation">計算中</strong>
                 <button type="button" data-apply-recommendation="ltcMonthly">套用</button>
@@ -285,7 +318,7 @@
       <section class="workspace">
         <section class="mission-panel" data-view-section="overview" aria-label="財務駕駛艙">
           <div class="mission-main">
-            <div class="mission-kicker"><span>LIFE / VISION</span><span class="live-indicator">即時推演</span></div>
+            <div class="mission-kicker"><span class="mission-brand"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-compass"></use></svg> LIFE / VISION</span><span class="live-indicator">即時推演</span></div>
             <h2>為下一站，做好準備。</h2>
             <p class="mission-label">本年度預估淨資產</p>
             <div class="mission-value"><strong id="overviewNetAssets">—</strong><span>NT$</span></div>
@@ -293,34 +326,34 @@
           </div>
           <div class="mission-instruments">
             <div class="instrument-grid">
-              <div><span>年收支結餘</span><strong id="overviewSurplus">—</strong><small>投資投入前</small></div>
-              <div><span>現金可支應</span><strong id="overviewRunway">—</strong><small>以期末現金估算</small></div>
-              <div><span>首次現金缺口</span><strong id="overviewCashRisk">—</strong><small>不含變賣投資或房產</small></div>
+              <div><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg>年收支結餘</span><strong id="overviewSurplus">—</strong><small>投資投入前</small></div>
+              <div><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-wallet"></use></svg>現金可支應</span><strong id="overviewRunway">—</strong><small>以期末現金估算</small></div>
+              <div><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-activity"></use></svg>首次現金缺口</span><strong id="overviewCashRisk">—</strong><small>不含變賣投資或房產</small></div>
             </div>
             <div class="trajectory-caption"><span>淨資產軌跡</span><span id="trajectoryRange">現在 → 100歲</span></div>
             <svg class="wealth-sparkline" viewBox="0 0 600 108" role="img" aria-label="目前至100歲的淨資產走勢">
               <defs><linearGradient id="trajectoryFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7fa8ff" stop-opacity="0.25"/><stop offset="100%" stop-color="#7fa8ff" stop-opacity="0"/></linearGradient></defs>
               <path id="trajectoryArea" fill="url(#trajectoryFill)"/>
-              <path id="trajectoryLine" fill="none" stroke="#9dbaff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path id="trajectoryLine" fill="none" stroke="#9dbaff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>
             </svg>
           </div>
         </section>
 
         <section class="summary-row" data-view-section="overview">
           <article class="metric metric-green">
-            <span>目前一次金保障缺口</span>
+            <div class="metric-heading"><svg class="ui-icon metric-glyph" aria-hidden="true" focusable="false"><use href="#icon-shield"></use></svg><span>目前一次金保障缺口</span></div>
             <strong id="currentGap">0</strong>
           </article>
           <article class="metric metric-amber">
-            <span>最大缺口年齡</span>
+            <div class="metric-heading"><svg class="ui-icon metric-glyph" aria-hidden="true" focusable="false"><use href="#icon-clock"></use></svg><span>最大缺口年齡</span></div>
             <strong id="worstAge">0歲</strong>
           </article>
           <article class="metric metric-red">
-            <span>淨資產轉負年齡</span>
+            <div class="metric-heading"><svg class="ui-icon metric-glyph" aria-hidden="true" focusable="false"><use href="#icon-activity"></use></svg><span>淨資產轉負年齡</span></div>
             <strong id="depletionAge">未耗盡</strong>
           </article>
           <article class="metric metric-slate">
-            <span>100歲預估淨資產</span>
+            <div class="metric-heading"><svg class="ui-icon metric-glyph" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg><span>100歲預估淨資產</span></div>
             <strong id="age100Assets">0</strong>
           </article>
         </section>
@@ -329,7 +362,7 @@
           <article class="chart-panel wide-panel">
             <div class="chart-head">
               <div>
-                <h2>到100歲缺口與資產線</h2>
+                <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg>到100歲缺口與資產線</h2>
                 <p>紅色為保障缺口；墨色為現金；藍色為投資；灰金色為不動產。</p>
               </div>
               <div class="equivalent-assets">
@@ -346,7 +379,7 @@
               <span>100歲</span>
             </div>
             <details class="cashflow-details">
-              <summary>年度收支明細<span id="cashflowYearLabel">24歲</span></summary>
+              <summary><span class="disclosure-label"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-list"></use></svg>年度收支明細</span><span id="cashflowYearLabel">24歲</span></summary>
               <div id="yearCashflow" class="cashflow-grid"></div>
               <p class="form-help">年度期末現金＝期初現金＋利息＋收入−支出−保費−投資投入＋投資收回。淨資產另加投資、持有資產並扣除還款後的負債。</p>
             </details>
@@ -356,7 +389,7 @@
           <article class="chart-panel">
             <div class="chart-head compact">
               <div>
-                <h2>該年齡缺口</h2>
+                <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-chart"></use></svg>該年齡缺口</h2>
                 <p id="barSubtitle">24歲，各保障項目。</p>
               </div>
             </div>
@@ -375,10 +408,10 @@
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>投資項目</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-trend"></use></svg>投資項目</h2>
               <p>一次投入與定期定額會依日期及個別報酬率計入資產線。</p>
             </div>
-            <button id="addInvestment" type="button">新增投資</button>
+            <button id="addInvestment" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增投資</button>
           </div>
           <div class="table-wrap">
             <table class="investment-table">
@@ -391,10 +424,10 @@
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>不動產</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-home"></use></svg>不動產</h2>
               <p>房屋、土地等不動產獨立估值，依年增(減)率計入不動產折線與約當總和。</p>
             </div>
-            <button id="addRealEstate" type="button">新增不動產</button>
+            <button id="addRealEstate" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增不動產</button>
           </div>
           <div id="realEstateRows" class="resource-list"></div>
         </section>
@@ -402,10 +435,10 @@
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>其他持有資產</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-car"></use></svg>其他持有資產</h2>
               <p>車輛或其他動產可設定持有期間，展開細項加入年度持有成本。</p>
             </div>
-            <button id="addHeldAsset" type="button">新增其他資產</button>
+            <button id="addHeldAsset" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增其他資產</button>
           </div>
           <div id="heldAssetRows" class="resource-list"></div>
         </section>
@@ -413,10 +446,10 @@
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>固定支出項</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-receipt"></use></svg>固定支出項</h2>
               <p>長期租金、管理費等固定開銷會依年增(減)率逐年估算並扣除現金資產。</p>
             </div>
-            <button id="addFixedExpense" type="button">新增固定支出</button>
+            <button id="addFixedExpense" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增固定支出</button>
           </div>
           <div id="fixedExpenseRows" class="resource-list"></div>
         </section>
@@ -424,10 +457,10 @@
         <section class="planning-panel" data-view-section="assets" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>負債</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-credit"></use></svg>負債</h2>
               <p>房貸、車貸或其他負債會在有效期間扣除淨資產，細項可加入年度還款支出。</p>
             </div>
-            <button id="addDebtItem" type="button">新增負債</button>
+            <button id="addDebtItem" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增負債</button>
           </div>
           <div id="debtRows" class="resource-list"></div>
         </section>
@@ -435,12 +468,12 @@
         <section class="policy-panel" data-view-section="policies" hidden>
           <div class="section-head policy-head">
             <div>
-              <h2>現有保單與未來規劃</h2>
+              <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-file"></use></svg>現有保單與未來規劃</h2>
               <p>主畫面只顯示主約；附約、給付細項與非平準保費集中在「更多編輯」。</p>
             </div>
             <div class="button-row">
-              <button id="addPolicy" type="button">新增主約</button>
-              <button id="loadSample" class="secondary" type="button">載入範例</button>
+              <button id="addPolicy" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg>新增主約</button>
+              <button id="loadSample" class="secondary" type="button"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-sparkles"></use></svg>載入範例</button>
             </div>
           </div>
           <div class="table-wrap">
@@ -465,7 +498,7 @@
 
         <section class="gap-table-panel" data-view-section="overview">
           <div class="section-head">
-            <h2>年齡檢查表</h2>
+            <h2><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-clock"></use></svg>年齡檢查表</h2>
             <p>選擇年齡，查看當年的保障與財務狀態。</p>
           </div>
           <div id="ageTable" class="age-table"></div>
@@ -485,12 +518,12 @@
         <div id="editModalFields" class="edit-modal-fields"></div>
         <footer class="edit-modal-actions">
           <button type="button" class="secondary" data-modal-action="cancel">取消</button>
-          <button type="submit">儲存</button>
+          <button type="submit"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-check"></use></svg>儲存</button>
         </footer>
       </form>
     </section>
   </div>
 
-  <script src="./app.js?v=20261021a"></script>
+  <script src="./app.js?v=20261021b"></script>
 </body>
 </html>

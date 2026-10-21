@@ -225,6 +225,49 @@ let editorDraft = null;
 let activeView = "";
 let editorReturnFocus = null;
 let pendingCalculation = null;
+const valueAnimations = new WeakMap();
+
+function iconMarkup(name) {
+  return `<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="#icon-${name}"></use></svg>`;
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+function updateDisplayValue(id, value) {
+  const element = document.getElementById(id);
+  if (element.textContent === String(value)) return;
+  element.textContent = value;
+  element.classList.add("motion-value");
+  valueAnimations.get(element)?.cancel();
+  if (prefersReducedMotion() || !element.animate || !element.getClientRects().length) return;
+  const animation = element.animate([
+    { opacity: 0.55, transform: "translateY(3px)" },
+    { opacity: 1, transform: "translateY(0)" }
+  ], { duration: 240, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+  valueAnimations.set(element, animation);
+  animation.onfinish = () => {
+    if (valueAnimations.get(element) === animation) valueAnimations.delete(element);
+  };
+}
+
+function updateNavigationIndicator(scrollActive = false) {
+  const tabs = document.querySelector(".workflow-tabs");
+  const selected = tabs.querySelector('.workflow-tab[aria-pressed="true"]');
+  if (!selected) return;
+  tabs.style.setProperty("--tab-x", `${selected.offsetLeft}px`);
+  tabs.style.setProperty("--tab-width", `${selected.offsetWidth}px`);
+  tabs.style.setProperty("--tab-height", `${selected.offsetHeight}px`);
+  if (!tabs.classList.contains("is-ready")) requestAnimationFrame(() => tabs.classList.add("is-ready"));
+  if (scrollActive) {
+    const left = selected.offsetLeft;
+    const right = left + selected.offsetWidth;
+    const target = left < tabs.scrollLeft + 5 ? left - 5
+      : right > tabs.scrollLeft + tabs.clientWidth - 5 ? right - tabs.clientWidth + 5 : tabs.scrollLeft;
+    tabs.scrollTo({ left: Math.max(0, target), behavior: prefersReducedMotion() ? "instant" : "smooth" });
+  }
+}
 
 function makeId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -1283,7 +1326,7 @@ function openStageManager() {
   editorIndex = null;
   editorDraft = {};
   document.getElementById("editModalTitle").textContent = "人生階段｜更多編輯";
-  document.querySelector('#editModalForm button[type="submit"]').textContent = "完成";
+  document.querySelector('#editModalForm button[type="submit"]').innerHTML = `${iconMarkup("check")}完成`;
   renderEditorFields();
   showEntityEditor();
 }
@@ -1494,7 +1537,7 @@ function openEntityEditor(type, index = null) {
   editorIndex = index;
   editorDraft = index === null ? newEditorDraft(type) : structuredClone(editorList(type)[index]);
   document.getElementById("editModalTitle").textContent = editorTitle(type, index === null);
-  document.querySelector('#editModalForm button[type="submit"]').textContent = "儲存";
+  document.querySelector('#editModalForm button[type="submit"]').innerHTML = `${iconMarkup("check")}儲存`;
   renderEditorFields();
   showEntityEditor();
 }
@@ -1524,7 +1567,7 @@ function openRiderEditor(parentId, index = null) {
   editorDraft.parentId = parentId;
   editorDraft.name = "新增附約";
   document.getElementById("editModalTitle").textContent = "新增附約";
-  document.querySelector('#editModalForm button[type="submit"]').textContent = "儲存";
+  document.querySelector('#editModalForm button[type="submit"]').innerHTML = `${iconMarkup("check")}儲存`;
   renderEditorFields();
   showEntityEditor();
 }
@@ -1762,11 +1805,11 @@ function renderSummary() {
   const age100 = projection[projection.length - 1];
 
   document.getElementById("currentAgeLabel").textContent = input.currentAge;
-  document.getElementById("currentGap").textContent = formatMoney(current.totalGap, true);
-  document.getElementById("worstAge").textContent = `${worst.age}歲`;
-  document.getElementById("depletionAge").textContent = depletion ? `${depletion.age}歲` : "未轉負";
+  updateDisplayValue("currentGap", formatMoney(current.totalGap, true));
+  updateDisplayValue("worstAge", `${worst.age}歲`);
+  updateDisplayValue("depletionAge", depletion ? `${depletion.age}歲` : "未轉負");
   document.getElementById("depletionAge").dataset.state = depletion ? "negative" : "positive";
-  document.getElementById("age100Assets").textContent = formatMoney(age100.assets, true);
+  updateDisplayValue("age100Assets", formatMoney(age100.assets, true));
 
   const status = document.getElementById("survivalStatus");
   status.textContent = depletion ? `${depletion.age}歲轉負` : "未轉負";
@@ -1782,14 +1825,14 @@ function renderSummary() {
 function renderMission() {
   const current = projection[0];
   const firstCashRisk = projection.find((row) => row.liquidAssets < 0);
-  document.getElementById("overviewNetAssets").textContent = formatMoney(current.assets);
+  updateDisplayValue("overviewNetAssets", formatMoney(current.assets));
   const surplus = document.getElementById("overviewSurplus");
-  surplus.textContent = formatMoney(current.operatingSurplus, true);
+  updateDisplayValue("overviewSurplus", formatMoney(current.operatingSurplus, true));
   surplus.dataset.state = current.operatingSurplus < 0 ? "negative" : "positive";
   const annualOutflow = current.expense + current.premium;
-  document.getElementById("overviewRunway").textContent = annualOutflow > 0
-    ? `${(Math.max(0, current.liquidAssets) / annualOutflow * 12).toFixed(1)} 個月` : "—";
-  document.getElementById("overviewCashRisk").textContent = firstCashRisk ? `${firstCashRisk.age}歲` : "未出現";
+  updateDisplayValue("overviewRunway", annualOutflow > 0
+    ? `${(Math.max(0, current.liquidAssets) / annualOutflow * 12).toFixed(1)} 個月` : "—");
+  updateDisplayValue("overviewCashRisk", firstCashRisk ? `${firstCashRisk.age}歲` : "未出現");
   document.getElementById("overviewCashRisk").dataset.state = firstCashRisk ? "negative" : "positive";
   document.getElementById("overviewPeriod").textContent = `${current.date} 起的一年・${current.financeStage}・新臺幣估算`;
   document.getElementById("trajectoryRange").textContent = `${current.age} → 100歲`;
@@ -1990,8 +2033,11 @@ function drawLineChart() {
     context.fillStyle = "rgba(255, 255, 255, 0.97)";
     context.strokeStyle = "#dfe2e8";
     context.lineWidth = 1;
-    context.fillRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
-    context.strokeRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+    context.beginPath();
+    if (context.roundRect) context.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 12);
+    else context.rect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+    context.fill();
+    context.stroke();
     context.textAlign = "left";
     context.textBaseline = "top";
     context.fillStyle = "#20232b";
@@ -2066,7 +2112,10 @@ function drawBarChart() {
     const barHeight = (value / (maxValue * 1.1)) * (bounds.bottom - bounds.top);
     const y = bounds.bottom - barHeight;
     context.fillStyle = colors[index];
-    context.fillRect(x, y, barWidth, barHeight);
+    context.beginPath();
+    if (context.roundRect) context.roundRect(x, y, barWidth, barHeight, Math.min(7, barHeight / 2));
+    else context.rect(x, y, barWidth, barHeight);
+    context.fill();
     context.fillStyle = "#20232b";
     context.font = '10px "Microsoft JhengHei", sans-serif';
     context.textAlign = "center";
@@ -2431,6 +2480,7 @@ function setActiveView(view) {
     button.setAttribute("aria-pressed", String(button.dataset.viewTarget === view));
   });
   document.getElementById("viewHelp").textContent = VIEW_HELP_TEXT[view];
+  updateNavigationIndicator(true);
 
   if (view === "overview") {
     requestAnimationFrame(() => {
@@ -2441,11 +2491,15 @@ function setActiveView(view) {
 }
 
 function bindEvents() {
+  document.fonts?.ready.then(() => updateNavigationIndicator());
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").addEventListener("change", (event) => {
+    if (event.matches) document.querySelectorAll(".motion-value").forEach((element) => valueAnimations.get(element)?.cancel());
+  });
   document.querySelectorAll("[data-view-target]").forEach((button) => {
     button.addEventListener("click", () => {
       if (button.dataset.viewTarget === activeView) return;
       setActiveView(button.dataset.viewTarget);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "instant" : "smooth" });
     });
   });
 
@@ -2643,7 +2697,7 @@ function bindEvents() {
     if (!button) return;
     chartHoverActive = false;
     selectProjectionAge(button.dataset.inspectAge);
-    document.getElementById("lineChart").scrollIntoView({ block: "center", behavior: "smooth" });
+    document.getElementById("lineChart").scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "instant" : "smooth" });
   });
   const lineCanvas = document.getElementById("lineChart");
   lineCanvas.addEventListener("pointermove", (event) => {
@@ -2994,6 +3048,7 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => {
+    updateNavigationIndicator();
     drawLineChart();
     drawBarChart();
   });
