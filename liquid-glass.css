@@ -1,0 +1,148 @@
+/* Shared liquid material. Solid surfaces remain the fallback without backdrop filters. */
+:root {
+  --glass-fill: #f6f9fd;
+  --glass-edge: #ffffffc7;
+  --glass-shadow: 0 12px 36px #28477209, inset 0 1px 0 #ffffffed, inset 0 -1px 0 #abc4e525;
+  --glass-glint: linear-gradient(135deg, #ffffffc7 0%, #ffffff28 27%, transparent 48%, #e1efff32 76%, #ffffff80 100%);
+}
+
+body {
+  background: radial-gradient(ellipse at 2% 0%, #c7e1f4a6, transparent 38%),
+    radial-gradient(ellipse at 100% 28%, #d6d9f699, transparent 42%),
+    radial-gradient(ellipse at 12% 77%, #d2e9ed80, transparent 38%), #eff3f8;
+}
+
+:is(.topbar, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+  .chart-panel, .metric, .age-snapshot, .edit-modal-dialog, .file-menu-content) {
+  background-color: var(--glass-fill);
+  background-image: var(--glass-glint);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+}
+
+.topbar { border-radius: 28px; padding: clamp(18px, 2vw, 28px); }
+.topbar > *, .topbar-right, .save-status { min-width: 0; }
+.save-status { overflow-wrap: anywhere; }
+.workflow-nav { background: #edf3fa; border-radius: 26px; }
+.workflow-tabs { background: #dce6f080; border-color: #ffffff94; box-shadow: inset 0 1px 2px #ffffffc7, inset 0 -1px 2px #8aa7cc1a; }
+.workflow-active-track { background: linear-gradient(145deg, #39495b, #202c3c 62%, #3d5067); box-shadow: inset 0 1px 0 #ffffff38, inset 0 -1px 0 #8bb3e338, 0 4px 14px #20334b26; }
+.view-help { color: #596b80; }
+
+/* Nested content shares its parent's material rather than stacking large blur layers. */
+:is(.protection-item, .advanced-settings, .scope-grid article, .recommendation-overview,
+  .empty-list, .finance-stage-empty, .scope-notice, .resource-detail, .policy-detail-menu) {
+  background-color: #eef4fb80;
+  background-image: var(--glass-glint);
+  border-color: #c4d3e566;
+  box-shadow: inset 0 1px 0 #ffffffe0;
+}
+.entity-summary { border-color: #b6c9e04d; }
+table th { background: #e7eff8b8; }
+table td { border-color: #c5d3e552; }
+.ratio-item { border-color: #bdcfe36b; }
+.metric-glyph { background: linear-gradient(145deg, #ffffffb3, #d8e8fb99); box-shadow: inset 0 1px 0 #ffffff, 0 3px 9px #365f8e0a; }
+
+.mission-panel {
+  background: radial-gradient(ellipse at 100% 0%, #709ac335, transparent 65%),
+    linear-gradient(135deg, #253448f5, #131d2af7 58%, #243b53f2);
+  border-color: #a6c9e54d;
+  box-shadow: 0 18px 44px #19345414, inset 0 1px 0 #d5ebff52, inset 0 -1px 0 #719bc633;
+}
+.mission-panel::before { background: linear-gradient(120deg, #e4f3ff0d, transparent 35%, transparent 65%, #b2dcff0a); border-radius: inherit; }
+.mission-panel::after { border: 1px solid #d2e7ff0e; border-radius: inherit; content: ""; inset: 4px; pointer-events: none; position: absolute; }
+
+:is(input:not([type="range"]), select, textarea) {
+  background: linear-gradient(145deg, #ffffffb3, #eaf1f98c);
+  border-color: #bdcde085;
+  box-shadow: inset 0 1px 3px #3b58700a, 0 1px 0 #ffffffc7;
+}
+:is(input:not([type="range"]), select, textarea):focus { background-color: #fff; box-shadow: 0 0 0 3px #507bc51f, inset 0 1px 0 #fff; }
+.edit-modal-backdrop { background: #182c455c; }
+.edit-modal-header, .edit-modal-actions { background: #f7faff; border-color: #c7d5e580; }
+
+/* Optical layers sit behind the label. They never move or distort control text. */
+:is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary) {
+  --liquid-x: 50%;
+  --liquid-y: 50%;
+  --liquid-drift-x: 0px;
+  --liquid-drift-y: 0px;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+:is(button, .file-menu-trigger, .advanced-settings > summary, .cashflow-details > summary, .model-scope-panel > summary)::before {
+  background: radial-gradient(ellipse 95px 65px at var(--liquid-x) var(--liquid-y), #ffffffb8, #d2efff38 42%, transparent 75%),
+    linear-gradient(125deg, #ffffff4d, transparent 35%, #b3dfff1a 60%, #ffffff52);
+  border: 1px solid #ffffff45;
+  border-radius: inherit;
+  content: "";
+  inset: 0;
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(var(--liquid-drift-x), var(--liquid-drift-y)) scale(1.06);
+  transition: opacity 300ms ease, transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+.liquid-ripple {
+  background: radial-gradient(ellipse, transparent 48%, #c3eaff26 55%, #ffffff80 62%, #b8dfff4d 66%, transparent 72%);
+  border: 1px solid #ffffff73;
+  box-shadow: inset 0 0 16px #ffffff45, 0 0 14px #b2dfff26;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+.liquid-ripple::after { border: 1px solid #ffffff70; border-radius: inherit; content: ""; inset: 14%; position: absolute; }
+button { background-image: linear-gradient(140deg, #ffffff24, transparent 48%, #afccff1a); box-shadow: inset 0 1px 0 #ffffff47, inset 0 -1px 0 #122d5221, 0 4px 12px #224a7a0a; }
+:is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger) { background-color: #ffffff99; border-color: #b9cce0b3; box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #d0e0f34d, 0 3px 10px #244e7a07; }
+:is(button.delete-btn, button.danger-action) { border-color: #dfb6c380; }
+.workflow-tab { box-shadow: none; }
+.age-item { background-color: #f1f6fc91; border-color: #becfe77a; box-shadow: inset 0 1px 0 #ffffffeb, inset 0 -1px 0 #d5e4f13b; }
+.age-item.warn { border-left-color: var(--amber); }
+.age-item.risk { border-left-color: var(--red); }
+.age-item[aria-pressed="true"] { background-color: #ddeafdcc; border-color: #829fe6; box-shadow: inset 0 0 0 1px #849feb73, inset 0 1px 0 #fff, 0 5px 16px #4b78b312; }
+
+@supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  :root { --glass-fill: #ffffffa8; }
+  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric, .age-snapshot) {
+    -webkit-backdrop-filter: blur(12px) saturate(135%);
+    backdrop-filter: blur(12px) saturate(135%);
+  }
+  /* Stronger blur is reserved for the floating layers. */
+  .workflow-nav { background: #edf4fba3; -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%); }
+  .file-menu-content, .edit-modal-dialog { background-color: #f8fbffdc; -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
+  .edit-modal-header, .edit-modal-actions { background: #f7faffeb; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .is-liquid-hover::before { opacity: 0.95; }
+  button.is-liquid-hover:not(:disabled):not(.workflow-tab):not(.age-item), .file-menu-trigger.is-liquid-hover {
+    box-shadow: inset 0 1px 0 #ffffffa6, inset 0 -1px 0 #a7cbed66, 0 7px 20px #3b648820;
+  }
+  .age-item.is-liquid-hover { box-shadow: inset 0 1px 0 #fff, 0 7px 20px #3b648818; }
+}
+@media (max-width: 760px) {
+  .topbar { border-radius: 24px; padding: 18px 16px; }
+  .investment-table tr, .policy-table tr { background: var(--glass-glint), #eff5fb91; border-color: #bdcfe580; box-shadow: inset 0 1px 0 #fff; }
+  :is(.panel-section, .planning-panel, .policy-panel, .gap-table-panel, .chart-panel, .metric) { -webkit-backdrop-filter: blur(8px) saturate(125%); backdrop-filter: blur(8px) saturate(125%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .liquid-ripple { display: none; }
+  :is(button, .file-menu-trigger, summary)::before { transform: none; transition: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-fill: #f7faff; }
+  :is(.topbar, .workflow-nav, .panel-section, .planning-panel, .policy-panel, .gap-table-panel,
+    .chart-panel, .metric, .age-snapshot, .edit-modal-dialog, .file-menu-content, .edit-modal-header, .edit-modal-actions) {
+    background: var(--glass-fill);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  :is(button, .file-menu-trigger, summary)::before, .liquid-ripple { display: none; }
+  :is(button.secondary, button.detail-btn, button.delete-btn, button.danger-action, .file-menu-trigger, .age-item) { background-color: #f7faff; }
+  :is(input:not([type="range"]), select, textarea) { background: #f1f5fa; }
+}
+@media (forced-colors: active) {
+  :is(button, .file-menu-trigger, summary)::before, .liquid-ripple { display: none; }
+}

@@ -8,7 +8,7 @@ const ignoredTopLevel = new Set([".git", ".github", "_site", "node_modules"]);
 await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
 
-for (const entry of ["index.html", "styles.css", "app.js", "README.md", "DISCLAIMER.md", "LICENSE"]) {
+for (const entry of ["index.html", "styles.css", "app.js", "liquid-glass.css", "liquid-glass.js", "README.md", "DISCLAIMER.md", "LICENSE"]) {
   await cp(path.join(root, entry), path.join(outputDir, entry), { recursive: true });
 }
 
